@@ -1,0 +1,80 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/tags"
+
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/query",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn generate_tags(TagsConfiguration, Bytes, options? : TagsOptions) -> TagsResult raise TagsError
+
+// Errors
+pub(all) suberror TagsError {
+  Cancelled(TagsProgressState)
+  InvalidCaptureName(String)
+  LanguageFailed(@tree_sitter_mbt.LanguageError)
+  ParseFailed(@tree_sitter_mbt.ParseError)
+  PredicateFailed(@query.QueryPredicateError)
+  QueryFailed(@query.QueryError)
+}
+
+// Types and methods
+pub(all) struct Tag {
+  name : String
+  syntax_type : String
+  kind : TagKind
+  range : @api.Range
+  name_range : @api.Range
+  line_range : @api.Range
+  span : @api.Range
+  utf16_column_range : Utf16ColumnRange
+  docs : String
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TagKind {
+  Definition
+  Reference
+} derive(Eq, @debug.Debug)
+
+type TagsConfiguration
+pub fn TagsConfiguration::names(Self) -> Array[String]
+pub fn TagsConfiguration::new(@tree_sitter_mbt.Language, String, locals_query? : String) -> Self raise TagsError
+pub fn TagsConfiguration::pattern_count(Self) -> Int
+pub fn TagsConfiguration::tags_pattern_start(Self) -> Int
+
+pub(all) struct TagsOptions {
+  cancellation_state : TagsProgressState?
+  progress_callback : ((TagsProgressState) -> Bool)?
+}
+pub fn TagsOptions::cancelled(TagsProgressState) -> Self
+pub fn TagsOptions::default() -> Self
+pub fn TagsOptions::progress((TagsProgressState) -> Bool) -> Self
+
+pub(all) enum TagsProgressPhase {
+  Parse
+  Query
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TagsProgressState {
+  phase : TagsProgressPhase
+  current_byte_offset : UInt
+} derive(Eq, @debug.Debug)
+pub fn TagsProgressState::new(phase~ : TagsProgressPhase, current_byte_offset~ : UInt) -> Self
+
+pub(all) struct TagsResult {
+  tags : Array[Tag]
+  has_error : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Utf16ColumnRange {
+  start : UInt
+  end : UInt
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,95 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/cli/native"
+
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/cli",
+  "moonbit-community/tree_sitter_mbt/tags",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn cli_global_config_path_candidates(String?) -> Array[String]
+
+pub async fn read_cli_combined_query(Array[String]) -> @cli.CliCombinedQuery
+
+pub async fn read_cli_discovered_global_config_file(String?) -> @cli.CliGlobalConfig?
+
+pub async fn read_cli_file_bytes(String) -> Bytes
+
+pub async fn read_cli_file_string(String) -> String
+
+pub async fn read_cli_global_config_file(String) -> @cli.CliGlobalConfig
+
+pub async fn read_cli_language_from_grammar_path(String) -> @tree_sitter_mbt.Language
+
+pub async fn read_cli_optional_global_config_file(String?) -> @cli.CliGlobalConfig?
+
+pub async fn read_cli_parse_command_language(@cli.CliParseCommand, Array[@cli.CliParseCommandSource]) -> @tree_sitter_mbt.Language
+
+pub async fn read_cli_parse_command_sources(@cli.CliParseCommand) -> Array[@cli.CliParseCommandSource]
+
+pub async fn read_cli_query_command_file(@cli.CliQueryCommand) -> String
+
+pub async fn read_cli_query_command_language(@cli.CliQueryCommand, Array[@cli.CliParseCommandSource]) -> @tree_sitter_mbt.Language
+
+pub async fn read_cli_query_command_sources(@cli.CliQueryCommand) -> Array[@cli.CliParseCommandSource]
+
+pub async fn read_cli_query_files(Array[String]) -> Array[@cli.CliQueryFile]
+
+pub async fn read_cli_tags_command_sources(@cli.CliTagsCommand) -> Array[@cli.CliParseCommandSource]
+
+pub async fn read_cli_test_command_files(@cli.CliTestCommand, Array[String]) -> Array[@cli.CliTestCommandFile]
+
+pub async fn read_cli_test_command_language(@cli.CliTestCommand) -> @tree_sitter_mbt.Language
+
+pub async fn read_cli_tree_sitter_config_file(String) -> @cli.CliTreeSitterConfig
+
+pub async fn read_cli_tree_sitter_config_locations(Array[String]) -> Array[@cli.CliLanguageConfigLocation]
+
+pub async fn resolve_cli_global_config_path(String?) -> String?
+
+pub async fn run_cli_generate_command_files(@cli.CliGenerateCommand) -> @cli.CliGenerateRunResult
+
+pub async fn run_cli_parse_command_files(@cli.CliParseCommand, @tree_sitter_mbt.Parser) -> @cli.CliParseCommandRunResult
+
+pub async fn run_cli_parse_command_loaded_files(@cli.CliParseCommand) -> @cli.CliParseCommandRunResult
+
+pub async fn run_cli_query_command_files(@cli.CliQueryCommand, @tree_sitter_mbt.Language) -> @cli.CliQueryCommandRunResult
+
+pub async fn run_cli_query_command_loaded_files(@cli.CliQueryCommand) -> @cli.CliQueryCommandRunResult
+
+pub async fn run_cli_tags_command_files(@cli.CliTagsCommand, @tags.TagsConfiguration) -> @cli.CliTagsCommandRunResult
+
+pub async fn run_cli_tags_command_loaded_files(@cli.CliTagsCommand) -> @cli.CliTagsCommandRunResult
+
+pub async fn run_cli_test_command_files(@cli.CliTestCommand, @tree_sitter_mbt.Parser, Array[String]) -> @cli.CliTestCommandRunResult
+
+pub async fn run_cli_test_command_loaded_files(@cli.CliTestCommand) -> @cli.CliTestCommandRunResult
+
+pub async fn write_cli_output_file(@cli.CliOutputFile) -> Unit
+
+pub async fn write_cli_output_files(Array[@cli.CliOutputFile]) -> Unit
+
+// Errors
+pub(all) suberror CliFileIoError {
+  FileReadFailed(path~ : String, reason~ : String)
+  FileWriteFailed(path~ : String, reason~ : String)
+  MissingInputPaths(String)
+  MissingQueryPath
+  UnsupportedFileInput(String)
+  UnsupportedGrammarFileExtension(path~ : String)
+  UnsupportedDynamicLanguage(path~ : String)
+  GrammarJsLoadFailed(path~ : String, runtime~ : String, status~ : Int, stderr~ : String)
+  MissingLanguageConfig(String)
+  ConfigFailed(String)
+  GenerateFailed(String)
+  LanguageValidationFailed(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

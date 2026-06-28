@@ -1,0 +1,19 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/test_fixtures/generated_minimal"
+
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+}
+
+// Values
+pub fn language() -> @tree_sitter_mbt.Language raise @tables.TableValidationError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

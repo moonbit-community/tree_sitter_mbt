@@ -1,0 +1,16 @@
+import {
+  "moonbitlang/core/json",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/env",
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/generator",
+  "moonbit-community/tree_sitter_mbt/query",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+  "moonbit-community/tree_sitter_mbt/tags",
+}
+
+import {
+  "moonbitlang/core/test",
+} for "test"

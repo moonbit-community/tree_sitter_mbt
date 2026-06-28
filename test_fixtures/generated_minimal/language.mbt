@@ -1,0 +1,176 @@
+///|
+pub fn language() -> @tree_sitter_mbt.Language raise @tables.TableValidationError {
+  @tree_sitter_mbt.language_from_generated_tables(generated_language_tables())
+}
+
+///|
+fn generated_language_tables() -> @tables.GeneratedLanguageTables {
+  @tables.GeneratedLanguageTables::new(
+    name="minimal",
+    abi_version=15,
+    metadata=@tables.LanguageMetadata::new(major=0, minor=0, patch=0),
+    symbol_count=3,
+    alias_count=0,
+    token_count=2,
+    external_token_count=0,
+    state_count=4,
+    field_count=0,
+    production_id_count=1,
+    max_alias_sequence_length=1,
+    supertype_count=0,
+    main_lex_state_count=3,
+    external_lex_state_count=1,
+    reserved_word_set_count=1,
+    max_reserved_word_set_size=0,
+    large_state_count=2,
+    keyword_capture_token=None,
+    symbol_names=["end", "a", "document"],
+    symbol_types=[
+      @api.SymbolType::Regular,
+      @api.SymbolType::Anonymous,
+      @api.SymbolType::Regular,
+    ],
+    field_names=[""],
+    lex_modes=[
+      @tables.GeneratedLexMode::new(
+        lex_state=65535,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=0,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=1,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=2,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+    ],
+    primary_state_ids=[0, 1, 2, 3],
+    parse_action_lists=[
+      @tables.GeneratedParseActionList::new(actions=[], reusable=false),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=2, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=2,
+            child_count=1,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[@tables.GeneratedParseAction::Accept],
+        reusable=true,
+      ),
+    ],
+    large_parse_table=[
+      [
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+      ],
+      [
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::ActionCell(1),
+        @tables.GeneratedParseTableCell::StateCell(3),
+      ],
+    ],
+    small_parse_table=[
+      @tables.GeneratedSmallParseTableRow::new(state_id=2, offset=0, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=2,
+          symbols=[0],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=3, offset=4, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[0],
+        ),
+      ]),
+    ],
+    small_parse_table_map=[0, 4],
+    default_aliases=[],
+    supertype_entries=[],
+    reserved_word_sets=[@tables.GeneratedTokenSet::new(symbol_ids=[])],
+    external_lex_states=[
+      @tables.GeneratedExternalLexState::new(external_token_ids=[]),
+    ],
+    external_scanner=@tables.ExternalScannerDescriptor::none(),
+    production_infos=[
+      @tables.GeneratedProductionInfo::new(alias_sequence=[], field_map=[]),
+    ],
+    main_lex_tables=[
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=97, end=97)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=Some(1),
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=Some(1),
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+    ],
+    keyword_lex_table=None,
+  )
+}

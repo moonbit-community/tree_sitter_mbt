@@ -1,0 +1,7 @@
+import {
+  "moonbit-community/tree_sitter_mbt/api",
+}
+
+import {
+  "moonbitlang/core/test",
+} for "test"

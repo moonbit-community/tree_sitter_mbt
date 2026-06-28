@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/test_fixtures"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn minimal_fixture() -> FixtureSource
+
+pub fn native_abi_version() -> Int
+
+pub fn upstream_commit() -> String
+
+pub fn upstream_version() -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct FixtureSource {
+  name : String
+  upstream_path : String
+  grammar_json : String
+  corpus : String
+  external_scanner_status : String
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

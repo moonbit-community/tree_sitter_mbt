@@ -1,0 +1,588 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/cli"
+
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/generator",
+  "moonbit-community/tree_sitter_mbt/query",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+  "moonbit-community/tree_sitter_mbt/tags",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn classify_cli_query_file_path(String) -> CliQueryFileKind
+
+pub fn classify_cli_query_file_paths(Array[String]) -> CliQueryFilePathSet
+
+pub fn cli_corpus_correction_from_example(CliCorpusExample, output? : String) -> CliCorpusCorrection
+
+pub fn cli_corpus_example_is_selected(CliCorpusExample, include_pattern? : String, exclude_pattern? : String, file_name? : String) -> Bool
+
+pub fn cli_corpus_run_exit_code(Array[CliCorpusRunResult]) -> Int
+
+pub fn cli_corpus_run_results_have_failure(Array[CliCorpusRunResult]) -> Bool
+
+pub fn cli_global_config_path_candidates_for_environment(String?, CliGlobalConfigPathEnvironment) -> Array[String]
+
+pub fn cli_input_from_bytes(Bytes, requested? : @api.InputEncoding) -> @tree_sitter_mbt.Input
+
+pub fn cli_language_config_grammar_root(String, CliLanguageConfig) -> String
+
+pub fn cli_language_file_type_match(CliLanguageConfig, String) -> CliLanguageFileTypeMatch?
+
+pub fn cli_parse_exit_code(Array[CliParseResult]) -> Int
+
+pub fn cli_parse_results_have_error(Array[CliParseResult]) -> Bool
+
+pub fn cli_query_error_byte_offset(@query.QueryError) -> Int
+
+pub fn cli_query_error_file_offset(CliCombinedQuery, @query.QueryError) -> CliQueryFileOffset?
+
+pub fn cli_query_file_offset(CliCombinedQuery, Int) -> CliQueryFileOffset?
+
+pub fn cli_query_range_for_byte_offset(CliCombinedQuery, Int) -> CliQuerySourceRange?
+
+pub fn cli_tree_sitter_config_path(String) -> String
+
+pub fn combine_cli_query_files(Array[CliQueryFile]) -> CliCombinedQuery
+
+pub fn detect_utf16_bom_encoding(Bytes) -> @api.InputEncoding?
+
+pub fn first_parse_problem(@tree_sitter_mbt.Tree) -> CliParseProblem?
+
+pub fn format_cli_corpus_sexp(String, initial_indent_level? : Int) -> String
+
+pub fn locate_cli_language_configs(String, CliTreeSitterConfig) -> Array[CliLanguageConfigLocation]
+
+pub fn normalize_corpus_sexp_output(String) -> CliCorpusNormalizedOutput
+
+pub fn normalize_test_number(UInt) -> UInt
+
+pub fn parse_cli_command_args(Array[String]) -> CliCommand raise CliArgsError
+
+pub fn parse_cli_global_config_json(String) -> CliGlobalConfig raise CliConfigError
+
+pub fn parse_cli_input_encoding(String) -> @api.InputEncoding raise CliEncodingError
+
+pub fn parse_cli_tree_sitter_config_json(String) -> CliTreeSitterConfig raise CliConfigError
+
+pub fn parse_cli_tree_sitter_metadata_json(String) -> @tables.LanguageMetadata raise CliConfigError
+
+pub fn parse_corpus_file_contents(String, String, file_name? : String, current_platform? : String) -> CliCorpusFile
+
+pub fn parse_paths_file_contents(String) -> Array[String]
+
+pub fn plan_cli_corpus_update(@tree_sitter_mbt.Parser, CliCorpusFile, include_pattern? : String, exclude_pattern? : String, file_name? : String, show_fields? : Bool) -> CliCorpusUpdatePlan raise
+
+pub fn render_cli_corpus_corrections(Array[CliCorpusCorrection]) -> String
+
+pub fn render_cli_parse_output(Bytes, @tree_sitter_mbt.Tree, output? : CliParseOutputMode, no_ranges? : Bool) -> String
+
+pub fn render_cli_test_json_summary(CliTestRunSummary) -> String
+
+pub fn render_cli_test_summary(CliTestRunSummary, stats? : CliTestStatsMode) -> String
+
+pub fn render_parse_cst_cursor(Bytes, @tree_sitter_mbt.TreeCursor, no_ranges? : Bool) -> String
+
+pub fn render_parse_cst_tree(Bytes, @tree_sitter_mbt.Tree, no_ranges? : Bool) -> String
+
+pub fn render_parse_normal_cursor(@tree_sitter_mbt.TreeCursor, no_ranges? : Bool) -> String
+
+pub fn render_parse_normal_tree(@tree_sitter_mbt.Tree, no_ranges? : Bool) -> String
+
+pub fn render_parse_problem(CliParseProblem) -> String
+
+pub fn resolve_cli_explicit_query_paths(Array[String]) -> CliQueryFilePathSet
+
+pub fn resolve_cli_language_grammar_json_path(CliLanguageConfigLocation) -> String
+
+pub fn resolve_cli_language_location_query_paths(CliLanguageConfigLocation) -> CliQueryFilePathSet
+
+pub fn resolve_cli_language_query_paths(String, CliLanguageConfig) -> CliQueryFilePathSet
+
+pub fn resolve_positional_paths(Array[CliPathExpansion]) -> Array[String] raise CliInputError
+
+pub fn run_cli_corpus_example(@tree_sitter_mbt.Parser, CliCorpusExample, show_fields? : Bool) -> CliCorpusRunResult raise
+
+pub fn run_cli_corpus_file(@tree_sitter_mbt.Parser, CliCorpusFile, include_pattern? : String, exclude_pattern? : String, file_name? : String, show_fields? : Bool) -> Array[CliCorpusRunResult] raise
+
+pub fn run_cli_generate_command(CliGenerateCommand, String, semantic_version? : @tables.LanguageMetadata, emit_grammar_json? : Bool) -> CliGenerateRunResult raise CliGenerateRunError
+
+pub fn run_cli_parse_command(CliParseCommand, @tree_sitter_mbt.Parser, Array[CliParseCommandSource]) -> CliParseCommandRunResult raise
+
+pub fn run_cli_parse_source(@tree_sitter_mbt.Parser, Bytes, output? : CliParseOutputMode, no_ranges? : Bool, encoding? : @api.InputEncoding) -> CliParseResult raise
+
+pub fn run_cli_query_command(CliQueryCommand, @tree_sitter_mbt.Language, String, Array[CliParseCommandSource]) -> CliQueryCommandRunResult raise CliQueryRunError
+
+pub fn run_cli_tags_command(CliTagsCommand, @tags.TagsConfiguration, Array[CliParseCommandSource]) -> CliTagsCommandRunResult raise CliTagsRunError
+
+pub fn run_cli_test_command(CliTestCommand, @tree_sitter_mbt.Parser, Array[CliTestCommandFile]) -> CliTestCommandRunResult raise
+
+pub fn select_cli_input_encoding(Bytes, requested? : @api.InputEncoding) -> @api.InputEncoding
+
+pub fn select_cli_language(Array[CliLanguageConfig], lib_path? : String, scope? : String, file_name? : String, source? : String) -> CliLanguageSelection? raise CliConfigError
+
+pub fn select_cli_language_config_for_file(Array[CliLanguageConfig], String, source? : String) -> CliLanguageConfig? raise CliConfigError
+
+pub fn select_cli_language_config_for_first_line(Array[CliLanguageConfig], String) -> CliLanguageConfig? raise CliConfigError
+
+pub fn select_cli_language_config_for_injection(Array[CliLanguageConfig], String) -> CliLanguageConfig? raise CliConfigError
+
+pub fn select_cli_language_config_for_scope(Array[CliLanguageConfig], String) -> CliLanguageConfig?
+
+pub fn select_cli_language_location(Array[CliLanguageConfigLocation], lib_path? : String, scope? : String, file_name? : String, source? : String) -> CliLocatedLanguageSelection? raise CliConfigError
+
+pub fn select_cli_language_location_for_scope(Array[CliLanguageConfigLocation], String) -> CliLanguageConfigLocation?
+
+pub fn select_input_source(paths_file_contents? : String, positional_paths? : Array[CliPathExpansion], test_number? : UInt) -> CliInputSource raise CliInputError
+
+pub fn strip_cli_corpus_sexp_fields(String) -> String
+
+pub fn summarize_cli_test_results(Array[CliCorpusRunResult]) -> CliTestRunSummary
+
+pub fn tree_has_parse_problem(@tree_sitter_mbt.Tree) -> Bool
+
+// Errors
+pub(all) suberror CliArgsError {
+  MissingCommand
+  UnknownCommand(String)
+  UnknownOption(String)
+  MissingOptionValue(String)
+  InvalidOptionValue(option~ : String, value~ : String)
+  ConflictingOptions(String, String)
+  UnexpectedArgument(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror CliConfigError {
+  InvalidJson(String)
+  ExpectedObject(String)
+  ExpectedArray(String)
+  ExpectedString(String)
+  MissingField(path~ : String, field~ : String)
+  InvalidSemanticVersion(path~ : String, value~ : String)
+  InvalidRegex(path~ : String, pattern~ : String)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror CliEncodingError {
+  UnknownEncoding(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror CliGenerateRunError {
+  InvalidAbiVersion(String)
+  UnsupportedGenerateOption(String)
+  GenerateFailed(@generator.GenerateError)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror CliInputError {
+  EmptyPathSelection
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror CliQueryRunError {
+  LanguageFailed(@tree_sitter_mbt.LanguageError)
+  ParseFailed(@tree_sitter_mbt.ParseError)
+  QueryFailed(@query.QueryError)
+  PredicateFailed(@query.QueryPredicateError)
+  InvalidRange(String)
+}
+
+pub(all) suberror CliTagsRunError {
+  TagsFailed(@tags.TagsError)
+}
+
+// Types and methods
+pub(all) struct CliByteRange {
+  start : UInt
+  end : UInt
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCombinedQuery {
+  source : String
+  ranges : Array[CliQuerySourceRange]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliCommand {
+  CliParse(CliParseCommand)
+  CliTest(CliTestCommand)
+  CliGenerate(CliGenerateCommand)
+  CliQuery(CliQueryCommand)
+  CliTags(CliTagsCommand)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusAttributes {
+  platform : Bool
+  fail_fast : Bool
+  expectation : CliCorpusExpectation
+  cst : Bool
+  languages : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusCorrection {
+  name : String
+  input : String
+  output : String
+  attributes_str : String
+  header_delim_len : Int
+  divider_delim_len : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusExample {
+  name : String
+  input : Bytes
+  output : String
+  header_delim_len : Int
+  divider_delim_len : Int
+  has_fields : Bool
+  attributes_str : String
+  attributes : CliCorpusAttributes
+  file_name : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliCorpusExpectation {
+  Pass
+  Error
+  Skip
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusFile {
+  name : String
+  examples : Array[CliCorpusExample]
+  file_name : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusNormalizedOutput {
+  output : String
+  has_fields : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusRunResult {
+  name : String
+  status : CliCorpusRunStatus
+  expected : String
+  actual : String
+  is_cst : Bool
+  has_parse_error : Bool
+  expectation : CliCorpusExpectation
+  file_name : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliCorpusRunStatus {
+  CorpusRunPassed
+  CorpusRunFailed
+  CorpusRunSkipped
+  CorpusRunPlatformSkipped
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliCorpusUpdatePlan {
+  results : Array[CliCorpusRunResult]
+  corrections : Array[CliCorpusCorrection]
+  has_unexpected_parse_errors : Bool
+  can_update : Bool
+  stopped_on_fail_fast : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliGenerateCommand {
+  grammar_path : String?
+  output_dir : String?
+  abi_version : String?
+  js_runtime : String?
+  log : Bool
+  no_parser : Bool
+  report_states_for_rule : String?
+  json_summary : Bool
+  disable_optimizations : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliGenerateRunResult {
+  files : Array[CliOutputFile]
+  language_name : String
+  abi_version : Int
+  warnings : Array[@generator.GenerateWarning]
+  json_summary : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliGlobalConfig {
+  parser_directories : Array[String]
+  theme : Json?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliGlobalConfigPathEnvironment {
+  tree_sitter_dir : String?
+  xdg_config_home : String?
+  home : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliInputSource {
+  Stdin
+  Paths(Array[String])
+  TestNumber(UInt)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliLanguageConfig {
+  scope : String
+  path : String?
+  file_types : Array[String]
+  content_regex : String?
+  first_line_regex : String?
+  injection_regex : String?
+  highlights : Array[String]
+  injections : Array[String]
+  locals : Array[String]
+  tags : Array[String]
+  external_files : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliLanguageConfigLocation {
+  parser_root : String
+  grammar_root : String
+  config : CliLanguageConfig
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliLanguageFileTypeMatch {
+  file_type : String
+  exact_filename : Bool
+  suffix_length : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliLanguageSelection {
+  CliLanguageFromLibPath(String)
+  CliLanguageFromConfig(CliLanguageConfig, CliLanguageSelectionReason)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliLanguageSelectionReason {
+  CliLanguageByScope
+  CliLanguageByFileType
+  CliLanguageByFirstLine
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliLocatedLanguageSelection {
+  CliLocatedLanguageFromLibPath(String)
+  CliLocatedLanguageFromConfig(CliLanguageConfigLocation, CliLanguageSelectionReason)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliOutputFile {
+  path : String
+  content : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliParseCommand {
+  paths_file : String?
+  paths : Array[String]
+  config_path : String?
+  grammar_path : String?
+  lib_path : String?
+  lang_name : String?
+  scope : String?
+  output : CliParseOutputMode
+  no_ranges : Bool
+  time : Bool
+  encoding : @api.InputEncoding?
+  test_number : UInt?
+  rebuild : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliParseCommandRunResult {
+  results : Array[CliParseCommandSourceResult]
+  stdout : String
+  exit_code : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliParseCommandSource {
+  name : String?
+  contents : Bytes
+  language_names : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliParseCommandSourceResult {
+  name : String?
+  result : CliParseResult
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliParseOutputMode {
+  CliParseNormal
+  CliParseCst
+  CliParseQuiet
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliParseProblem {
+  kind : CliParseProblemKind
+  node_type : String
+  is_named : Bool
+  start_byte : UInt
+  end_byte : UInt
+  start_point : @api.Point
+  end_point : @api.Point
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliParseProblemKind {
+  ErrorNode
+  MissingNode
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliParseResult {
+  output : String
+  successful : Bool
+  problem : CliParseProblem?
+  encoding : @api.InputEncoding
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliPathExpansion {
+  argument : String
+  paths : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQueryCommand {
+  query_path : String?
+  source_paths : Array[String]
+  config_path : String?
+  grammar_path : String?
+  lib_path : String?
+  lang_name : String?
+  scope : String?
+  encoding : @api.InputEncoding?
+  test_number : UInt?
+  rebuild : Bool
+  output : CliQueryOutputMode
+  byte_range : CliByteRange?
+  containing_byte_range : CliByteRange?
+  test_mode : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQueryCommandRunResult {
+  results : Array[CliQueryCommandSourceResult]
+  stdout : String
+  exit_code : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQueryCommandSourceResult {
+  name : String?
+  output : String
+  match_count : Int
+  capture_count : Int
+  has_parse_error : Bool
+  successful : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQueryFile {
+  path : String
+  content : String
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliQueryFileKind {
+  CliQueryFileHighlights
+  CliQueryFileInjections
+  CliQueryFileLocals
+  CliQueryFileTags
+  CliQueryFileOther
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQueryFileOffset {
+  path : String
+  byte_offset : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQueryFilePathSet {
+  highlights : Array[String]
+  injections : Array[String]
+  locals : Array[String]
+  tags : Array[String]
+  others : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliQueryOutputMode {
+  CliQueryCaptures
+  CliQueryMatches
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliQuerySourceRange {
+  path : String
+  start_byte : Int
+  end_byte : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTagsCommand {
+  paths_file : String?
+  paths : Array[String]
+  config_path : String?
+  grammar_path : String?
+  scope : String?
+  time : Bool
+  quiet : Bool
+  test_number : UInt?
+  rebuild : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTagsCommandRunResult {
+  results : Array[CliTagsCommandSourceResult]
+  stdout : String
+  exit_code : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTagsCommandSourceResult {
+  name : String?
+  output : String
+  tag_count : Int
+  has_parse_error : Bool
+  successful : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTestCommand {
+  include_pattern : String?
+  exclude_pattern : String?
+  file_name : String?
+  config_path : String?
+  grammar_path : String?
+  lib_path : String?
+  lang_name : String?
+  update : Bool
+  show_fields : Bool
+  rebuild : Bool
+  overview_only : Bool
+  json_summary : Bool
+  stats : CliTestStatsMode?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTestCommandFile {
+  name : String
+  contents : String
+  file_name : String?
+  current_platform : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTestCommandFileResult {
+  name : String
+  results : Array[CliCorpusRunResult]
+  update : CliOutputFile?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTestCommandRunResult {
+  files : Array[CliTestCommandFileResult]
+  summary : CliTestRunSummary
+  stdout : String
+  json_summary : String?
+  exit_code : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTestRunSummary {
+  total : Int
+  passed : Int
+  failed : Int
+  skipped : Int
+  platform_skipped : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CliTestStatsMode {
+  CliTestStatsAll
+  CliTestStatsOutliersAndTotal
+  CliTestStatsTotalOnly
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CliTreeSitterConfig {
+  grammars : Array[CliLanguageConfig]
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

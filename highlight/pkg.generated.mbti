@@ -1,0 +1,74 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/highlight"
+
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/query",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn render_html(Array[HighlightEvent], Bytes, encoding? : @api.InputEncoding) -> String raise HighlightError
+
+// Errors
+pub(all) suberror HighlightError {
+  Cancelled(HighlightProgressState)
+  IncludedRangesFailed(@tree_sitter_mbt.IncludedRangesError)
+  LanguageFailed(@tree_sitter_mbt.LanguageError)
+  ParseFailed(@tree_sitter_mbt.ParseError)
+  QueryFailed(@query.QueryError)
+  RenderFailed(String)
+  PredicateFailed(@query.QueryPredicateError)
+}
+
+// Types and methods
+type HighlightConfiguration
+pub fn HighlightConfiguration::configure(Self, Array[String]) -> Unit
+pub fn HighlightConfiguration::has_combined_injections_query(Self) -> Bool
+pub fn HighlightConfiguration::highlight_pattern_start(Self) -> Int
+pub fn HighlightConfiguration::injection_pattern_start(Self) -> Int
+pub fn HighlightConfiguration::language_name(Self) -> String
+pub fn HighlightConfiguration::local_pattern_start(Self) -> Int
+pub fn HighlightConfiguration::names(Self) -> Array[String]
+pub fn HighlightConfiguration::new(@tree_sitter_mbt.Language, String, String, injections_query? : String, locals_query? : String, highlight_names? : Array[String]) -> Self raise HighlightError
+pub fn HighlightConfiguration::nonconformant_capture_names(Self, capture_names? : Array[String]) -> Array[String]
+pub fn HighlightConfiguration::pattern_count(Self) -> Int
+
+pub(all) enum HighlightEvent {
+  Source(start_byte~ : UInt, end_byte~ : UInt)
+  HighlightStart(String)
+  HighlightEnd(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct HighlightOptions {
+  cancellation_state : HighlightProgressState?
+  progress_callback : ((HighlightProgressState) -> Bool)?
+}
+pub fn HighlightOptions::cancelled(HighlightProgressState) -> Self
+pub fn HighlightOptions::default() -> Self
+pub fn HighlightOptions::progress((HighlightProgressState) -> Bool) -> Self
+pub fn HighlightOptions::with_progress(Self, (HighlightProgressState) -> Bool) -> Self
+
+pub(all) enum HighlightProgressPhase {
+  Parse
+  Query
+  Render
+} derive(Eq, @debug.Debug)
+
+pub(all) struct HighlightProgressState {
+  phase : HighlightProgressPhase
+  current_byte_offset : UInt
+} derive(Eq, @debug.Debug)
+pub fn HighlightProgressState::new(phase~ : HighlightProgressPhase, current_byte_offset~ : UInt) -> Self
+
+type Highlighter
+pub fn Highlighter::highlight(Self, HighlightConfiguration, Bytes, options? : HighlightOptions) -> Array[HighlightEvent] raise HighlightError
+pub fn Highlighter::highlight_encoded(Self, HighlightConfiguration, Bytes, encoding? : @api.InputEncoding, options? : HighlightOptions) -> Array[HighlightEvent] raise HighlightError
+pub fn Highlighter::highlight_with_injections(Self, HighlightConfiguration, Bytes, (String) -> HighlightConfiguration?, encoding? : @api.InputEncoding, options? : HighlightOptions) -> Array[HighlightEvent] raise HighlightError
+pub fn Highlighter::new() -> Self
+
+// Type aliases
+
+// Traits
+

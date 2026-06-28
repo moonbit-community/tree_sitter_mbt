@@ -1,0 +1,28 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/runtime"
+
+import {
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+type Length derive(Eq, @debug.Debug)
+pub fn Length::add(Self, Self) -> Self
+pub fn Length::is_undefined(Self) -> Bool
+pub fn Length::max() -> Self
+pub fn Length::min(Self, Self) -> Self
+pub fn Length::new(bytes~ : UInt, extent~ : @api.Point) -> Self
+pub fn Length::saturating_sub(Self, Self) -> Self
+pub fn Length::sub(Self, Self) -> Self
+pub fn Length::undefined() -> Self
+pub fn Length::zero() -> Self
+
+// Type aliases
+
+// Traits
+

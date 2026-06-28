@@ -1,0 +1,5 @@
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+  "moonbit-community/tree_sitter_mbt/api",
+}

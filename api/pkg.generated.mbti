@@ -1,0 +1,87 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/api"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn uint32_max() -> UInt
+
+// Errors
+pub(all) suberror ScannerError {
+  Failure(String)
+  InvalidResult(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+type FieldId derive(Eq, @debug.Debug)
+pub fn FieldId::new(UInt) -> Self
+pub fn FieldId::value(Self) -> UInt
+
+pub(all) struct InputEdit {
+  start_byte : UInt
+  old_end_byte : UInt
+  new_end_byte : UInt
+  start_point : Point
+  old_end_point : Point
+  new_end_point : Point
+} derive(Eq, @debug.Debug)
+pub fn InputEdit::edit_position(Self, byte~ : UInt, point~ : Point) -> (UInt, Point)
+pub fn InputEdit::new(start_byte~ : UInt, old_end_byte~ : UInt, new_end_byte~ : UInt, start_point~ : Point, old_end_point~ : Point, new_end_point~ : Point) -> Self
+
+pub(all) enum InputEncoding {
+  Utf8
+  Utf16LE
+  Utf16BE
+  Custom
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Point {
+  row : UInt
+  column : UInt
+} derive(Eq, @debug.Debug)
+pub fn Point::add(Self, Self) -> Self
+pub fn Point::edit(Self, byte~ : UInt, edit~ : InputEdit) -> (UInt, Self)
+pub fn Point::gt(Self, Self) -> Bool
+pub fn Point::gte(Self, Self) -> Bool
+pub fn Point::lt(Self, Self) -> Bool
+pub fn Point::lte(Self, Self) -> Bool
+pub fn Point::max() -> Self
+pub fn Point::new(row~ : UInt, column~ : UInt) -> Self
+pub fn Point::sub(Self, Self) -> Self
+pub fn Point::zero() -> Self
+
+pub(all) struct Range {
+  start_byte : UInt
+  end_byte : UInt
+  start_point : Point
+  end_point : Point
+} derive(Eq, @debug.Debug)
+pub fn Range::byte_length(Self) -> UInt
+pub fn Range::contains_byte(Self, UInt) -> Bool
+pub fn Range::contains_point(Self, Point) -> Bool
+pub fn Range::edit(Self, InputEdit) -> Self
+pub fn Range::is_empty(Self) -> Bool
+pub fn Range::new(start_byte~ : UInt, end_byte~ : UInt, start_point~ : Point, end_point~ : Point) -> Self
+pub fn Range::unbounded(start_byte~ : UInt, start_point~ : Point) -> Self
+
+type StateId derive(Eq, @debug.Debug)
+pub fn StateId::new(UInt) -> Self
+pub fn StateId::value(Self) -> UInt
+
+type SymbolId derive(Eq, @debug.Debug)
+pub fn SymbolId::new(UInt) -> Self
+pub fn SymbolId::value(Self) -> UInt
+
+pub(all) enum SymbolType {
+  Regular
+  Anonymous
+  Supertype
+  Auxiliary
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

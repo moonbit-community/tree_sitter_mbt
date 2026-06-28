@@ -1,0 +1,319 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/runtime/tables"
+
+import {
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn external_scanner_serialization_buffer_size() -> Int
+
+pub fn lex_state_none() -> Int
+
+pub fn target_abi_version() -> Int
+
+pub fn validate(GeneratedLanguageTables) -> ValidatedLanguageTables raise TableValidationError
+
+// Errors
+pub(all) suberror TableValidationError {
+  UnsupportedAbi(Int)
+  EmptyLanguageName
+  NegativeCount(field~ : String, value~ : Int)
+  InvalidLength(field~ : String, expected~ : Int, actual~ : Int)
+  InvalidId(field~ : String, value~ : Int, min~ : Int, max~ : Int)
+  InvalidFieldZero(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) enum ExternalScanResult {
+  NoToken
+  Token(external_token_id~ : Int, bytes_read~ : Int)
+  TokenRange(external_token_id~ : Int, start_byte~ : UInt, end_byte~ : UInt, start_point~ : @api.Point, end_point~ : @api.Point, state_changed~ : Bool)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ExternalScannerAdvanceStep {
+  byte_width : Int
+  codepoint : Int
+} derive(Eq, @debug.Debug)
+pub fn ExternalScannerAdvanceStep::new(byte_width~ : Int, codepoint~ : Int) -> Self
+
+pub(all) struct ExternalScannerContext {
+  input : Bytes
+  byte_offset : UInt
+  point : @api.Point
+  valid_symbols : Array[Bool]
+  is_at_included_range_start : Bool
+  previous_included_range_end_byte : UInt?
+  previous_included_range_end_point : @api.Point?
+  eof : Bool
+  mut column : UInt
+  advance_steps : Array[ExternalScannerAdvanceStep]
+  mut current_byte : UInt
+  mut current_point : @api.Point
+  mut current_step_index : Int
+  mut token_start_byte : UInt
+  mut token_start_point : @api.Point
+  mut token_end_byte : UInt
+  mut token_end_point : @api.Point
+  mut has_marked_end : Bool
+  mut did_get_column : Bool
+  logs : Array[String]
+} derive(Eq, @debug.Debug)
+pub fn ExternalScannerContext::advance(Self, skip? : Bool) -> Unit
+pub fn ExternalScannerContext::current_byte(Self) -> UInt
+pub fn ExternalScannerContext::current_point(Self) -> @api.Point
+pub fn ExternalScannerContext::did_get_column(Self) -> Bool
+pub fn ExternalScannerContext::eof(Self) -> Bool
+pub fn ExternalScannerContext::get_column(Self) -> UInt
+pub fn ExternalScannerContext::is_at_included_range_start(Self) -> Bool
+pub fn ExternalScannerContext::log(Self, String) -> Unit
+pub fn ExternalScannerContext::logged_messages(Self) -> Array[String]
+pub fn ExternalScannerContext::mark_end(Self) -> Unit
+pub fn ExternalScannerContext::new(input~ : Bytes, byte_offset~ : UInt, point~ : @api.Point, valid_symbols~ : Array[Bool], is_at_included_range_start? : Bool, previous_included_range_end_byte? : UInt?, previous_included_range_end_point? : @api.Point?, eof? : Bool, column? : UInt, advance_steps? : Array[ExternalScannerAdvanceStep]) -> Self
+pub fn ExternalScannerContext::token(Self, external_token_id~ : Int, state_changed? : Bool) -> ExternalScanResult
+
+type ExternalScannerDescriptor derive(Eq, @debug.Debug)
+pub fn ExternalScannerDescriptor::create(Self) -> Unit raise @api.ScannerError
+pub fn ExternalScannerDescriptor::deserialize(Self, Bytes) -> Unit raise @api.ScannerError
+pub fn ExternalScannerDescriptor::destroy(Self) -> Unit raise @api.ScannerError
+pub fn ExternalScannerDescriptor::external_state_count(Self) -> Int
+pub fn ExternalScannerDescriptor::external_token_count(Self) -> Int
+pub fn ExternalScannerDescriptor::has_scan_callback(Self) -> Bool
+pub fn ExternalScannerDescriptor::new(external_token_count~ : Int, external_state_count~ : Int, states? : Array[Array[Bool]], symbol_map? : Array[Int]) -> Self
+pub fn ExternalScannerDescriptor::none() -> Self
+pub fn ExternalScannerDescriptor::scan(Self, ExternalScannerContext) -> ExternalScanResult raise @api.ScannerError
+pub fn ExternalScannerDescriptor::serialize(Self) -> Bytes raise @api.ScannerError
+pub fn ExternalScannerDescriptor::state_enabled(Self, Int, Int) -> Bool?
+pub fn ExternalScannerDescriptor::symbol_for_external_token(Self, Int) -> Int?
+pub fn ExternalScannerDescriptor::with_callbacks(external_token_count~ : Int, external_state_count~ : Int, states? : Array[Array[Bool]], symbol_map? : Array[Int], create~ : () -> Unit raise @api.ScannerError, destroy~ : () -> Unit raise @api.ScannerError, deserialize~ : (Bytes) -> Unit raise @api.ScannerError, serialize~ : () -> Bytes raise @api.ScannerError, scan~ : (ExternalScannerContext) -> ExternalScanResult raise @api.ScannerError) -> Self
+pub fn ExternalScannerDescriptor::with_scan(external_token_count~ : Int, external_state_count~ : Int, states? : Array[Array[Bool]], symbol_map? : Array[Int], scan~ : (ExternalScannerContext) -> ExternalScanResult raise @api.ScannerError) -> Self
+
+pub(all) struct GeneratedAlias {
+  value : String
+  named : Bool
+} derive(Eq, @debug.Debug)
+pub fn GeneratedAlias::new(value~ : String, named~ : Bool) -> Self
+
+pub(all) struct GeneratedCharacterRange {
+  start : Int
+  end : Int
+} derive(Eq, @debug.Debug)
+pub fn GeneratedCharacterRange::new(start~ : Int, end~ : Int) -> Self
+
+pub(all) struct GeneratedDefaultAlias {
+  symbol_id : Int
+  value : String
+  named : Bool
+} derive(Eq, @debug.Debug)
+pub fn GeneratedDefaultAlias::new(symbol_id~ : Int, value~ : String, named~ : Bool) -> Self
+
+pub(all) struct GeneratedExternalLexState {
+  external_token_ids : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedExternalLexState::new(external_token_ids? : Array[Int]) -> Self
+
+pub(all) struct GeneratedFieldLocation {
+  index : Int
+  inherited : Bool
+} derive(Eq, @debug.Debug)
+pub fn GeneratedFieldLocation::new(index~ : Int, inherited~ : Bool) -> Self
+
+pub(all) struct GeneratedFieldMapEntry {
+  field_id : Int
+  locations : Array[GeneratedFieldLocation]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedFieldMapEntry::new(field_id~ : Int, locations? : Array[GeneratedFieldLocation]) -> Self
+
+pub(all) struct GeneratedLanguageTables {
+  abi_version : Int
+  name : String
+  metadata : LanguageMetadata
+  symbol_count : Int
+  alias_count : Int
+  token_count : Int
+  external_token_count : Int
+  state_count : Int
+  field_count : Int
+  production_id_count : Int
+  max_alias_sequence_length : Int
+  supertype_count : Int
+  main_lex_state_count : Int
+  external_lex_state_count : Int
+  reserved_word_set_count : Int
+  max_reserved_word_set_size : Int
+  large_state_count : Int
+  keyword_capture_token : Int?
+  symbol_names : Array[String]
+  symbol_types : Array[@api.SymbolType]
+  public_symbol_map : Array[Int]
+  alias_symbols : Array[GeneratedAlias]
+  non_terminal_aliases : Array[GeneratedNonTerminalAliasEntry]
+  field_names : Array[String]
+  lex_modes : Array[GeneratedLexMode]
+  primary_state_ids : Array[Int]
+  parse_action_lists : Array[GeneratedParseActionList]
+  large_parse_table : Array[Array[GeneratedParseTableCell]]
+  small_parse_table : Array[GeneratedSmallParseTableRow]
+  small_parse_table_map : Array[Int]
+  default_aliases : Array[GeneratedDefaultAlias]
+  supertype_entries : Array[GeneratedSupertypeEntry]
+  reserved_word_sets : Array[GeneratedTokenSet]
+  external_lex_states : Array[GeneratedExternalLexState]
+  external_scanner : ExternalScannerDescriptor
+  production_infos : Array[GeneratedProductionInfo]
+  main_lex_tables : Array[GeneratedLexTable]
+  keyword_lex_table : GeneratedLexTable?
+} derive(Eq, @debug.Debug)
+pub fn GeneratedLanguageTables::new(name~ : String, abi_version? : Int, metadata? : LanguageMetadata, symbol_count? : Int, alias_count? : Int, token_count? : Int, external_token_count? : Int, state_count? : Int, field_count? : Int, production_id_count? : Int, max_alias_sequence_length? : Int, supertype_count? : Int, main_lex_state_count? : Int, external_lex_state_count? : Int, reserved_word_set_count? : Int, max_reserved_word_set_size? : Int, large_state_count? : Int, keyword_capture_token? : Int?, symbol_names? : Array[String], symbol_types? : Array[@api.SymbolType], public_symbol_map? : Array[Int], alias_symbols? : Array[GeneratedAlias], non_terminal_aliases? : Array[GeneratedNonTerminalAliasEntry], field_names? : Array[String], lex_modes? : Array[GeneratedLexMode], primary_state_ids? : Array[Int], parse_action_lists? : Array[GeneratedParseActionList], large_parse_table? : Array[Array[GeneratedParseTableCell]], small_parse_table? : Array[GeneratedSmallParseTableRow], small_parse_table_map? : Array[Int], default_aliases? : Array[GeneratedDefaultAlias], supertype_entries? : Array[GeneratedSupertypeEntry], reserved_word_sets? : Array[GeneratedTokenSet], external_lex_states? : Array[GeneratedExternalLexState], external_scanner? : ExternalScannerDescriptor, production_infos? : Array[GeneratedProductionInfo], main_lex_tables? : Array[GeneratedLexTable], keyword_lex_table? : GeneratedLexTable?) -> Self
+
+pub(all) struct GeneratedLexMode {
+  lex_state : Int
+  external_lex_state : Int
+  reserved_word_set_id : Int
+} derive(Eq, @debug.Debug)
+pub fn GeneratedLexMode::new(lex_state? : Int, external_lex_state? : Int, reserved_word_set_id? : Int) -> Self
+
+pub(all) struct GeneratedLexState {
+  accept_symbol_id : Int?
+  eof_action : Int?
+  transitions : Array[GeneratedLexTransition]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedLexState::new(accept_symbol_id? : Int?, eof_action? : Int?, transitions? : Array[GeneratedLexTransition]) -> Self
+
+pub(all) struct GeneratedLexTable {
+  states : Array[GeneratedLexState]
+  start_state : Int
+} derive(Eq, @debug.Debug)
+pub fn GeneratedLexTable::new(states? : Array[GeneratedLexState], start_state? : Int) -> Self
+
+pub(all) struct GeneratedLexTransition {
+  ranges : Array[GeneratedCharacterRange]
+  target_state : Int
+  is_separator : Bool
+  precedence : Int
+} derive(Eq, @debug.Debug)
+pub fn GeneratedLexTransition::new(ranges? : Array[GeneratedCharacterRange], target_state~ : Int, is_separator? : Bool, precedence? : Int) -> Self
+
+pub(all) struct GeneratedNonTerminalAliasEntry {
+  symbol_id : Int
+  public_symbol_id : Int
+  alias_symbol_ids : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedNonTerminalAliasEntry::new(symbol_id~ : Int, public_symbol_id~ : Int, alias_symbol_ids? : Array[Int]) -> Self
+
+pub(all) enum GeneratedParseAction {
+  Accept
+  Recover
+  Shift(state_id~ : Int, is_repetition~ : Bool)
+  ShiftExtra
+  Reduce(symbol_id~ : Int, child_count~ : Int, dynamic_precedence~ : Int, production_id~ : Int)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct GeneratedParseActionList {
+  actions : Array[GeneratedParseAction]
+  reusable : Bool
+} derive(Eq, @debug.Debug)
+pub fn GeneratedParseActionList::new(actions? : Array[GeneratedParseAction], reusable? : Bool) -> Self
+
+pub(all) enum GeneratedParseTableCell {
+  EmptyCell
+  ActionCell(Int)
+  StateCell(Int)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct GeneratedProductionInfo {
+  alias_sequence : Array[GeneratedAlias?]
+  field_map : Array[GeneratedFieldMapEntry]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedProductionInfo::new(alias_sequence? : Array[GeneratedAlias?], field_map? : Array[GeneratedFieldMapEntry]) -> Self
+
+pub(all) struct GeneratedSmallParseTableRow {
+  state_id : Int
+  offset : Int
+  sections : Array[GeneratedSmallParseTableSection]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedSmallParseTableRow::new(state_id~ : Int, offset~ : Int, sections? : Array[GeneratedSmallParseTableSection]) -> Self
+
+pub(all) struct GeneratedSmallParseTableSection {
+  kind : GeneratedSmallParseTableSectionKind
+  value : Int
+  symbols : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedSmallParseTableSection::new(kind~ : GeneratedSmallParseTableSectionKind, value~ : Int, symbols? : Array[Int]) -> Self
+
+pub(all) enum GeneratedSmallParseTableSectionKind {
+  SmallAction
+  SmallState
+} derive(Eq, @debug.Debug)
+
+pub(all) struct GeneratedSupertypeEntry {
+  symbol_id : Int
+  subtype_symbol_ids : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedSupertypeEntry::new(symbol_id~ : Int, subtype_symbol_ids? : Array[Int]) -> Self
+
+pub(all) struct GeneratedTokenSet {
+  symbol_ids : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn GeneratedTokenSet::new(symbol_ids? : Array[Int]) -> Self
+
+pub(all) struct LanguageMetadata {
+  major : Int
+  minor : Int
+  patch : Int
+} derive(Eq, @debug.Debug)
+pub fn LanguageMetadata::new(major~ : Int, minor~ : Int, patch~ : Int) -> Self
+pub fn LanguageMetadata::zero() -> Self
+
+type ValidatedLanguageTables derive(Eq, @debug.Debug)
+pub fn ValidatedLanguageTables::abi_version(Self) -> Int
+pub fn ValidatedLanguageTables::alias_count(Self) -> Int
+pub fn ValidatedLanguageTables::default_alias_for_symbol(Self, @api.SymbolId) -> GeneratedAlias?
+pub fn ValidatedLanguageTables::external_lex_state(Self, Int) -> GeneratedExternalLexState?
+pub fn ValidatedLanguageTables::external_lex_state_count(Self) -> Int
+pub fn ValidatedLanguageTables::external_scanner(Self) -> ExternalScannerDescriptor
+pub fn ValidatedLanguageTables::external_token_count(Self) -> Int
+pub fn ValidatedLanguageTables::field_count(Self) -> Int
+pub fn ValidatedLanguageTables::field_id_for_name(Self, String) -> @api.FieldId?
+pub fn ValidatedLanguageTables::field_name_for_id(Self, @api.FieldId) -> String?
+pub fn ValidatedLanguageTables::goto_state_for_symbol(Self, @api.StateId, @api.SymbolId) -> @api.StateId?
+pub fn ValidatedLanguageTables::keyword_capture_token(Self) -> @api.SymbolId?
+pub fn ValidatedLanguageTables::keyword_lex_table(Self) -> GeneratedLexTable?
+pub fn ValidatedLanguageTables::large_parse_table_cell(Self, @api.StateId, @api.SymbolId) -> GeneratedParseTableCell?
+pub fn ValidatedLanguageTables::large_state_count(Self) -> Int
+pub fn ValidatedLanguageTables::lex_mode(Self, @api.StateId) -> GeneratedLexMode?
+pub fn ValidatedLanguageTables::lookahead_symbols(Self, @api.StateId) -> Array[@api.SymbolId]?
+pub fn ValidatedLanguageTables::main_lex_state_count(Self) -> Int
+pub fn ValidatedLanguageTables::main_lex_table(Self, Int) -> GeneratedLexTable?
+pub fn ValidatedLanguageTables::max_alias_sequence_length(Self) -> Int
+pub fn ValidatedLanguageTables::max_reserved_word_set_size(Self) -> Int
+pub fn ValidatedLanguageTables::metadata(Self) -> LanguageMetadata
+pub fn ValidatedLanguageTables::name(Self) -> String
+pub fn ValidatedLanguageTables::parse_action_list(Self, Int) -> GeneratedParseActionList?
+pub fn ValidatedLanguageTables::parse_action_list_count(Self) -> Int
+pub fn ValidatedLanguageTables::parse_action_list_for_symbol(Self, @api.StateId, @api.SymbolId) -> GeneratedParseActionList?
+pub fn ValidatedLanguageTables::parse_table_cell(Self, @api.StateId, @api.SymbolId) -> GeneratedParseTableCell?
+pub fn ValidatedLanguageTables::primary_state_id(Self, @api.StateId) -> @api.StateId?
+pub fn ValidatedLanguageTables::production_id_count(Self) -> Int
+pub fn ValidatedLanguageTables::production_info(Self, Int) -> GeneratedProductionInfo?
+pub fn ValidatedLanguageTables::public_symbol_count(Self) -> Int
+pub fn ValidatedLanguageTables::public_symbol_for_alias(Self, GeneratedAlias) -> @api.SymbolId?
+pub fn ValidatedLanguageTables::public_symbol_for_grammar_symbol(Self, @api.SymbolId) -> @api.SymbolId?
+pub fn ValidatedLanguageTables::reserved_word_set(Self, Int) -> GeneratedTokenSet?
+pub fn ValidatedLanguageTables::reserved_word_set_count(Self) -> Int
+pub fn ValidatedLanguageTables::small_parse_table_offset(Self, Int) -> Int?
+pub fn ValidatedLanguageTables::small_parse_table_row(Self, Int) -> GeneratedSmallParseTableRow?
+pub fn ValidatedLanguageTables::state_count(Self) -> Int
+pub fn ValidatedLanguageTables::subtypes(Self, @api.SymbolId) -> Array[@api.SymbolId]
+pub fn ValidatedLanguageTables::supertype_count(Self) -> Int
+pub fn ValidatedLanguageTables::supertypes(Self) -> Array[@api.SymbolId]
+pub fn ValidatedLanguageTables::symbol_count(Self) -> Int
+pub fn ValidatedLanguageTables::symbol_name(Self, @api.SymbolId) -> String?
+pub fn ValidatedLanguageTables::symbol_type(Self, @api.SymbolId) -> @api.SymbolType?
+pub fn ValidatedLanguageTables::token_count(Self) -> Int
+
+// Type aliases
+
+// Traits
+

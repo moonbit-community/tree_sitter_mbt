@@ -1,0 +1,11 @@
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/query",
+  "moonbitlang/core/encoding/utf8",
+}
+
+import {
+  "moonbit-community/tree_sitter_mbt/generator",
+  "moonbitlang/core/test",
+} for "test"

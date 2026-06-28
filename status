@@ -1,0 +1,25 @@
+v1 checkpoint
+
+- Implemented ABI 15 public symbol plumbing in runtime/tables:
+  public_symbol_map, alias_symbols, and non_terminal_aliases are validated and
+  exposed through public-symbol lookup helpers.
+- Generator now emits public symbol maps, appended alias symbols,
+  non-terminal alias entries, and source renderer output for those fields.
+- Parser node construction applies public alias symbols while preserving grammar
+  symbols for parse-table operations and next-state style lookups.
+- Native generate reads adjacent tree-sitter.json metadata.version when present;
+  absent config defaults to 0.0.0, and malformed/missing version fields raise a
+  config error.
+- README documents the intentional v1 package-boundary divergence: root owns the
+  stable Parser/Tree/Node facade and implementation while runtime/tables owns
+  generated table validation.
+- Regex::new deprecation sites were removed. Deprecated try? warnings remain in
+  existing tests and parser Result-conversion paths.
+
+pending v1 fixture work
+
+- The committed generated fixture packages currently cover minimal and
+  minimal-alias cases. The larger upstream fixture/corpus matrix from plan.md
+  remains pending: inline, reserved words, immediate tokens, Unicode regex,
+  external tokens, conflict/error fixtures, and corpus/incremental harness
+  expansion.

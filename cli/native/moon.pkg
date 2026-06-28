@@ -1,0 +1,28 @@
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/cli",
+  "moonbit-community/tree_sitter_mbt/generator",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+  "moonbit-community/tree_sitter_mbt/tags",
+  "moonbitlang/async",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/env",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/process",
+}
+
+import {
+  "moonbit-community/tree_sitter_mbt/test_fixtures/generated_minimal" @minimal,
+  "moonbitlang/core/test",
+} for "test"
+
+supported_targets = "+native"
+
+warnings = "-29"
+
+options(
+  "native-stub": [ "stdin.c" ],
+  targets: { "file_io_test.mbt": [ "native" ] },
+)

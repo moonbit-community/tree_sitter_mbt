@@ -1,0 +1,14 @@
+import {
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/grammar",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+}
+
+import {
+  "moonbitlang/core/json",
+  "moonbitlang/core/test",
+} for "test"
+
+import {
+  "moonbitlang/core/test",
+} for "wbtest"

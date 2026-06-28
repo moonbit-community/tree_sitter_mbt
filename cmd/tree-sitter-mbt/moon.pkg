@@ -1,0 +1,13 @@
+import {
+  "moonbit-community/tree_sitter_mbt/cli",
+  "moonbit-community/tree_sitter_mbt/cli/native" @cli_native,
+  "moonbitlang/async",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/env",
+}
+
+supported_targets = "+native"
+
+options(
+  "is-main": true,
+)

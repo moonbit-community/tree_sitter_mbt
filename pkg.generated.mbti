@@ -1,0 +1,206 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt"
+
+import {
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn language_from_generated_tables(@tables.GeneratedLanguageTables) -> Language raise @tables.TableValidationError
+
+// Errors
+pub(all) suberror IncludedRangesError {
+  InvalidRange(index~ : Int, range~ : @api.Range)
+  Overlap(index~ : Int, previous~ : @api.Range, current~ : @api.Range)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror LanguageError {
+  UnsupportedAbi(Int)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror ParseError {
+  NoLanguage
+  LanguageMismatch
+  Cancelled(ParseState)
+  InvalidInputCallback(byte_offset~ : UInt, point~ : @api.Point, reason~ : String)
+  InvalidInputDecode(byte_offset~ : UInt, reason~ : String)
+  ScannerError(@api.ScannerError)
+  LexError(byte_offset~ : UInt, state_id~ : @api.StateId)
+  ParseTableError(state_id~ : @api.StateId, symbol_id~ : @api.SymbolId)
+  ParseStackUnderflow
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+type Input
+pub fn Input::bytes(Self) -> Bytes
+pub fn Input::encoding(Self) -> @api.InputEncoding
+pub fn Input::from_bytes(Bytes, encoding? : @api.InputEncoding) -> Self
+pub fn Input::from_callback((UInt, @api.Point) -> InputChunk, encoding? : @api.InputEncoding) -> Self
+pub fn Input::from_custom_bytes(Bytes, (Bytes, Int) -> InputDecodeResult) -> Self
+pub fn Input::from_custom_callback((UInt, @api.Point) -> InputChunk, (Bytes, Int) -> InputDecodeResult) -> Self
+pub fn Input::from_string(String, encoding? : @api.InputEncoding) -> Self
+pub fn Input::source(Self) -> String
+
+pub(all) struct InputChunk {
+  chunk : Bytes?
+  bytes_read : Int
+} derive(Eq, @debug.Debug)
+pub fn InputChunk::eof() -> Self
+pub fn InputChunk::from_bytes(Bytes) -> Self
+pub fn InputChunk::new(chunk~ : Bytes?, bytes_read~ : Int) -> Self
+
+pub(all) enum InputDecodeResult {
+  CodePoint(Int, bytes~ : Int)
+  DecodeError
+} derive(Eq, @debug.Debug)
+
+type Language
+pub fn Language::abi_version(Self) -> Int
+pub fn Language::external_token_count(Self) -> Int
+pub fn Language::field_count(Self) -> Int
+pub fn Language::field_id_for_name(Self, String) -> @api.FieldId?
+pub fn Language::field_name_for_id(Self, @api.FieldId) -> String?
+pub fn Language::from_validated_tables(@tables.ValidatedLanguageTables) -> Self
+pub fn Language::lookahead_iterator(Self, @api.StateId) -> LookaheadIterator?
+pub fn Language::metadata(Self) -> @tables.LanguageMetadata
+pub fn Language::name(Self) -> String
+pub fn Language::next_state(Self, @api.StateId, @api.SymbolId) -> @api.StateId?
+pub fn Language::state_count(Self) -> Int
+pub fn Language::subtypes(Self, @api.SymbolId) -> Array[@api.SymbolId]
+pub fn Language::supertypes(Self) -> Array[@api.SymbolId]
+pub fn Language::symbol_count(Self) -> Int
+pub fn Language::symbol_for_name(Self, String, is_named~ : Bool) -> @api.SymbolId?
+pub fn Language::symbol_name(Self, @api.SymbolId) -> String?
+pub fn Language::symbol_type(Self, @api.SymbolId) -> @api.SymbolType?
+pub fn Language::token_count(Self) -> Int
+
+pub(all) enum LogType {
+  Lex
+  Parse
+} derive(Eq, @debug.Debug)
+
+type Logger
+pub fn Logger::log(Self, LogType, String) -> Unit
+pub fn Logger::new((LogType, String) -> Unit) -> Self
+
+type LookaheadIterator
+pub fn LookaheadIterator::current_symbol(Self) -> @api.SymbolId
+pub fn LookaheadIterator::current_symbol_name(Self) -> String?
+pub fn LookaheadIterator::language(Self) -> Language
+pub fn LookaheadIterator::next(Self) -> Bool
+pub fn LookaheadIterator::reset(Self, Language, @api.StateId) -> Bool
+pub fn LookaheadIterator::reset_state(Self, @api.StateId) -> Bool
+pub fn LookaheadIterator::state(Self) -> @api.StateId
+
+type Node
+pub fn Node::child(Self, Int) -> Self
+pub fn Node::child_by_field_id(Self, @api.FieldId) -> Self
+pub fn Node::child_by_field_name(Self, String) -> Self
+pub fn Node::child_count(Self) -> Int
+pub fn Node::child_with_descendant(Self, Self) -> Self
+pub fn Node::descendant_count(Self) -> Int
+pub fn Node::descendant_for_byte_range(Self, UInt, UInt) -> Self
+pub fn Node::descendant_for_point_range(Self, @api.Point, @api.Point) -> Self
+pub fn Node::edit(Self, @api.InputEdit) -> Unit
+pub fn Node::end_byte(Self) -> UInt
+pub fn Node::end_point(Self) -> @api.Point
+pub fn Node::eq(Self, Self) -> Bool
+pub fn Node::field_name_for_child(Self, Int) -> String?
+pub fn Node::field_name_for_named_child(Self, Int) -> String?
+pub fn Node::first_child_for_byte(Self, UInt) -> Self
+pub fn Node::first_child_for_point(Self, @api.Point) -> Self
+pub fn Node::first_named_child_for_byte(Self, UInt) -> Self
+pub fn Node::first_named_child_for_point(Self, @api.Point) -> Self
+pub fn Node::grammar_symbol(Self) -> @api.SymbolId
+pub fn Node::grammar_type(Self) -> String
+pub fn Node::has_changes(Self) -> Bool
+pub fn Node::has_error(Self) -> Bool
+pub fn Node::is_error(Self) -> Bool
+pub fn Node::is_extra(Self) -> Bool
+pub fn Node::is_missing(Self) -> Bool
+pub fn Node::is_named(Self) -> Bool
+pub fn Node::is_null(Self) -> Bool
+pub fn Node::language(Self) -> Language
+pub fn Node::named_child(Self, Int) -> Self
+pub fn Node::named_child_count(Self) -> Int
+pub fn Node::named_descendant_for_byte_range(Self, UInt, UInt) -> Self
+pub fn Node::named_descendant_for_point_range(Self, @api.Point, @api.Point) -> Self
+pub fn Node::next_named_sibling(Self) -> Self
+pub fn Node::next_parse_state(Self) -> @api.StateId?
+pub fn Node::next_sibling(Self) -> Self
+pub fn Node::parent(Self) -> Self
+pub fn Node::parse_state(Self) -> @api.StateId?
+pub fn Node::previous_named_sibling(Self) -> Self
+pub fn Node::previous_sibling(Self) -> Self
+pub fn Node::start_byte(Self) -> UInt
+pub fn Node::start_point(Self) -> @api.Point
+pub fn Node::symbol(Self) -> @api.SymbolId
+pub fn Node::to_sexp(Self) -> String
+pub fn Node::type_(Self) -> String
+
+pub(all) struct ParseOptions {
+  cancellation_state : ParseState?
+  progress_callback : ((ParseState) -> Bool)?
+}
+pub fn ParseOptions::cancelled(ParseState) -> Self
+pub fn ParseOptions::default() -> Self
+pub fn ParseOptions::progress((ParseState) -> Bool) -> Self
+pub fn ParseOptions::with_progress(Self, (ParseState) -> Bool) -> Self
+
+pub(all) struct ParseState {
+  current_byte_offset : UInt
+  has_error : Bool
+} derive(Eq, @debug.Debug)
+pub fn ParseState::initial() -> Self
+pub fn ParseState::new(current_byte_offset~ : UInt, has_error~ : Bool) -> Self
+
+type Parser
+pub fn Parser::included_ranges(Self) -> Array[@api.Range]
+pub fn Parser::language(Self) -> Language?
+pub fn Parser::logger(Self) -> Logger?
+pub fn Parser::new() -> Self
+pub fn Parser::parse(Self, Input, old_tree? : Tree?, options? : ParseOptions) -> Tree raise ParseError
+pub fn Parser::parse_bytes(Self, Bytes, old_tree? : Tree?, options? : ParseOptions) -> Tree raise ParseError
+pub fn Parser::parse_string(Self, String, old_tree? : Tree?, options? : ParseOptions) -> Tree raise ParseError
+pub fn Parser::reset(Self) -> Unit
+pub fn Parser::set_included_ranges(Self, Array[@api.Range]) -> Unit raise IncludedRangesError
+pub fn Parser::set_language(Self, Language) -> Unit raise LanguageError
+pub fn Parser::set_logger(Self, Logger?) -> Unit
+
+type Tree
+pub fn Tree::changed_ranges(Self, Self) -> Array[@api.Range]
+pub fn Tree::copy(Self) -> Self
+pub fn Tree::edit(Self, @api.InputEdit) -> Unit
+pub fn Tree::included_ranges(Self) -> Array[@api.Range]
+pub fn Tree::language(Self) -> Language
+pub fn Tree::root_node(Self) -> Node
+pub fn Tree::root_node_with_offset(Self, byte_offset~ : UInt, point_offset~ : @api.Point) -> Node
+pub fn Tree::to_sexp(Self) -> String
+pub fn Tree::walk(Self) -> TreeCursor
+
+type TreeCursor
+pub fn TreeCursor::copy(Self) -> Self
+pub fn TreeCursor::current_depth(Self) -> Int
+pub fn TreeCursor::current_descendant_index(Self) -> Int
+pub fn TreeCursor::current_field_id(Self) -> @api.FieldId
+pub fn TreeCursor::current_field_name(Self) -> String?
+pub fn TreeCursor::current_node(Self) -> Node
+pub fn TreeCursor::goto_descendant(Self, Int) -> Self?
+pub fn TreeCursor::goto_first_child(Self) -> Self?
+pub fn TreeCursor::goto_first_child_for_byte(Self, UInt) -> Self?
+pub fn TreeCursor::goto_first_child_for_byte_with_index(Self, UInt) -> (Int, Self)?
+pub fn TreeCursor::goto_first_child_for_point(Self, @api.Point) -> Self?
+pub fn TreeCursor::goto_first_child_for_point_with_index(Self, @api.Point) -> (Int, Self)?
+pub fn TreeCursor::goto_last_child(Self) -> Self?
+pub fn TreeCursor::goto_next_sibling(Self) -> Self?
+pub fn TreeCursor::goto_parent(Self) -> Self?
+pub fn TreeCursor::goto_previous_sibling(Self) -> Self?
+pub fn TreeCursor::reset(Self, Node) -> Self
+pub fn TreeCursor::reset_to(Self, Self) -> Self
+
+// Type aliases
+
+// Traits
+

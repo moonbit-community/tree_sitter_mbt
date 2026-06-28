@@ -1,0 +1,81 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/grammar"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn parse_grammar(String) -> InputGrammar raise GrammarError
+
+// Errors
+pub(all) suberror GrammarError {
+  InvalidJson(String)
+  ExpectedObject(String)
+  ExpectedArray(String)
+  ExpectedString(String)
+  ExpectedBool(String)
+  ExpectedNumber(String)
+  MissingField(path~ : String, field~ : String)
+  UnknownRuleType(path~ : String, rule_type~ : String)
+  InvalidPrecedence(String)
+  TokenContainsSymbol(path~ : String, symbol~ : String)
+  EmptyStringExtra(String)
+  UndeclaredReservedContext(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct InputGrammar {
+  name : String
+  start_rule : String?
+  rules : Array[NamedRule]
+  extras : Array[Rule]
+  externals : Array[Rule]
+  inline : Array[String]
+  conflicts : Array[Array[String]]
+  precedences : Array[Array[PrecedenceValue]]
+  word : String?
+  reserved : Array[ReservedSet]
+  supertypes : Array[String]
+  inherits : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct NamedRule {
+  name : String
+  rule : Rule
+} derive(Eq, @debug.Debug)
+
+pub(all) enum PrecedenceValue {
+  Number(Int)
+  Name(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ReservedSet {
+  name : String
+  rules : Array[Rule]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Rule {
+  Alias(content~ : Rule, value~ : String, named~ : Bool)
+  Blank
+  String(String)
+  Pattern(value~ : String, flags~ : String)
+  Symbol(String)
+  Seq(Array[Rule])
+  Choice(Array[Rule])
+  Repeat(Rule)
+  Repeat1(Rule)
+  Field(name~ : String, content~ : Rule)
+  Prec(value~ : PrecedenceValue, content~ : Rule)
+  PrecLeft(value~ : PrecedenceValue, content~ : Rule)
+  PrecRight(value~ : PrecedenceValue, content~ : Rule)
+  PrecDynamic(value~ : Int, content~ : Rule)
+  Token(Rule)
+  ImmediateToken(Rule)
+  Reserved(context_name~ : String, content~ : Rule)
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

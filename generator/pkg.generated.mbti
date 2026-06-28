@@ -1,0 +1,66 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/tree_sitter_mbt/generator"
+
+import {
+  "moonbit-community/tree_sitter_mbt/runtime/tables",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn generate_language(String, options? : GenerateOptions) -> GeneratedLanguage raise GenerateError
+
+// Errors
+pub(all) suberror GenerateError {
+  UnsupportedAbi(Int)
+  InvalidImportAlias(String)
+  InvalidGrammar(String)
+  UndeclaredPrecedence(String)
+  ConflictingPrecedenceOrdering(left~ : String, right~ : String)
+  IndirectRecursion(String)
+  UndefinedSymbol(String)
+  TerminalSupertype(String)
+  InvalidExternalToken(String)
+  InvalidRegex(String)
+  InvalidLexicalToken(String)
+  InvalidInline(String)
+  ImproperNonTerminalExtra(String)
+  AmbiguousExtra(Array[String])
+  ParseTableValueOutOfRange(kind~ : String, value~ : Int, min~ : Int, max~ : Int)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct GenerateOptions {
+  abi_version : Int
+  language_name : String
+  semantic_version : @tables.LanguageMetadata?
+  root_alias : String
+  tables_alias : String
+  api_alias : String
+} derive(Eq, @debug.Debug)
+pub fn GenerateOptions::default() -> Self
+
+pub(all) enum GenerateWarning {
+  UnsupportedRegexFlag(String)
+  NamedExtraMayBeEmpty(String)
+  SimplifiableRule(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct GeneratedLanguage {
+  moonbit_sources : Array[GeneratedSource]
+  node_types_json : String
+  tables : @tables.GeneratedLanguageTables
+  language_name : String
+  abi_version : Int
+  metadata : @tables.LanguageMetadata
+  warnings : Array[GenerateWarning]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct GeneratedSource {
+  path : String
+  content : String
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

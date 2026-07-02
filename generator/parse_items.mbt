@@ -5,6 +5,8 @@ priv struct ParseItem {
   production : FlattenedProduction
   source : InlinedProductionSource?
   has_preceding_inherited_fields : Bool
+  inherited_precedence : @grammar.PrecedenceValue?
+  inherited_associativity : Associativity
 }
 
 ///|
@@ -267,6 +269,8 @@ fn parse_item_start() -> ParseItem {
     production: parse_item_start_production(),
     source: None,
     has_preceding_inherited_fields: false,
+    inherited_precedence: None,
+    inherited_associativity: Associativity::NoAssociativity,
   }
 }
 
@@ -299,6 +303,8 @@ fn parse_item_for_production(
     production,
     source: None,
     has_preceding_inherited_fields: false,
+    inherited_precedence: None,
+    inherited_associativity: Associativity::NoAssociativity,
   }
 }
 
@@ -319,6 +325,8 @@ fn parse_item_for_grammar_production(
       ),
     ),
     has_preceding_inherited_fields: false,
+    inherited_precedence: None,
+    inherited_associativity: Associativity::NoAssociativity,
   }
 }
 
@@ -334,6 +342,8 @@ fn parse_item_for_generated_production(
     production,
     source: Some(InlinedProductionSource::GeneratedProduction(generated_index)),
     has_preceding_inherited_fields: false,
+    inherited_precedence: None,
+    inherited_associativity: Associativity::NoAssociativity,
   }
 }
 
@@ -486,7 +496,12 @@ fn ParseItemSetBuilder::add_item(
                 )
             }
             for addition in self.transitive_closure_additions[index] {
-              let addition_index = set.insert(addition.item)
+              let addition_item = parse_item_inherit_leading_precedence(
+                addition.item,
+                step.precedence,
+                step.associativity,
+              )
+              let addition_index = set.insert(addition_item)
               parse_token_set_insert_all(
                 set.entries[addition_index].lookaheads,
                 addition.info.lookaheads,
@@ -534,6 +549,28 @@ fn ParseItemSetBuilder::add_item(
     set.entries[index],
     entry.following_reserved_word_set,
   )
+}
+
+///|
+fn parse_item_inherit_leading_precedence(
+  item : ParseItem,
+  precedence : @grammar.PrecedenceValue?,
+  associativity : Associativity,
+) -> ParseItem {
+  if precedence is None && associativity is NoAssociativity {
+    return item
+  }
+  {
+    ..item,
+    inherited_precedence: match item.inherited_precedence {
+      Some(_) => item.inherited_precedence
+      None => precedence
+    },
+    inherited_associativity: match item.inherited_associativity {
+      NoAssociativity => associativity
+      Left | Right => item.inherited_associativity
+    },
+  }
 }
 
 ///|
@@ -610,6 +647,11 @@ fn parse_item_same(left : ParseItem, right : ParseItem) -> Bool {
       parse_item_associativity(left),
       parse_item_associativity(right),
     ) ||
+    left.inherited_precedence != right.inherited_precedence ||
+    !same_associativity(
+      left.inherited_associativity,
+      right.inherited_associativity,
+    ) ||
     left.has_preceding_inherited_fields != right.has_preceding_inherited_fields {
     return false
   }
@@ -671,6 +713,20 @@ fn parse_item_compare(left : ParseItem, right : ParseItem) -> Int {
   comparison = compare_associativity(
     parse_item_associativity(left),
     parse_item_associativity(right),
+  )
+  if comparison != 0 {
+    return comparison
+  }
+  comparison = compare_precedence_value_option(
+    left.inherited_precedence,
+    right.inherited_precedence,
+  )
+  if comparison != 0 {
+    return comparison
+  }
+  comparison = compare_associativity(
+    left.inherited_associativity,
+    right.inherited_associativity,
   )
   if comparison != 0 {
     return comparison

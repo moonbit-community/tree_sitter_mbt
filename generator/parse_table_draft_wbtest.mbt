@@ -86,12 +86,9 @@ fn parse_table_shift_action(
   precedence : @grammar.PrecedenceValue?,
   associativity : Associativity,
 ) -> ParseActionDraft {
-  ParseActionDraft::DraftShift(
-    state_id=9,
-    is_repetition=false,
-    precedence~,
-    associativity~,
-  )
+  ParseActionDraft::DraftShift(state_id=9, is_repetition=false, contributors=[
+    { symbol: InternalSymbol::NonTerminal(0), precedence, associativity },
+  ])
 }
 
 ///|
@@ -107,6 +104,46 @@ fn parse_table_reduce_action(
     precedence~,
     associativity~,
   )
+}
+
+///|
+fn parse_table_prec_step(
+  symbol : InternalSymbol,
+  precedence : Int,
+  associativity : Associativity,
+) -> ProductionStep {
+  {
+    ..parse_analysis_step(symbol),
+    precedence: Some(@grammar.PrecedenceValue::Number(precedence)),
+    associativity,
+  }
+}
+
+///|
+fn parse_table_entry_has_shift_reduce(
+  draft : ParseTableDraft,
+  symbol : ParseTerminalSymbol,
+) -> Bool {
+  for state in draft.states {
+    match parse_table_terminal_entry(state, symbol) {
+      Some(entry) => {
+        let mut has_shift = false
+        let mut has_reduce = false
+        for action in entry.actions {
+          match action {
+            DraftShift(_) => has_shift = true
+            DraftReduce(_) => has_reduce = true
+            DraftAccept | DraftShiftExtra => ()
+          }
+        }
+        if has_shift && has_reduce {
+          return true
+        }
+      }
+      None => ()
+    }
+  }
+  false
 }
 
 ///|
@@ -134,6 +171,89 @@ test "parse table draft resolves static shift reduce precedence" {
   assert_true(
     parse_action_conflict_resolution(reduce_high, shift_low) is KeepExisting,
   )
+
+  let reduce_default = parse_table_reduce_action(
+    None,
+    Associativity::NoAssociativity,
+  )
+  let shift_negative = parse_table_shift_action(
+    Some(@grammar.PrecedenceValue::Number(-1)),
+    Associativity::NoAssociativity,
+  )
+  assert_true(
+    parse_action_conflict_resolution(reduce_default, shift_negative)
+    is KeepExisting,
+  )
+
+  let shift_positive = parse_table_shift_action(
+    Some(@grammar.PrecedenceValue::Number(1)),
+    Associativity::NoAssociativity,
+  )
+  assert_true(
+    parse_action_conflict_resolution(reduce_default, shift_positive)
+    is ReplaceExisting,
+  )
+
+  let shift_zero = parse_table_shift_action(
+    Some(@grammar.PrecedenceValue::Number(0)),
+    Associativity::Right,
+  )
+  assert_true(
+    parse_action_conflict_resolution(reduce_default, shift_zero) is KeepBoth,
+  )
+
+  let mixed_shift = ParseActionDraft::DraftShift(
+    state_id=1,
+    is_repetition=false,
+    contributors=[
+      {
+        symbol: InternalSymbol::NonTerminal(1),
+        precedence: None,
+        associativity: Associativity::NoAssociativity,
+      },
+      {
+        symbol: InternalSymbol::NonTerminal(2),
+        precedence: Some(@grammar.PrecedenceValue::Number(-1)),
+        associativity: Associativity::Right,
+      },
+    ],
+  )
+  assert_true(
+    parse_action_conflict_resolution(reduce_default, mixed_shift)
+    is KeepExisting,
+  )
+}
+
+///|
+test "parse table draft dedupes identical reduce actions" {
+  let state : ParseStateDraft = {
+    id: 0,
+    core_id: 0,
+    terminal_entries: [],
+    nonterminal_entries: [],
+    reserved_words: parse_token_set_empty(),
+  }
+  let action = parse_table_reduce_action(
+    Some(@grammar.PrecedenceValue::Number(1)),
+    Associativity::Left,
+  )
+
+  parse_state_draft_add_action(
+    state,
+    ParseTerminalSymbol::ParseTerminal(0),
+    action,
+  )
+  parse_state_draft_add_action(
+    state,
+    ParseTerminalSymbol::ParseTerminal(0),
+    action,
+  )
+
+  guard parse_table_terminal_entry(state, ParseTerminalSymbol::ParseTerminal(0))
+    is Some(entry) else {
+    fail("expected action entry")
+  }
+  assert_eq(entry.actions.length(), 1)
 }
 
 ///|
@@ -149,6 +269,29 @@ test "parse table draft resolves tied shift reduce associativity" {
   assert_true(
     parse_action_conflict_resolution(reduce_right, shift) is ReplaceExisting,
   )
+}
+
+///|
+test "parse table draft preserves declared shift reduce conflict actions" {
+  let expression = InternalSymbol::NonTerminal(0)
+  let star = InternalSymbol::Terminal(0)
+  let identifier = InternalSymbol::Terminal(1)
+  let grammar = parse_analysis_prepared(
+    [
+      parse_analysis_variable(0, [
+        parse_analysis_production([
+          parse_table_prec_step(expression, 1, Associativity::Left),
+          parse_table_prec_step(star, 1, Associativity::Left),
+          parse_table_prec_step(expression, 1, Associativity::Left),
+        ]),
+        parse_analysis_production([parse_analysis_step(identifier)]),
+      ]),
+    ],
+    terminal_count=2,
+    conflict_symbols=[[expression]],
+  )
+  let draft = parse_table_draft_for(grammar)
+  assert_true(parse_table_entry_has_shift_reduce(draft, ParseTerminal(0)))
 }
 
 ///|
@@ -1025,6 +1168,53 @@ test "parse table draft records reserved words for next word token" {
   assert_true(
     parse_token_set_same(
       draft.reserved_word_sets.sets[1],
+      parse_analysis_token_set([1], []),
+    ),
+  )
+}
+
+///|
+test "parse table draft records reserved words through nonterminal first set" {
+  let grammar = parse_analysis_prepared(
+    [
+      parse_analysis_variable(0, [
+        parse_analysis_production([
+          parse_analysis_step(InternalSymbol::NonTerminal(1)),
+        ]),
+      ]),
+      parse_analysis_variable(1, [
+        parse_analysis_production([
+          parse_analysis_step(InternalSymbol::Terminal(2), reserved=1),
+        ]),
+      ]),
+    ],
+    terminal_count=3,
+    word_symbol=InternalSymbol::Terminal(2),
+    reserved_sets=[
+      { name: "", rules: [] },
+      {
+        name: "keyword",
+        rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],
+      },
+    ],
+  )
+  let symbol_sets = build_parse_symbol_sets(grammar)
+  let builder = build_parse_item_set_builder(grammar, symbol_sets)
+  let item_set = parse_item_set_empty()
+  ignore(
+    item_set.insert(
+      parse_item_for_production(
+        0,
+        parse_analysis_production([
+          parse_analysis_step(InternalSymbol::NonTerminal(1)),
+        ]),
+      ),
+    ),
+  )
+
+  assert_true(
+    parse_token_set_same(
+      parse_state_reserved_words(builder, item_set),
       parse_analysis_token_set([1], []),
     ),
   )

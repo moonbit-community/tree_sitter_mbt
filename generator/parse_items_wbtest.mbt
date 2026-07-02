@@ -52,6 +52,8 @@ test "parse item set ordering mirrors upstream inherited-field quirk" {
     ]),
     source: None,
     has_preceding_inherited_fields: true,
+    inherited_precedence: None,
+    inherited_associativity: Associativity::NoAssociativity,
   }
   let second = {
     variable_index: 0,
@@ -62,6 +64,8 @@ test "parse item set ordering mirrors upstream inherited-field quirk" {
     ]),
     source: None,
     has_preceding_inherited_fields: true,
+    inherited_precedence: None,
+    inherited_associativity: Associativity::NoAssociativity,
   }
   let set = parse_item_set_empty()
   let first_index = set.insert(first)

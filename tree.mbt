@@ -1689,7 +1689,9 @@ fn Node::write_sexp(
     out.write_string(")")
     return true
   }
-  if self.is_error() && self.end_byte() > self.start_byte() {
+  if self.is_error() &&
+    self.child_count() == 0 &&
+    self.end_byte() > self.start_byte() {
     self.write_field_prefix(out, field_id~)
     out.write_string("(UNEXPECTED ")
     out.write_string(self.unexpected_error_text())
@@ -1701,10 +1703,12 @@ fn Node::write_sexp(
   }
   let child_parts = []
   for child in self.public_children() {
+    let child_node = self.child_node(child.index)
+    if self.has_redundant_lexical_child(child_node) {
+      continue
+    }
     let child_out = StringBuilder::new()
-    if self
-      .child_node(child.index)
-      .write_sexp(child_out, field_id=child.field_id) {
+    if child_node.write_sexp(child_out, field_id=child.field_id) {
       child_parts.push(child_out.to_string())
     }
   }
@@ -1717,6 +1721,19 @@ fn Node::write_sexp(
   }
   out.write_string(")")
   true
+}
+
+///|
+fn Node::has_redundant_lexical_child(self : Node, child : Node) -> Bool {
+  if child.is_null() || child.is_missing() || child.is_error() {
+    return false
+  }
+  if child.child_count() != 0 {
+    return false
+  }
+  self.type_() == child.type_() &&
+  self.start_byte() == child.start_byte() &&
+  self.end_byte() == child.end_byte()
 }
 
 ///|

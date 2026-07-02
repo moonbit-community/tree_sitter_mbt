@@ -68,7 +68,7 @@ test "parse grammar rule forms and ordered top level collections" {
       #|  "externals": [{ "type": "SYMBOL", "name": "external_token" }],
       #|  "inline": ["_inline"],
       #|  "conflicts": [["a", "b"]],
-      #|  "precedences": [["low", 1]],
+      #|  "precedences": [["low", 1, { "type": "SYMBOL", "name": "call" }, { "type": "STRING", "value": "and" }]],
       #|  "word": "identifier",
       #|  "reserved": {
       #|    "global": [{ "type": "SYMBOL", "name": "identifier" }],
@@ -90,6 +90,8 @@ test "parse grammar rule forms and ordered top level collections" {
   assert_eq(grammar.conflicts.length(), 0)
   assert_true(grammar.precedences[0][0] == PrecedenceValue::Name("low"))
   assert_true(grammar.precedences[0][1] == PrecedenceValue::Number(1))
+  assert_true(grammar.precedences[0][2] == PrecedenceValue::Name("call"))
+  assert_true(grammar.precedences[0][3] == PrecedenceValue::Name("and"))
   assert_eq(grammar.reserved.length(), 2)
   assert_eq(grammar.reserved[0].name, "global")
   assert_true(grammar.reserved[0].rules[0] == Rule::Symbol("identifier"))

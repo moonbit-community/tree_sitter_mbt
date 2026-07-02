@@ -217,7 +217,7 @@ fn RegexParser::parse_atom(self : RegexParser) -> Result[RegexAst, String] {
     None => Err("Unexpected end of regex")
     Some('(') =>
       if self.peek() == Some('?') {
-        Err("Unsupported regex assertion at index \{self.index - 1}")
+        self.parse_inline_group()
       } else {
         match self.parse_alternation(stop_on_paren=true) {
           Err(message) => Err(message)
@@ -230,12 +230,56 @@ fn RegexParser::parse_atom(self : RegexParser) -> Result[RegexAst, String] {
         }
       }
     Some('[') => self.parse_character_class()
-    Some('.') => Ok(RegexAst::RegexClass(character_set_any()))
+    Some('.') => Ok(RegexAst::RegexClass(character_set_dot()))
     Some('\\') => self.parse_escape_atom()
     Some('*') | Some('+') | Some('?') | Some('{') =>
       Err("Unexpected repetition operator at index \{self.index - 1}")
     Some(char) => Ok(RegexAst::RegexLiteral(char.to_uint()))
   }
+}
+
+///|
+fn RegexParser::parse_inline_group(
+  self : RegexParser,
+) -> Result[RegexAst, String] {
+  let group_index = self.index - 1
+  let _ = self.advance()
+  let mut case_insensitive = false
+  while true {
+    match self.peek() {
+      Some('i') => {
+        case_insensitive = true
+        let _ = self.advance()
+        continue
+      }
+      Some(':') => {
+        let _ = self.advance()
+        match self.parse_alternation(stop_on_paren=true) {
+          Err(message) => return Err(message)
+          Ok(ast) =>
+            if self.consume(')') {
+              if case_insensitive {
+                return Ok(regex_ast_case_insensitive(ast))
+              } else {
+                return Ok(ast)
+              }
+            } else {
+              return Err("Expected ')' at index \{self.index}")
+            }
+        }
+      }
+      _ => return Err("Unsupported regex assertion at index \{group_index}")
+    }
+  }
+  Err("Unsupported regex assertion at index \{group_index}")
+}
+
+///|
+fn character_set_dot() -> CharacterSet {
+  character_set_difference(
+    character_set_any(),
+    character_set_union(character_set_char('\n'), character_set_char('\r')),
+  )
 }
 
 ///|

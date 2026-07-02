@@ -546,6 +546,14 @@ fn expect_precedence(
         raise GrammarError::InvalidPrecedence(path)
       }
     }
+    Json::Object(fields) =>
+      match required_string_field(fields, "type", path) {
+        "SYMBOL" =>
+          PrecedenceValue::Name(required_string_field(fields, "name", path))
+        "STRING" =>
+          PrecedenceValue::Name(required_string_field(fields, "value", path))
+        _ => raise GrammarError::InvalidPrecedence(path)
+      }
     _ => raise GrammarError::InvalidPrecedence(path)
   }
 }

@@ -15,13 +15,19 @@ priv enum ParseTableSymbolDraft {
 }
 
 ///|
+priv struct ParseShiftContributor {
+  symbol : InternalSymbol
+  precedence : @grammar.PrecedenceValue?
+  associativity : Associativity
+}
+
+///|
 priv enum ParseActionDraft {
   DraftAccept
   DraftShift(
     state_id~ : Int,
     is_repetition~ : Bool,
-    precedence~ : @grammar.PrecedenceValue?,
-    associativity~ : Associativity
+    contributors~ : Array[ParseShiftContributor]
   )
   DraftShiftExtra
   DraftReduce(
@@ -41,6 +47,14 @@ priv enum ParseActionConflictResolution {
   ReplaceExisting
   DropBoth
 }
+
+///|
+priv enum ParseShiftReduceDecision {
+  PreferShift
+  PreferReduce
+  PreserveBoth
+  DropShiftAndReduce
+} derive(Eq)
 
 ///|
 priv enum ParseGotoDraft {
@@ -160,6 +174,7 @@ priv struct ParseTableDraft {
   mut states : Array[ParseStateDraft]
   mut symbols : Array[ParseTableSymbolDraft]
   mut primary_state_ids : Array[Int]
+  nonterminal_extra_state_ids : Array[Int]
   mut reserved_word_sets : ParseReservedWordSetsDraft
   mut external_lex_states : ParseExternalLexStatesDraft
   parse_action_lists : Array[ParseActionListDraft]
@@ -178,6 +193,7 @@ fn build_parse_table_draft(
     states: [],
     symbols: [],
     primary_state_ids: [],
+    nonterminal_extra_state_ids: [],
     reserved_word_sets: parse_reserved_word_sets_empty(),
     external_lex_states: parse_external_lex_states_empty(),
     parse_action_lists: [],
@@ -196,6 +212,9 @@ fn build_parse_table_draft(
       reserved_words: parse_token_set_empty(),
     }
     let closed = builder.transitive_closure(state.item_set)
+    if parse_item_set_has_nonterminal_extra_end(closed) {
+      table.nonterminal_extra_state_ids.push(state.id)
+    }
     draft_state.reserved_words = parse_state_reserved_words(builder, closed)
     add_reduce_actions(table, draft_state, builder, closed)
     for transition in state.terminal_transitions {
@@ -203,6 +222,7 @@ fn build_parse_table_draft(
         draft_state,
         parse_terminal_symbol_from_internal(transition.symbol),
         parse_shift_action_for_transition(closed, transition),
+        grammar=builder.grammar,
       )
     }
     for transition in state.nonterminal_transitions {
@@ -227,7 +247,7 @@ fn build_parse_table_draft(
     table.used_symbols,
   )
   table.primary_state_ids = parse_table_primary_state_ids(table.states)
-  parse_table_draft_assign_action_lists(table)
+  parse_table_draft_assign_action_lists(table, builder.grammar)
   table.layout = parse_table_layout_from_draft(table)
   validate_parse_table_draft_width(table)
   table
@@ -318,6 +338,16 @@ fn parse_external_lex_state_for_state(
     }
   }
   set
+}
+
+///|
+fn parse_item_set_has_nonterminal_extra_end(item_set : ParseItemSet) -> Bool {
+  for entry in item_set.entries {
+    if entry.lookaheads.end_of_nonterminal_extra {
+      return true
+    }
+  }
+  false
 }
 
 ///|
@@ -494,6 +524,89 @@ fn validate_parse_table_draft_width(
     validate_parse_action_list_draft_width(table, table.parse_action_lists[i])
   }
   validate_parse_table_layout_width(table)
+}
+
+///|
+fn validate_no_unresolved_parse_conflicts(
+  grammar : PreparedGrammar,
+  table : ParseTableDraft,
+) -> Unit raise GenerateError {
+  for state in table.states {
+    for entry in state.terminal_entries {
+      if entry.actions.length() > 1 &&
+        !parse_actions_are_auxiliary_repeat_continuation(grammar, entry.actions) {
+        raise GenerateError::InvalidGrammar(
+          "unresolved conflict in parse state \{state.id}: \{parse_action_summaries(entry.actions)}",
+        )
+      }
+    }
+  }
+}
+
+///|
+fn parse_actions_are_auxiliary_repeat_continuation(
+  grammar : PreparedGrammar,
+  actions : Array[ParseActionDraft],
+) -> Bool {
+  if actions.length() != 2 {
+    return false
+  }
+  let mut has_shift = false
+  let mut has_auxiliary_reduce = false
+  for action in actions {
+    match action {
+      DraftShift(_) => has_shift = true
+      DraftReduce(symbol~, ..) =>
+        if parse_symbol_is_auxiliary_nonterminal(grammar, symbol) {
+          has_auxiliary_reduce = true
+        }
+      DraftAccept | DraftShiftExtra => ()
+    }
+  }
+  has_shift && has_auxiliary_reduce
+}
+
+///|
+fn parse_symbol_is_auxiliary_nonterminal(
+  grammar : PreparedGrammar,
+  symbol : InternalSymbol,
+) -> Bool {
+  match symbol {
+    NonTerminal(index) =>
+      index >= 0 &&
+      index < grammar.syntax.variables.length() &&
+      is_auxiliary_kind(grammar.syntax.variables[index].kind)
+    Terminal(_) | External(_) => false
+  }
+}
+
+///|
+fn parse_action_summaries(actions : Array[ParseActionDraft]) -> String {
+  let parts : Array[String] = []
+  for action in actions {
+    parts.push(parse_action_summary(action))
+  }
+  parts.join(", ")
+}
+
+///|
+fn parse_action_summary(action : ParseActionDraft) -> String {
+  match action {
+    DraftAccept => "accept"
+    DraftShift(state_id~, ..) => "shift(\{state_id})"
+    DraftShiftExtra => "shift_extra"
+    DraftReduce(symbol~, child_count~, dynamic_precedence~, production_id~, ..) =>
+      "reduce(\{internal_symbol_summary(symbol)}, children=\{child_count}, dynamic=\{dynamic_precedence}, production=\{production_id})"
+  }
+}
+
+///|
+fn internal_symbol_summary(symbol : InternalSymbol) -> String {
+  match symbol {
+    Terminal(index) => "terminal:\{index}"
+    External(index) => "external:\{index}"
+    NonTerminal(index) => "nonterminal:\{index}"
+  }
 }
 
 ///|
@@ -768,16 +881,80 @@ fn parse_table_symbol_id_for_internal(
 }
 
 ///|
-fn parse_table_draft_assign_action_lists(table : ParseTableDraft) -> Unit {
+fn parse_table_draft_assign_action_lists(
+  table : ParseTableDraft,
+  grammar : PreparedGrammar,
+) -> Unit {
   table.parse_action_lists.push(parse_action_list_empty())
   for state in table.states {
     for entry in state.terminal_entries {
       entry.action_list_id = parse_table_draft_action_list_id(table, {
         actions: entry.actions.copy(),
-        reusable: true,
+        reusable: parse_action_list_is_reusable(grammar, entry.actions),
       })
     }
   }
+}
+
+///|
+fn parse_action_list_is_reusable(
+  grammar : PreparedGrammar,
+  actions : Array[ParseActionDraft],
+) -> Bool {
+  actions.length() <= 1 ||
+  parse_actions_are_auxiliary_repeat_continuation(grammar, actions) ||
+  !parse_actions_match_declared_conflict(grammar, actions)
+}
+
+///|
+fn parse_actions_match_declared_conflict(
+  grammar : PreparedGrammar,
+  actions : Array[ParseActionDraft],
+) -> Bool {
+  for i in 0..<actions.length() {
+    for j in (i + 1)..<actions.length() {
+      if parse_action_pair_matches_declared_conflict(
+          grammar,
+          actions[i],
+          actions[j],
+        ) {
+        return true
+      }
+    }
+  }
+  false
+}
+
+///|
+fn parse_action_pair_matches_declared_conflict(
+  grammar : PreparedGrammar,
+  left : ParseActionDraft,
+  right : ParseActionDraft,
+) -> Bool {
+  match (left, right) {
+    (DraftShift(_), DraftReduce(_)) =>
+      parse_shift_reduce_conflict_is_declared(grammar, left, right)
+    (DraftReduce(_), DraftShift(_)) =>
+      parse_shift_reduce_conflict_is_declared(grammar, right, left)
+    (DraftReduce(symbol=left_symbol, ..), DraftReduce(symbol=right_symbol, ..)) =>
+      parse_symbols_have_declared_conflict(grammar, left_symbol, right_symbol)
+    _ => false
+  }
+}
+
+///|
+fn parse_symbols_have_declared_conflict(
+  grammar : PreparedGrammar,
+  left : InternalSymbol,
+  right : InternalSymbol,
+) -> Bool {
+  for row in grammar.syntax.conflict_symbols {
+    if contains_internal_symbol(row, left) &&
+      contains_internal_symbol(row, right) {
+      return true
+    }
+  }
+  false
 }
 
 ///|
@@ -1308,11 +1485,21 @@ fn parse_state_reserved_words(
       let mut reserved_word_set_id = -1
       for entry in item_set.entries {
         match entry.item.step() {
-          Some(step) =>
-            if step.symbol == word_symbol &&
-              step.reserved_word_set_id > reserved_word_set_id {
-              reserved_word_set_id = step.reserved_word_set_id
+          Some(step) => {
+            let step_reserved_word_set_id = if step.symbol == word_symbol {
+              step.reserved_word_set_id
+            } else if parse_token_set_contains_symbol(
+                parse_symbol_first_set(builder.symbol_sets, step.symbol),
+                word_symbol,
+              ) {
+              parse_symbol_reserved_first_set(builder.symbol_sets, step.symbol)
+            } else {
+              -1
             }
+            if step_reserved_word_set_id > reserved_word_set_id {
+              reserved_word_set_id = step_reserved_word_set_id
+            }
+          }
           None =>
             if parse_token_set_contains_symbol(entry.lookaheads, word_symbol) &&
               entry.following_reserved_word_set > reserved_word_set_id {
@@ -1351,8 +1538,7 @@ fn add_extra_actions(
       ParseActionDraft::DraftShift(
         state_id=transition.state_id,
         is_repetition=false,
-        precedence=None,
-        associativity=Associativity::NoAssociativity,
+        contributors=[],
       ),
     )
   }
@@ -1399,42 +1585,84 @@ fn parse_shift_action_for_transition(
   item_set : ParseItemSet,
   transition : ParseTransition,
 ) -> ParseActionDraft {
-  let (precedence, associativity) = parse_shift_metadata_for_symbol(
-    item_set,
-    transition.symbol,
-  )
   ParseActionDraft::DraftShift(
     state_id=transition.state_id,
     is_repetition=false,
-    precedence~,
-    associativity~,
+    contributors=parse_shift_contributors_for_symbol(
+      item_set,
+      transition.symbol,
+    ),
   )
 }
 
 ///|
-fn parse_shift_metadata_for_symbol(
+fn parse_shift_contributors_for_symbol(
   item_set : ParseItemSet,
   symbol : InternalSymbol,
-) -> (@grammar.PrecedenceValue?, Associativity) {
-  let mut precedence : @grammar.PrecedenceValue? = None
-  let mut associativity = Associativity::NoAssociativity
+) -> Array[ParseShiftContributor] {
+  let contributors : Array[ParseShiftContributor] = []
   for entry in item_set.entries {
     if entry.item.symbol() == Some(symbol) {
       match entry.item.step() {
         Some(step) =>
-          if compare_precedence_value_option(step.precedence, precedence) > 0 ||
-            (
-              compare_precedence_value_option(step.precedence, precedence) == 0 &&
-              compare_associativity(step.associativity, associativity) > 0
-            ) {
-            precedence = step.precedence
-            associativity = step.associativity
-          }
+          push_shift_contributor_unique(contributors, {
+            symbol: InternalSymbol::NonTerminal(entry.item.variable_index),
+            precedence: parse_shift_contributor_precedence(entry.item, step),
+            associativity: parse_shift_contributor_associativity(
+              entry.item,
+              step,
+            ),
+          })
         None => ()
       }
     }
   }
-  (precedence, associativity)
+  contributors
+}
+
+///|
+fn parse_shift_contributor_precedence(
+  item : ParseItem,
+  step : ProductionStep,
+) -> @grammar.PrecedenceValue? {
+  match step.precedence {
+    Some(_) => step.precedence
+    None => item.inherited_precedence
+  }
+}
+
+///|
+fn parse_shift_contributor_associativity(
+  item : ParseItem,
+  step : ProductionStep,
+) -> Associativity {
+  match step.associativity {
+    NoAssociativity => item.inherited_associativity
+    Left | Right => step.associativity
+  }
+}
+
+///|
+fn push_shift_contributor_unique(
+  contributors : Array[ParseShiftContributor],
+  contributor : ParseShiftContributor,
+) -> Unit {
+  for existing in contributors {
+    if parse_shift_contributor_same(existing, contributor) {
+      return
+    }
+  }
+  contributors.push(contributor)
+}
+
+///|
+fn parse_shift_contributor_same(
+  left : ParseShiftContributor,
+  right : ParseShiftContributor,
+) -> Bool {
+  left.symbol == right.symbol &&
+  left.precedence == right.precedence &&
+  same_associativity(left.associativity, right.associativity)
 }
 
 ///|
@@ -1464,7 +1692,12 @@ fn add_reduce_actions(
         )
       }
       for symbol in parse_terminal_symbols_from_set(entry.lookaheads) {
-        parse_state_draft_add_action(state, symbol, action)
+        parse_state_draft_add_action(
+          state,
+          symbol,
+          action,
+          grammar=builder.grammar,
+        )
       }
     }
   }
@@ -1714,12 +1947,18 @@ fn parse_state_draft_add_action(
   state : ParseStateDraft,
   symbol : ParseTerminalSymbol,
   action : ParseActionDraft,
+  grammar? : PreparedGrammar,
 ) -> Unit {
   let entry = parse_state_draft_terminal_entry(state, symbol)
   let kept : Array[ParseActionDraft] = []
   let mut should_add = true
   for existing in entry.actions {
-    match parse_action_conflict_resolution(existing, action) {
+    let resolution = match grammar {
+      Some(grammar) =>
+        parse_action_conflict_resolution(existing, action, grammar~)
+      None => parse_action_conflict_resolution(existing, action)
+    }
+    match resolution {
       KeepBoth => kept.push(existing)
       KeepExisting => {
         kept.push(existing)
@@ -1744,22 +1983,94 @@ fn parse_state_draft_add_action(
 fn parse_action_conflict_resolution(
   existing : ParseActionDraft,
   incoming : ParseActionDraft,
+  grammar? : PreparedGrammar,
 ) -> ParseActionConflictResolution {
+  if parse_action_draft_equivalent(existing, incoming) {
+    return KeepExisting
+  }
   match (existing, incoming) {
     (DraftShift(_), DraftReduce(_)) =>
-      parse_shift_reduce_conflict_resolution(
-        existing,
-        incoming,
-        shift_is_existing=true,
-      )
+      match grammar {
+        Some(grammar) =>
+          parse_shift_reduce_conflict_resolution(
+            existing,
+            incoming,
+            shift_is_existing=true,
+            grammar~,
+          )
+        None =>
+          parse_shift_reduce_conflict_resolution(
+            existing,
+            incoming,
+            shift_is_existing=true,
+          )
+      }
     (DraftReduce(_), DraftShift(_)) =>
-      parse_shift_reduce_conflict_resolution(
-        incoming,
-        existing,
-        shift_is_existing=false,
-      )
+      match grammar {
+        Some(grammar) =>
+          parse_shift_reduce_conflict_resolution(
+            incoming,
+            existing,
+            shift_is_existing=false,
+            grammar~,
+          )
+        None =>
+          parse_shift_reduce_conflict_resolution(
+            incoming,
+            existing,
+            shift_is_existing=false,
+          )
+      }
     _ => KeepBoth
   }
+}
+
+///|
+fn parse_action_draft_equivalent(
+  left : ParseActionDraft,
+  right : ParseActionDraft,
+) -> Bool {
+  if !parse_action_draft_same(left, right) {
+    return false
+  }
+  match (left, right) {
+    (
+      DraftShift(contributors=left_contributors, ..),
+      DraftShift(contributors=right_contributors, ..),
+    ) =>
+      parse_shift_contributor_arrays_same(left_contributors, right_contributors)
+    (
+      DraftReduce(
+        precedence=left_precedence,
+        associativity=left_associativity,
+        ..
+      ),
+      DraftReduce(
+        precedence=right_precedence,
+        associativity=right_associativity,
+        ..
+      ),
+    ) =>
+      left_precedence == right_precedence &&
+      same_associativity(left_associativity, right_associativity)
+    _ => true
+  }
+}
+
+///|
+fn parse_shift_contributor_arrays_same(
+  left : Array[ParseShiftContributor],
+  right : Array[ParseShiftContributor],
+) -> Bool {
+  if left.length() != right.length() {
+    return false
+  }
+  for i in 0..<left.length() {
+    if !parse_shift_contributor_same(left[i], right[i]) {
+      return false
+    }
+  }
+  true
 }
 
 ///|
@@ -1767,33 +2078,132 @@ fn parse_shift_reduce_conflict_resolution(
   shift : ParseActionDraft,
   reduce : ParseActionDraft,
   shift_is_existing~ : Bool,
+  grammar? : PreparedGrammar,
 ) -> ParseActionConflictResolution {
-  let shift_precedence = parse_action_static_precedence(shift)
-  let reduce_precedence = parse_action_static_precedence(reduce)
-  if shift_precedence is None && reduce_precedence is None {
-    return KeepBoth
+  match grammar {
+    Some(grammar) =>
+      if parse_shift_reduce_conflict_is_declared(grammar, shift, reduce) {
+        return KeepBoth
+      }
+    None => ()
   }
-  let comparison = compare_precedence_value_option(
-    shift_precedence, reduce_precedence,
-  )
+  let contributors = parse_shift_action_contributors(shift)
+  if contributors.is_empty() {
+    return parse_shift_reduce_decision_to_resolution(
+      parse_shift_reduce_decision(
+        parse_action_static_precedence(shift),
+        parse_action_associativity(shift),
+        reduce,
+      ),
+      shift_is_existing~,
+    )
+  }
+  let mut selected : ParseShiftReduceDecision? = None
+  for contributor in contributors {
+    let decision = parse_shift_reduce_decision(
+      contributor.precedence,
+      contributor.associativity,
+      reduce,
+    )
+    match selected {
+      Some(previous) =>
+        if decision is PreserveBoth {
+          ()
+        } else if previous is PreserveBoth {
+          selected = Some(decision)
+        } else if previous != decision {
+          return KeepBoth
+        }
+      None => selected = Some(decision)
+    }
+  }
+  match selected {
+    Some(decision) =>
+      parse_shift_reduce_decision_to_resolution(decision, shift_is_existing~)
+    None => KeepBoth
+  }
+}
+
+///|
+fn parse_shift_reduce_decision(
+  shift_precedence : @grammar.PrecedenceValue?,
+  shift_associativity : Associativity,
+  reduce : ParseActionDraft,
+) -> ParseShiftReduceDecision {
+  let reduce_precedence = parse_action_static_precedence(reduce)
+  let comparison = match (shift_precedence, reduce_precedence) {
+    (None, None) => return PreserveBoth
+    (Some(@grammar.PrecedenceValue::Number(0)), None) => return PreserveBoth
+    (Some(@grammar.PrecedenceValue::Number(value)), None) => value
+    (Some(@grammar.PrecedenceValue::Name(_)), None) => 1
+    (None, Some(_)) => -1
+    (Some(left), Some(right)) => compare_precedence_value(left, right)
+  }
   if comparison > 0 {
-    if shift_is_existing {
-      KeepExisting
-    } else {
-      ReplaceExisting
-    }
+    PreferShift
   } else if comparison < 0 {
-    if shift_is_existing {
-      ReplaceExisting
-    } else {
-      KeepExisting
-    }
+    PreferReduce
   } else {
-    match parse_action_conflict_associativity(shift, reduce) {
-      Left => if shift_is_existing { ReplaceExisting } else { KeepExisting }
-      Right => if shift_is_existing { KeepExisting } else { ReplaceExisting }
-      NoAssociativity => DropBoth
+    match
+      parse_shift_reduce_conflict_associativity(shift_associativity, reduce) {
+      Left => PreferReduce
+      Right => PreferShift
+      NoAssociativity => DropShiftAndReduce
     }
+  }
+}
+
+///|
+fn parse_shift_reduce_decision_to_resolution(
+  decision : ParseShiftReduceDecision,
+  shift_is_existing~ : Bool,
+) -> ParseActionConflictResolution {
+  match decision {
+    PreserveBoth => KeepBoth
+    DropShiftAndReduce => DropBoth
+    PreferShift =>
+      if shift_is_existing {
+        KeepExisting
+      } else {
+        ReplaceExisting
+      }
+    PreferReduce =>
+      if shift_is_existing {
+        ReplaceExisting
+      } else {
+        KeepExisting
+      }
+  }
+}
+
+///|
+fn parse_shift_reduce_conflict_is_declared(
+  grammar : PreparedGrammar,
+  shift : ParseActionDraft,
+  reduce : ParseActionDraft,
+) -> Bool {
+  let reduce_symbol = parse_action_draft_reduce_symbol(reduce)
+  let contributors = parse_shift_action_contributors(shift)
+  for row in grammar.syntax.conflict_symbols {
+    if !contains_internal_symbol(row, reduce_symbol) {
+      continue
+    }
+    for contributor in contributors {
+      if contains_internal_symbol(row, contributor.symbol) {
+        return true
+      }
+    }
+  }
+  false
+}
+
+///|
+fn parse_shift_action_contributors(
+  action : ParseActionDraft,
+) -> Array[ParseShiftContributor] {
+  match action {
+    DraftShift(contributors~, ..) => contributors
+    DraftAccept | DraftShiftExtra | DraftReduce(_) => []
   }
 }
 
@@ -1802,19 +2212,40 @@ fn parse_action_static_precedence(
   action : ParseActionDraft,
 ) -> @grammar.PrecedenceValue? {
   match action {
-    DraftShift(precedence~, ..) | DraftReduce(precedence~, ..) => precedence
+    DraftShift(contributors~, ..) =>
+      parse_shift_effective_metadata(contributors).0
+    DraftReduce(precedence~, ..) => precedence
     DraftAccept | DraftShiftExtra => None
   }
 }
 
 ///|
-fn parse_action_conflict_associativity(
-  shift : ParseActionDraft,
+fn parse_shift_effective_metadata(
+  contributors : Array[ParseShiftContributor],
+) -> (@grammar.PrecedenceValue?, Associativity) {
+  let mut precedence : @grammar.PrecedenceValue? = None
+  let mut associativity = Associativity::NoAssociativity
+  for contributor in contributors {
+    if compare_precedence_value_option(contributor.precedence, precedence) > 0 ||
+      (
+        compare_precedence_value_option(contributor.precedence, precedence) == 0 &&
+        compare_associativity(contributor.associativity, associativity) > 0
+      ) {
+      precedence = contributor.precedence
+      associativity = contributor.associativity
+    }
+  }
+  (precedence, associativity)
+}
+
+///|
+fn parse_shift_reduce_conflict_associativity(
+  shift_associativity : Associativity,
   reduce : ParseActionDraft,
 ) -> Associativity {
   let reduce_associativity = parse_action_associativity(reduce)
   if reduce_associativity is NoAssociativity {
-    parse_action_associativity(shift)
+    shift_associativity
   } else {
     reduce_associativity
   }
@@ -1823,8 +2254,9 @@ fn parse_action_conflict_associativity(
 ///|
 fn parse_action_associativity(action : ParseActionDraft) -> Associativity {
   match action {
-    DraftShift(associativity~, ..) | DraftReduce(associativity~, ..) =>
-      associativity
+    DraftShift(contributors~, ..) =>
+      parse_shift_effective_metadata(contributors).1
+    DraftReduce(associativity~, ..) => associativity
     DraftAccept | DraftShiftExtra => Associativity::NoAssociativity
   }
 }
@@ -2038,6 +2470,9 @@ fn parse_table_draft_weight(draft : ParseTableDraft) -> Int {
   }
   for primary_state_id in draft.primary_state_ids {
     weight += primary_state_id + 10007
+  }
+  for state_id in draft.nonterminal_extra_state_ids {
+    weight += state_id + 10103
   }
   weight += parse_reserved_word_sets_weight(draft.reserved_word_sets)
   weight += parse_external_lex_states_weight(draft.external_lex_states)

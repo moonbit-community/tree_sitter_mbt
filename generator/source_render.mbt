@@ -146,6 +146,8 @@ fn render_generated_language_tables(
   args.push(
     "small_parse_table_map=\{render_int_array(tables.small_parse_table_map)}",
   )
+  args.push("extra_symbol_ids=\{render_int_array(tables.extra_symbol_ids)}")
+  args.push("extra_state_ids=\{render_int_array(tables.extra_state_ids)}")
   args.push(
     "default_aliases=\{render_default_alias_array(tables.default_aliases, table_alias)}",
   )

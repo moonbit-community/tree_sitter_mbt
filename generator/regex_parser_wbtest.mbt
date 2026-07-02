@@ -156,3 +156,27 @@ test "regex parser rejects unsupported assertions with stable errors" {
   )
   assert_true(parse_regex("(a") is Err("Expected ')' at index 2"))
 }
+
+///|
+test "regex parser supports scoped case insensitive groups" {
+  guard parse_regex("(?i:a)b") is Ok(RegexAst::RegexSeq(items)) else {
+    fail("expected scoped flag sequence")
+  }
+  assert_eq(items.length(), 2)
+  guard items[0] is RegexAst::RegexClass(first) else {
+    fail("expected case insensitive class")
+  }
+  assert_true(character_set_contains(first, 'a'.to_uint()))
+  assert_true(character_set_contains(first, 'A'.to_uint()))
+  assert_true(items[1] is RegexAst::RegexLiteral(98U))
+}
+
+///|
+test "regex dot excludes line breaks" {
+  guard parse_regex(".") is Ok(RegexAst::RegexClass(set)) else {
+    fail("expected dot character set")
+  }
+  assert_true(character_set_contains(set, 'a'.to_uint()))
+  assert_true(!character_set_contains(set, '\n'.to_uint()))
+  assert_true(!character_set_contains(set, '\r'.to_uint()))
+}

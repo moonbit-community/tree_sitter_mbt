@@ -144,13 +144,19 @@ test "extract tokens preserves lexical order, dedupes rules, and rewrites syntax
     extracted.lexical.variables[2].rule == InternedRule::IRString("x"),
   )
 
-  assert_eq(extracted.syntax.variables.length(), 1)
+  assert_eq(extracted.syntax.variables.length(), 3)
   guard extracted.syntax.variables[0].rule is InternedRule::IRSeq(members) else {
     fail("document should remain a syntax sequence")
   }
   assert_true(members[0] == InternedRule::IRSymbol(InternalSymbol::Terminal(0)))
   assert_true(members[1] == InternedRule::IRSymbol(InternalSymbol::Terminal(1)))
   assert_true(members[2] == InternedRule::IRSymbol(InternalSymbol::Terminal(2)))
+  assert_eq(extracted.syntax.variables[1].name, "identifier")
+  assert_true(extracted.syntax.variables[1].kind is VariableKind::Auxiliary)
+  assert_true(extracted.syntax.variables[1].rule is InternedRule::IRChoice([]))
+  assert_eq(extracted.syntax.variables[2].name, "external_token")
+  assert_true(extracted.syntax.variables[2].kind is VariableKind::Auxiliary)
+  assert_true(extracted.syntax.variables[2].rule is InternedRule::IRChoice([]))
 
   assert_eq(extracted.syntax.external_tokens.length(), 2)
   assert_eq(extracted.syntax.external_tokens[0].name, "external_token")
@@ -166,6 +172,88 @@ test "extract tokens preserves lexical order, dedupes rules, and rewrites syntax
 }
 
 ///|
+test "extract tokens keeps nested immediate tokens anonymous" {
+  let grammar = @grammar.parse_grammar(
+    (
+      #|{
+      #|  "name": "nested_immediate",
+      #|  "rules": {
+      #|    "program": { "type": "SYMBOL", "name": "infix" },
+      #|    "infix": {
+      #|      "type": "SEQ",
+      #|      "members": [
+      #|        { "type": "SYMBOL", "name": "identifier" },
+      #|        {
+      #|          "type": "IMMEDIATE_TOKEN",
+      #|          "content": { "type": "STRING", "value": "::" }
+      #|        },
+      #|        { "type": "SYMBOL", "name": "identifier" }
+      #|      ]
+      #|    },
+      #|    "identifier": { "type": "PATTERN", "value": "[a-z]+" }
+      #|  }
+      #|}
+    ),
+  )
+
+  let extracted = extract_tokens(intern_symbols(grammar))
+
+  let mut found = false
+  for variable in extracted.lexical.variables {
+    match variable.rule {
+      InternedRule::IRImmediateToken(InternedRule::IRString("::")) => {
+        found = true
+        assert_eq(variable.name, "::")
+        assert_true(variable.kind is VariableKind::Anonymous)
+      }
+      _ => ()
+    }
+  }
+  assert_true(found)
+}
+
+///|
+test "extract tokens preserves syntax slots after direct token rules" {
+  let grammar = @grammar.parse_grammar(
+    (
+      #|{
+      #|  "name": "sparse_symbols",
+      #|  "rules": {
+      #|    "document": {
+      #|      "type": "CHOICE",
+      #|      "members": [
+      #|        { "type": "SYMBOL", "name": "number" },
+      #|        { "type": "SYMBOL", "name": "wrapped" }
+      #|      ]
+      #|    },
+      #|    "number": { "type": "PATTERN", "value": "\\d+" },
+      #|    "wrapped": {
+      #|      "type": "SEQ",
+      #|      "members": [
+      #|        { "type": "STRING", "value": "(" },
+      #|        { "type": "SYMBOL", "name": "number" },
+      #|        { "type": "STRING", "value": ")" }
+      #|      ]
+      #|    }
+      #|  }
+      #|}
+    ),
+  )
+
+  let extracted = extract_tokens(intern_symbols(grammar))
+
+  assert_eq(extracted.syntax.variables.length(), 3)
+  assert_true(extracted.syntax.variables[1].kind is VariableKind::Auxiliary)
+  assert_true(
+    extracted.syntax.variables[1].symbol == InternalSymbol::NonTerminal(1),
+  )
+  assert_eq(extracted.syntax.variables[2].name, "wrapped")
+  assert_true(
+    extracted.syntax.variables[2].symbol == InternalSymbol::NonTerminal(2),
+  )
+}
+
+///|
 test "extract tokens routes extras to symbols or separators" {
   let grammar = @grammar.parse_grammar(extract_extras_fixture_json())
 
@@ -176,38 +264,117 @@ test "extract tokens routes extras to symbols or separators" {
 }
 
 ///|
+test "extract tokens rewrites reserved string rules to terminals" {
+  let grammar = @grammar.parse_grammar(
+    (
+      #|{
+      #|  "name": "reserved_tokens",
+      #|  "word": "identifier",
+      #|  "rules": {
+      #|    "document": { "type": "SYMBOL", "name": "identifier" },
+      #|    "identifier": { "type": "PATTERN", "value": "[a-z]+" }
+      #|  },
+      #|  "reserved": {
+      #|    "global": [{ "type": "STRING", "value": "if" }]
+      #|  }
+      #|}
+    ),
+  )
+
+  let extracted = extract_tokens(intern_symbols(grammar))
+
+  guard extracted.syntax.reserved_sets[0].rules[0]
+    is InternedRule::IRSymbol(InternalSymbol::Terminal(index)) else {
+    fail("reserved string should be rewritten to a terminal")
+  }
+  assert_eq(extracted.lexical.variables[index].name, "if")
+}
+
+///|
 test "expand repeats creates and reuses auxiliary repeat variables" {
   let grammar = @grammar.parse_grammar(repeat_fixture_json())
 
   let expanded = expand_repeats(extract_tokens(intern_symbols(grammar)))
 
-  assert_eq(expanded.syntax.variables.length(), 2)
+  assert_eq(expanded.syntax.variables.length(), 3)
   guard expanded.syntax.variables[0].rule is InternedRule::IRSeq(members) else {
     fail("document should remain a sequence")
   }
-  assert_true(
-    members[0] ==
-    InternedRule::IRChoice([
-      InternedRule::IRSymbol(InternalSymbol::NonTerminal(1)),
-      InternedRule::IRBlank,
-    ]),
-  )
+  guard members[0] is InternedRule::IRChoice(repeat_options) else {
+    fail("repeat use site should be optional")
+  }
+  let mut saw_blank = false
+  let mut repeat_symbol : InternalSymbol? = None
+  for option in repeat_options {
+    match option {
+      InternedRule::IRBlank => saw_blank = true
+      _ =>
+        match first_symbol_in_rule(option) {
+          Some(symbol) => repeat_symbol = Some(symbol)
+          None => ()
+        }
+    }
+  }
+  assert_true(saw_blank)
+  guard repeat_symbol is Some(repeat_symbol) else {
+    fail("repeat use site should reference a helper")
+  }
   assert_true(members[1] == members[0])
-  assert_eq(expanded.syntax.variables[1].name, "document_repeat1")
+  assert_eq(expanded.syntax.variables[1].name, "item")
   assert_true(expanded.syntax.variables[1].kind is VariableKind::Auxiliary)
+  assert_true(expanded.syntax.variables[1].rule is InternedRule::IRChoice([]))
+  let mut repeat_variable : InternedVariable? = None
+  for variable in expanded.syntax.variables {
+    if variable.symbol == repeat_symbol {
+      repeat_variable = Some(variable)
+    }
+  }
+  guard repeat_variable is Some(repeat_variable) else {
+    fail("repeat helper should be present")
+  }
+  assert_eq(repeat_variable.name, "document_repeat1")
+  assert_true(repeat_variable.kind is VariableKind::Auxiliary)
+  assert_true(repeat_variable.symbol == repeat_symbol)
   assert_true(
-    expanded.syntax.variables[1].symbol == InternalSymbol::NonTerminal(1),
-  )
-  assert_true(
-    expanded.syntax.variables[1].rule ==
+    repeat_variable.rule ==
     InternedRule::IRChoice([
       InternedRule::IRSeq([
-        InternedRule::IRSymbol(InternalSymbol::NonTerminal(1)),
-        InternedRule::IRSymbol(InternalSymbol::NonTerminal(1)),
+        InternedRule::IRSymbol(repeat_symbol),
+        InternedRule::IRSymbol(repeat_symbol),
       ]),
       InternedRule::IRSymbol(InternalSymbol::Terminal(0)),
     ]),
   )
+}
+
+///|
+fn first_symbol_in_rule(rule : InternedRule) -> InternalSymbol? {
+  match rule {
+    InternedRule::IRSymbol(symbol) => Some(symbol)
+    InternedRule::IRSeq(members) | InternedRule::IRChoice(members) => {
+      for item in members {
+        match first_symbol_in_rule(item) {
+          Some(symbol) => return Some(symbol)
+          None => ()
+        }
+      }
+      None
+    }
+    InternedRule::IRAlias(content~, ..)
+    | InternedRule::IRRepeat(content)
+    | InternedRule::IRRepeat1(content)
+    | InternedRule::IRField(content~, ..)
+    | InternedRule::IRPrec(content~, ..)
+    | InternedRule::IRPrecLeft(content~, ..)
+    | InternedRule::IRPrecRight(content~, ..)
+    | InternedRule::IRPrecDynamic(content~, ..)
+    | InternedRule::IRToken(content)
+    | InternedRule::IRImmediateToken(content)
+    | InternedRule::IRReserved(content~, ..) => first_symbol_in_rule(content)
+    InternedRule::IRBlank
+    | InternedRule::IRString(_)
+    | InternedRule::IRPattern(_) => None
+  }
 }
 
 ///|
@@ -375,6 +542,43 @@ test "flatten grammar propagates metadata and rolls back non-final precedence" {
     production.steps[1].precedence == Some(@grammar.PrecedenceValue::Number(2)),
   )
   assert_true(production.steps[1].associativity is Associativity::Right)
+}
+
+///|
+test "flatten grammar uses global reserved context by name" {
+  let extracted : ExtractedGrammar = {
+    syntax: {
+      name: "reserved_order",
+      start_symbol: Some(InternalSymbol::NonTerminal(0)),
+      variables: [
+        {
+          symbol: InternalSymbol::NonTerminal(0),
+          name: "document",
+          kind: VariableKind::Named,
+          rule: InternedRule::IRSymbol(InternalSymbol::Terminal(0)),
+        },
+      ],
+      extra_symbols: [],
+      external_tokens: [],
+      inline_symbols: [],
+      conflict_symbols: [],
+      precedence_orderings: [],
+      word_symbol: Some(InternalSymbol::Terminal(0)),
+      reserved_sets: [
+        { name: "property", rules: [] },
+        { name: "global", rules: [] },
+      ],
+      supertype_symbols: [],
+    },
+    lexical: { variables: [], separators: [] },
+  }
+
+  let flattened = flatten_grammar(extracted)
+
+  assert_eq(
+    flattened.syntax.variables[0].productions[0].steps[0].reserved_word_set_id,
+    1,
+  )
 }
 
 ///|

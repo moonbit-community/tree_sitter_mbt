@@ -1,1 +1,9 @@
-
+import {
+  "moonbit-community/tree_sitter_mbt",
+  "moonbit-community/tree_sitter_mbt/api",
+  "moonbit-community/tree_sitter_mbt/cli",
+  "moonbit-community/tree_sitter_mbt/generator",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/test",
+} for "wbtest"

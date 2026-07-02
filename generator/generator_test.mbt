@@ -1134,6 +1134,71 @@ test "generate language rejects conflicting precedence ordering" {
 }
 
 ///|
+test "generate language rejects unresolved conflicting precedence fixture" {
+  let result = @test.expect_error(() => {
+    generate_language(
+      (
+        #|{
+        #|  "name": "conflicting_precedence",
+        #|  "rules": {
+        #|    "expression": {
+        #|      "type": "CHOICE",
+        #|      "members": [
+        #|        { "type": "SYMBOL", "name": "sum" },
+        #|        { "type": "SYMBOL", "name": "product" },
+        #|        { "type": "SYMBOL", "name": "other_thing" }
+        #|      ]
+        #|    },
+        #|    "sum": {
+        #|      "type": "PREC_LEFT",
+        #|      "value": 0,
+        #|      "content": {
+        #|        "type": "SEQ",
+        #|        "members": [
+        #|          { "type": "SYMBOL", "name": "expression" },
+        #|          { "type": "STRING", "value": "+" },
+        #|          { "type": "SYMBOL", "name": "expression" }
+        #|        ]
+        #|      }
+        #|    },
+        #|    "product": {
+        #|      "type": "PREC_LEFT",
+        #|      "value": 1,
+        #|      "content": {
+        #|        "type": "SEQ",
+        #|        "members": [
+        #|          { "type": "SYMBOL", "name": "expression" },
+        #|          { "type": "STRING", "value": "*" },
+        #|          { "type": "SYMBOL", "name": "expression" }
+        #|        ]
+        #|      }
+        #|    },
+        #|    "other_thing": {
+        #|      "type": "PREC_LEFT",
+        #|      "value": -1,
+        #|      "content": {
+        #|        "type": "SEQ",
+        #|        "members": [
+        #|          { "type": "SYMBOL", "name": "expression" },
+        #|          { "type": "STRING", "value": "*" },
+        #|          { "type": "STRING", "value": "*" }
+        #|        ]
+        #|      }
+        #|    },
+        #|    "identifier": { "type": "PATTERN", "value": "[a-zA-Z]+" }
+        #|  },
+        #|  "extras": [{ "type": "PATTERN", "value": "\\s" }]
+        #|}
+      ),
+    )
+  })
+  guard result is GenerateError::InvalidGrammar(message) else {
+    fail("expected InvalidGrammar")
+  }
+  assert_true(generator_test_string_contains(message, "unresolved conflict"))
+}
+
+///|
 test "generate language rejects indirect recursion through single symbols" {
   let result = @test.expect_error(() => {
     generate_language(
@@ -1192,63 +1257,67 @@ test "generate language treats choice and metadata wrappers as single symbol edg
 }
 
 ///|
-test "generate language allows direct self recursion" {
-  let generated = generate_language(
-    (
-      #|{
-      #|  "name": "direct_recursion",
-      #|  "rules": {
-      #|    "document": { "type": "SYMBOL", "name": "document" }
-      #|  }
-      #|}
-    ),
-  )
-  assert_eq(generated.language_name, "direct_recursion")
+test "generate language rejects unresolved direct self recursion" {
+  let result = @test.expect_error(() => {
+    generate_language(
+      (
+        #|{
+        #|  "name": "direct_recursion",
+        #|  "rules": {
+        #|    "document": { "type": "SYMBOL", "name": "document" }
+        #|  }
+        #|}
+      ),
+    )
+  })
+  assert_true(result is GenerateError::InvalidGrammar(_))
 }
 
 ///|
-test "generate language ignores non single symbol recursion shapes" {
-  let generated = generate_language(
-    (
-      #|{
-      #|  "name": "non_single_recursion",
-      #|  "rules": {
-      #|    "document": {
-      #|      "type": "CHOICE",
-      #|      "members": [
-      #|        { "type": "SYMBOL", "name": "seq_rule" },
-      #|        { "type": "SYMBOL", "name": "repeat_rule" },
-      #|        { "type": "SYMBOL", "name": "reserved_rule" },
-      #|        { "type": "SYMBOL", "name": "token_rule" },
-      #|        { "type": "STRING", "value": "x" }
-      #|      ]
-      #|    },
-      #|    "seq_rule": {
-      #|      "type": "SEQ",
-      #|      "members": [
-      #|        { "type": "SYMBOL", "name": "document" },
-      #|        { "type": "STRING", "value": "s" }
-      #|      ]
-      #|    },
-      #|    "repeat_rule": {
-      #|      "type": "REPEAT",
-      #|      "content": { "type": "SYMBOL", "name": "document" }
-      #|    },
-      #|    "reserved_rule": {
-      #|      "type": "RESERVED",
-      #|      "context_name": "global",
-      #|      "content": { "type": "SYMBOL", "name": "document" }
-      #|    },
-      #|    "token_rule": {
-      #|      "type": "TOKEN",
-      #|      "content": { "type": "STRING", "value": "tok" }
-      #|    }
-      #|  },
-      #|  "reserved": {
-      #|    "global": []
-      #|  }
-      #|}
-    ),
-  )
-  assert_eq(generated.language_name, "non_single_recursion")
+test "generate language rejects unresolved non single recursion shapes" {
+  let result = @test.expect_error(() => {
+    generate_language(
+      (
+        #|{
+        #|  "name": "non_single_recursion",
+        #|  "rules": {
+        #|    "document": {
+        #|      "type": "CHOICE",
+        #|      "members": [
+        #|        { "type": "SYMBOL", "name": "seq_rule" },
+        #|        { "type": "SYMBOL", "name": "repeat_rule" },
+        #|        { "type": "SYMBOL", "name": "reserved_rule" },
+        #|        { "type": "SYMBOL", "name": "token_rule" },
+        #|        { "type": "STRING", "value": "x" }
+        #|      ]
+        #|    },
+        #|    "seq_rule": {
+        #|      "type": "SEQ",
+        #|      "members": [
+        #|        { "type": "SYMBOL", "name": "document" },
+        #|        { "type": "STRING", "value": "s" }
+        #|      ]
+        #|    },
+        #|    "repeat_rule": {
+        #|      "type": "REPEAT",
+        #|      "content": { "type": "SYMBOL", "name": "document" }
+        #|    },
+        #|    "reserved_rule": {
+        #|      "type": "RESERVED",
+        #|      "context_name": "global",
+        #|      "content": { "type": "SYMBOL", "name": "document" }
+        #|    },
+        #|    "token_rule": {
+        #|      "type": "TOKEN",
+        #|      "content": { "type": "STRING", "value": "tok" }
+        #|    }
+        #|  },
+        #|  "reserved": {
+        #|    "global": []
+        #|  }
+        #|}
+      ),
+    )
+  })
+  assert_true(result is GenerateError::InvalidGrammar(_))
 }

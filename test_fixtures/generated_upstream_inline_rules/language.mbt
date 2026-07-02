@@ -1,0 +1,3849 @@
+///|
+pub fn language() -> @tree_sitter_mbt.Language raise @tables.TableValidationError {
+  @tree_sitter_mbt.language_from_generated_tables(generated_language_tables())
+}
+
+///|
+fn generated_language_tables() -> @tables.GeneratedLanguageTables {
+  @tables.GeneratedLanguageTables::new(
+    name="inline_rules",
+    abi_version=15,
+    metadata=@tables.LanguageMetadata::new(major=0, minor=0, patch=0),
+    symbol_count=13,
+    alias_count=0,
+    token_count=7,
+    external_token_count=0,
+    state_count=50,
+    field_count=0,
+    production_id_count=1,
+    max_alias_sequence_length=3,
+    supertype_count=0,
+    main_lex_state_count=49,
+    external_lex_state_count=1,
+    reserved_word_set_count=1,
+    max_reserved_word_set_size=0,
+    large_state_count=2,
+    keyword_capture_token=None,
+    symbol_names=[
+      "end", ";", "(", ")", "+", "*", "number", "program", "statement", "parenthesized_expression",
+      "sum", "product", "program_repeat1",
+    ],
+    symbol_types=[
+      @api.SymbolType::Regular,
+      @api.SymbolType::Anonymous,
+      @api.SymbolType::Anonymous,
+      @api.SymbolType::Anonymous,
+      @api.SymbolType::Anonymous,
+      @api.SymbolType::Anonymous,
+      @api.SymbolType::Regular,
+      @api.SymbolType::Regular,
+      @api.SymbolType::Regular,
+      @api.SymbolType::Regular,
+      @api.SymbolType::Regular,
+      @api.SymbolType::Regular,
+      @api.SymbolType::Auxiliary,
+    ],
+    public_symbol_map=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    alias_symbols=[],
+    non_terminal_aliases=[],
+    field_names=[""],
+    lex_modes=[
+      @tables.GeneratedLexMode::new(
+        lex_state=65535,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=0,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=1,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=2,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=3,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=4,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=5,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=6,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=7,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=8,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=9,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=10,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=11,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=12,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=13,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=14,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=15,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=16,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=17,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=18,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=19,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=20,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=21,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=22,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=23,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=24,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=25,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=26,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=27,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=28,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=29,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=30,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=31,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=32,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=33,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=34,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=35,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=36,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=37,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=38,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=39,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=40,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=41,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=42,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=43,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=44,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=45,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=46,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=47,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+      @tables.GeneratedLexMode::new(
+        lex_state=48,
+        external_lex_state=0,
+        reserved_word_set_id=0,
+      ),
+    ],
+    primary_state_ids=[
+      0, 1, 2, 3, 4, 5, 6, 2, 8, 9, 10, 11, 12, 8, 14, 10, 11, 17, 18, 19, 20, 14,
+      17, 18, 19, 20, 26, 27, 28, 29, 30, 31, 26, 27, 28, 29, 30, 31, 38, 39, 40,
+      41, 42, 43, 38, 39, 40, 41, 42, 43,
+    ],
+    parse_action_lists=[
+      @tables.GeneratedParseActionList::new(actions=[], reusable=false),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=2, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=3, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=7, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=8, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=9, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=10, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=11, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[@tables.GeneratedParseAction::Accept],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=12,
+            child_count=1,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=7,
+            child_count=1,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=13, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=14, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=15, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=16, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=8,
+            child_count=2,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=17, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=18, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=19, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=20, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=12,
+            child_count=2,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+          @tables.GeneratedParseAction::Shift(state_id=2, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=12,
+            child_count=2,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=21, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=9,
+            child_count=3,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=22, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=23, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=24, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=25, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=26, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=10,
+            child_count=3,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=28, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=29, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id=11,
+            child_count=3,
+            dynamic_precedence=0,
+            production_id=0,
+          ),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=32, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=34, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=35, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=38, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=39, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=40, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=41, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=42, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=43, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=44, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=45, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=46, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=47, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=48, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+      @tables.GeneratedParseActionList::new(
+        actions=[
+          @tables.GeneratedParseAction::Shift(state_id=49, is_repetition=false),
+        ],
+        reusable=true,
+      ),
+    ],
+    large_parse_table=[
+      [
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+      ],
+      [
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::ActionCell(1),
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::EmptyCell,
+        @tables.GeneratedParseTableCell::ActionCell(2),
+        @tables.GeneratedParseTableCell::StateCell(4),
+        @tables.GeneratedParseTableCell::StateCell(5),
+        @tables.GeneratedParseTableCell::StateCell(3),
+        @tables.GeneratedParseTableCell::StateCell(3),
+        @tables.GeneratedParseTableCell::StateCell(3),
+        @tables.GeneratedParseTableCell::StateCell(6),
+      ],
+    ],
+    small_parse_table=[
+      @tables.GeneratedSmallParseTableRow::new(state_id=2, offset=0, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=4,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=8,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=3, offset=12, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=5,
+          symbols=[1],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=6,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=7,
+          symbols=[5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=4, offset=22, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=8,
+          symbols=[0],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=5, offset=26, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=9,
+          symbols=[0, 2, 6],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=6, offset=32, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=1,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=2,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=10,
+          symbols=[0],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=5,
+          symbols=[8],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=12,
+          symbols=[12],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=3,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=7, offset=53, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=11,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=13,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=8, offset=65, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=12,
+          symbols=[3],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=13,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=14,
+          symbols=[5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=9, offset=75, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=15,
+          symbols=[0, 2, 6],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=10, offset=81, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=16,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=17,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=18,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=11, offset=93, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=18,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=19,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=20,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=12, offset=105, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=2,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=20,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=21,
+          symbols=[0],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=5,
+          symbols=[8],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=12,
+          symbols=[12],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=3,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=13, offset=126, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=13,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=14,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=22,
+          symbols=[3],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=14, offset=136, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=23,
+          symbols=[1, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=15, offset=142, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=24,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=25,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=23,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=16, offset=154, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=26,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=27,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=25,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=17, offset=166, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=28,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=26,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=18, offset=178, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=30,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=29,
+          symbols=[1, 4],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=19, offset=186, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=31,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=29,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=20, offset=198, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=32,
+          symbols=[1, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=21, offset=204, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=23,
+          symbols=[3, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=22, offset=210, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=33,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=32,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=23, offset=222, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=34,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=29,
+          symbols=[3, 4],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=24, offset=230, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=3,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=35,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=35,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=25, offset=242, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=32,
+          symbols=[3, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=26, offset=248, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=13,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=14,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=36,
+          symbols=[3],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=27, offset=258, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=16,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=37,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=39,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=28, offset=270, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=18,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=38,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=40,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=29, offset=282, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=13,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=14,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=39,
+          symbols=[3],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=30, offset=292, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=16,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=40,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=42,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=31, offset=304, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=18,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=41,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=43,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=32, offset=316, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=13,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=14,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=42,
+          symbols=[3],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=33, offset=326, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=24,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=43,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=45,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=34, offset=338, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=26,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=44,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=46,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=35, offset=350, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=13,
+          symbols=[4],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=14,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=45,
+          symbols=[3],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=36, offset=360, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=24,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=46,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=48,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=37, offset=372, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=26,
+          symbols=[2],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=47,
+          symbols=[6],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallState,
+          value=49,
+          symbols=[9, 10, 11],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=38, offset=384, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=23,
+          symbols=[1, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=39, offset=390, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=30,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=29,
+          symbols=[1, 4],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=40, offset=398, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=32,
+          symbols=[1, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=41, offset=404, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=23,
+          symbols=[1, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=42, offset=410, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=30,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=29,
+          symbols=[1, 4],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=43, offset=418, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=32,
+          symbols=[1, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=44, offset=424, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=23,
+          symbols=[3, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=45, offset=430, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=34,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=29,
+          symbols=[3, 4],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=46, offset=438, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=32,
+          symbols=[3, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=47, offset=444, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=23,
+          symbols=[3, 4, 5],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=48, offset=450, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=34,
+          symbols=[5],
+        ),
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=29,
+          symbols=[3, 4],
+        ),
+      ]),
+      @tables.GeneratedSmallParseTableRow::new(state_id=49, offset=458, sections=[
+        @tables.GeneratedSmallParseTableSection::new(
+          kind=@tables.GeneratedSmallParseTableSectionKind::SmallAction,
+          value=32,
+          symbols=[3, 4, 5],
+        ),
+      ]),
+    ],
+    small_parse_table_map=[
+      0, 12, 22, 26, 32, 53, 65, 75, 81, 93, 105, 126, 136, 142, 154, 166, 178, 186,
+      198, 204, 210, 222, 230, 242, 248, 258, 270, 282, 292, 304, 316, 326, 338,
+      350, 360, 372, 384, 390, 398, 404, 410, 418, 424, 430, 438, 444, 450, 458,
+    ],
+    extra_symbol_ids=[],
+    extra_state_ids=[],
+    default_aliases=[],
+    supertype_entries=[],
+    reserved_word_sets=[@tables.GeneratedTokenSet::new(symbol_ids=[])],
+    external_lex_states=[
+      @tables.GeneratedExternalLexState::new(external_token_ids=[]),
+    ],
+    external_scanner=@tables.ExternalScannerDescriptor::none(),
+    production_infos=[
+      @tables.GeneratedProductionInfo::new(alias_sequence=[], field_map=[]),
+    ],
+    main_lex_tables=[
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=Some(1),
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=Some(1),
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=Some(1),
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=Some(1),
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=Some(1),
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(0),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=40, end=40)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(2),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(6),
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=48, end=57)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=59, end=59)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(1),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+      @tables.GeneratedLexTable::new(
+        states=[
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=None,
+            eof_action=None,
+            transitions=[
+              @tables.GeneratedLexTransition::new(
+                ranges=[
+                  @tables.GeneratedCharacterRange::new(start=9, end=13),
+                  @tables.GeneratedCharacterRange::new(start=32, end=32),
+                ],
+                target_state=0,
+                is_separator=true,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=41, end=41)],
+                target_state=1,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=42, end=42)],
+                target_state=2,
+                is_separator=false,
+                precedence=0,
+              ),
+              @tables.GeneratedLexTransition::new(
+                ranges=[@tables.GeneratedCharacterRange::new(start=43, end=43)],
+                target_state=3,
+                is_separator=false,
+                precedence=0,
+              ),
+            ],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(3),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(5),
+            eof_action=None,
+            transitions=[],
+          ),
+          @tables.GeneratedLexState::new(
+            accept_symbol_id=Some(4),
+            eof_action=None,
+            transitions=[],
+          ),
+        ],
+        start_state=0,
+      ),
+    ],
+    keyword_lex_table=None,
+  )
+}

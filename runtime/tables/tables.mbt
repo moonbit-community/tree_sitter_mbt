@@ -323,6 +323,8 @@ pub(all) struct GeneratedLanguageTables {
   large_parse_table : Array[Array[GeneratedParseTableCell]]
   small_parse_table : Array[GeneratedSmallParseTableRow]
   small_parse_table_map : Array[Int]
+  extra_symbol_ids : Array[Int]
+  extra_state_ids : Array[Int]
   default_aliases : Array[GeneratedDefaultAlias]
   supertype_entries : Array[GeneratedSupertypeEntry]
   reserved_word_sets : Array[GeneratedTokenSet]
@@ -365,6 +367,8 @@ pub fn GeneratedLanguageTables::new(
   large_parse_table? : Array[Array[GeneratedParseTableCell]] = [],
   small_parse_table? : Array[GeneratedSmallParseTableRow] = [],
   small_parse_table_map? : Array[Int] = [],
+  extra_symbol_ids? : Array[Int] = [],
+  extra_state_ids? : Array[Int] = [],
   default_aliases? : Array[GeneratedDefaultAlias] = [],
   supertype_entries? : Array[GeneratedSupertypeEntry] = [],
   reserved_word_sets? : Array[GeneratedTokenSet] = [GeneratedTokenSet::new()],
@@ -412,6 +416,8 @@ pub fn GeneratedLanguageTables::new(
     large_parse_table,
     small_parse_table,
     small_parse_table_map,
+    extra_symbol_ids,
+    extra_state_ids,
     default_aliases,
     supertype_entries,
     reserved_word_sets,
@@ -534,6 +540,8 @@ pub fn validate(
     validate_parse_action_list(tables, i, tables.parse_action_lists[i])
   }
   validate_parse_table_layout(tables)
+  validate_extra_symbol_ids(tables)
+  validate_extra_state_ids(tables)
   validate_supertype_entries(tables)
   validate_token_set_rows(tables)
   validate_external_scanner(tables)
@@ -989,6 +997,34 @@ fn validate_token_set_rows(
       tables,
       i,
       tables.external_lex_states[i],
+    )
+  }
+}
+
+///|
+fn validate_extra_symbol_ids(
+  tables : GeneratedLanguageTables,
+) -> Unit raise TableValidationError {
+  for i in 0..<tables.extra_symbol_ids.length() {
+    validate_range(
+      "extra_symbol_ids[\{i}]",
+      tables.extra_symbol_ids[i],
+      0,
+      tables.symbol_count - 1,
+    )
+  }
+}
+
+///|
+fn validate_extra_state_ids(
+  tables : GeneratedLanguageTables,
+) -> Unit raise TableValidationError {
+  for i in 0..<tables.extra_state_ids.length() {
+    validate_range(
+      "extra_state_ids[\{i}]",
+      tables.extra_state_ids[i],
+      0,
+      tables.state_count - 1,
     )
   }
 }
@@ -1711,6 +1747,34 @@ pub fn ValidatedLanguageTables::goto_state_for_symbol(
       Some(@api.StateId::new(state_id.reinterpret_as_uint()))
     _ => None
   }
+}
+
+///|
+pub fn ValidatedLanguageTables::is_extra_symbol(
+  self : ValidatedLanguageTables,
+  symbol_id : @api.SymbolId,
+) -> Bool {
+  let value = symbol_id.value().reinterpret_as_int()
+  for extra in self.raw.extra_symbol_ids {
+    if extra == value {
+      return true
+    }
+  }
+  false
+}
+
+///|
+pub fn ValidatedLanguageTables::is_extra_state(
+  self : ValidatedLanguageTables,
+  state_id : @api.StateId,
+) -> Bool {
+  let value = state_id.value().reinterpret_as_int()
+  for extra_state in self.raw.extra_state_ids {
+    if extra_state == value {
+      return true
+    }
+  }
+  false
 }
 
 ///|

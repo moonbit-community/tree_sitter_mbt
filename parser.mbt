@@ -65,6 +65,29 @@ priv struct PotentialReduceAction {
 }
 
 ///|
+priv struct ParseBranchState {
+  stack : Array[ParseStackEntry]
+  nodes : Array[NodeData]
+  leading_extras : Array[Array[Int]]
+  mut pending_extras : Array[Int]
+  mut current_byte : UInt
+  mut current_point : @api.Point
+  mut lookahead : LexedToken?
+  mut last_external_scanner_state : Bytes
+  mut did_insert_missing_token : Bool
+  mut parse_has_error : Bool
+  order : Int
+}
+
+///|
+priv struct AcceptedParseBranch {
+  tree : Tree
+  error_cost : Int
+  dynamic_precedence : Int
+  order : Int
+}
+
+///|
 priv struct LexedToken {
   symbol_id : Int
   start_byte : UInt
@@ -580,6 +603,42 @@ fn Parser::parse_full_input_loop(
     guard stack.last() is Some(top) else {
       raise ParseError::ParseStackUnderflow
     }
+    match synthetic_extra_reduce_action(tables, top.state_id) {
+      Some(action) => {
+        if tables.is_extra_symbol(symbol_id_from_int(action.symbol_id)) {
+          reduce_extra_stack(
+            language,
+            tables,
+            nodes,
+            leading_extras,
+            stack,
+            pending_extras,
+            action~,
+            fallback_byte=current_byte,
+            fallback_point=current_point,
+            force_fragile=false,
+          )
+        } else {
+          reduce_stack(
+            language,
+            tables,
+            nodes,
+            leading_extras,
+            stack,
+            symbol_id=action.symbol_id,
+            child_count=action.child_count,
+            dynamic_precedence=action.dynamic_precedence,
+            production_id=action.production_id,
+            force_fragile=false,
+            fallback_byte=current_byte,
+            fallback_point=current_point,
+            trailing_extras=[],
+          )
+        }
+        continue
+      }
+      None => ()
+    }
     let token = match lookahead {
       Some(value) => value
       None => {
@@ -605,6 +664,44 @@ fn Parser::parse_full_input_loop(
             value
           }
           Err(LexError(byte_offset~, state_id~)) => {
+            if try_reduce_all_potential_at(
+                language,
+                tables,
+                nodes,
+                leading_extras,
+                stack,
+                top.state_id,
+                fallback_byte=current_byte,
+                fallback_point=current_point,
+                logger~,
+              ) {
+              continue
+            }
+            if stack.length() > 1 &&
+              !did_insert_missing_token &&
+              try_insert_missing_token_for_lex_error(
+                language,
+                tables,
+                input,
+                encoding~,
+                decode_callback~,
+                chunk_end_offsets~,
+                included_ranges~,
+                nodes,
+                leading_extras,
+                stack,
+                top.state_id,
+                current_byte,
+                current_point,
+                external_scanner_state=last_external_scanner_state,
+                pending_extras,
+                logger~,
+              ) {
+              did_insert_missing_token = true
+              parse_has_error = true
+              pending_extras = []
+              continue
+            }
             if stack.length() == 1 {
               match
                 recover_lex_error(
@@ -640,8 +737,46 @@ fn Parser::parse_full_input_loop(
     }
     let token_symbol = symbol_id_from_int(token.symbol_id)
     let selected_action = match
-      selected_parse_action_for_symbol(tables, top.state_id, token.symbol_id) {
-      Some(selected) => selected
+      tables.parse_action_list_for_symbol(
+        state_id_from_int(top.state_id),
+        token_symbol,
+      ) {
+      Some(action_list) => {
+        let runtime_actions = runtime_parse_actions(action_list.actions)
+        if !action_list.reusable && runtime_actions.length() > 1 {
+          return self.parse_full_input_branch_loop(
+            language,
+            input,
+            encoding~,
+            decode_callback~,
+            chunk_end_offsets~,
+            options~,
+            included_ranges~,
+            logger~,
+            initial_branch={
+              stack: stack.copy(),
+              nodes: nodes.copy(),
+              leading_extras: copy_leading_extras(leading_extras),
+              pending_extras: pending_extras.copy(),
+              current_byte,
+              current_point,
+              lookahead: Some(token),
+              last_external_scanner_state,
+              did_insert_missing_token,
+              parse_has_error,
+              order: 0,
+            },
+          )
+        }
+        match selected_parse_action(action_list.actions) {
+          Some(selected) => selected
+          None =>
+            raise ParseError::ParseTableError(
+              state_id=state_id_from_int(top.state_id),
+              symbol_id=token_symbol,
+            )
+        }
+      }
       None => {
         if try_reduce_all_potential(
             language,
@@ -654,7 +789,6 @@ fn Parser::parse_full_input_loop(
             pending_extras,
             logger~,
           ) {
-          pending_extras = []
           continue
         }
         if !did_insert_missing_token &&
@@ -672,6 +806,19 @@ fn Parser::parse_full_input_loop(
           did_insert_missing_token = true
           parse_has_error = true
           pending_extras = []
+          continue
+        }
+        if try_synchronize_stack_to_root(
+            language,
+            tables,
+            nodes,
+            leading_extras,
+            stack,
+            pending_extras,
+            token,
+            logger~,
+          ) {
+          parse_has_error = true
           continue
         }
         if stack.length() > 1 {
@@ -714,6 +861,7 @@ fn Parser::parse_full_input_loop(
         return parser_tree_from_stack(
           language,
           nodes,
+          leading_extras,
           stack,
           pending_extras~,
           included_ranges~,
@@ -833,7 +981,7 @@ fn Parser::parse_full_input_loop(
         child_count~,
         dynamic_precedence~,
         production_id~
-      ) => {
+      ) =>
         reduce_stack(
           language,
           tables,
@@ -847,28 +995,636 @@ fn Parser::parse_full_input_loop(
           force_fragile=selected_action.force_fragile,
           fallback_byte=token.start_byte,
           fallback_point=token.start_point,
-          trailing_extras=pending_extras,
+          trailing_extras=[],
         )
-        pending_extras = []
-      }
     }
   }
   raise ParseError::ParseStackUnderflow
 }
 
 ///|
-fn selected_parse_action_for_symbol(
+fn copy_leading_extras(leading_extras : Array[Array[Int]]) -> Array[Array[Int]] {
+  let result : Array[Array[Int]] = []
+  for extras in leading_extras {
+    result.push(extras.copy())
+  }
+  result
+}
+
+///|
+fn Parser::parse_full_input_branch_loop(
+  self : Parser,
+  language : Language,
+  input : Bytes,
+  encoding~ : @api.InputEncoding,
+  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int],
+  options~ : ParseOptions,
+  included_ranges~ : Array[@api.Range],
+  logger~ : Logger?,
+  initial_branch~ : ParseBranchState,
+) -> Tree raise ParseError {
+  let tables = language.tables
+  let branches : Array[ParseBranchState] = [initial_branch]
+  let mut next_order = 1
+  let mut accepted : AcceptedParseBranch? = None
+  let mut first_error : ParseError? = None
+  while !branches.is_empty() {
+    let branch = match branches.pop() {
+      Some(branch) => branch
+      None => raise ParseError::ParseStackUnderflow
+    }
+    let progress_state = ParseState::new(
+      current_byte_offset=branch.current_byte,
+      has_error=branch.parse_has_error,
+    )
+    match parse_cancellation_state(options, progress_state) {
+      Some(cancelled_state) => {
+        self.outstanding_parse = Some(parse_branch_outstanding_state(branch))
+        raise ParseError::Cancelled(cancelled_state)
+      }
+      None => ()
+    }
+    let branch_result : Result[Array[AcceptedParseBranch], ParseError] = capture_parser_result(() => {
+        parse_branch_step(
+          language,
+          tables,
+          input,
+          encoding~,
+          decode_callback~,
+          chunk_end_offsets~,
+          included_ranges~,
+          logger~,
+          branch,
+          branches,
+          next_order~,
+        )
+      },
+    )
+    match branch_result {
+      Ok(accepted_now) => {
+        next_order += accepted_now.length()
+        for candidate in accepted_now {
+          if accepted_branch_prefer(candidate, accepted) {
+            accepted = Some(candidate)
+          }
+        }
+      }
+      Err(error) => if first_error is None { first_error = Some(error) }
+    }
+  }
+  match accepted {
+    Some(result) => result.tree
+    None =>
+      match first_error {
+        Some(error) => raise error
+        None => raise ParseError::ParseStackUnderflow
+      }
+  }
+}
+
+///|
+fn parse_branch_step(
+  language : Language,
   tables : @tables.ValidatedLanguageTables,
-  state_id : Int,
-  symbol_id : Int,
-) -> SelectedParseAction? {
+  input : Bytes,
+  encoding~ : @api.InputEncoding,
+  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int],
+  included_ranges~ : Array[@api.Range],
+  logger~ : Logger?,
+  branch : ParseBranchState,
+  branches : Array[ParseBranchState],
+  next_order~ : Int,
+) -> Array[AcceptedParseBranch] raise ParseError {
+  guard branch.stack.last() is Some(top) else {
+    raise ParseError::ParseStackUnderflow
+  }
+  match synthetic_extra_reduce_action(tables, top.state_id) {
+    Some(action) => {
+      if tables.is_extra_symbol(symbol_id_from_int(action.symbol_id)) {
+        reduce_extra_stack(
+          language,
+          tables,
+          branch.nodes,
+          branch.leading_extras,
+          branch.stack,
+          branch.pending_extras,
+          action~,
+          fallback_byte=branch.current_byte,
+          fallback_point=branch.current_point,
+          force_fragile=true,
+        )
+      } else {
+        reduce_stack(
+          language,
+          tables,
+          branch.nodes,
+          branch.leading_extras,
+          branch.stack,
+          symbol_id=action.symbol_id,
+          child_count=action.child_count,
+          dynamic_precedence=action.dynamic_precedence,
+          production_id=action.production_id,
+          force_fragile=true,
+          fallback_byte=branch.current_byte,
+          fallback_point=branch.current_point,
+          trailing_extras=[],
+        )
+      }
+      branches.push(branch)
+      return []
+    }
+    None => ()
+  }
+  let token = match branch.lookahead {
+    Some(value) => value
+    None => {
+      let lex_result : Result[LexedToken, ParseError] = capture_parser_result(() => {
+        lex_main_token(
+          tables,
+          top.state_id,
+          input,
+          encoding~,
+          decode_callback~,
+          chunk_end_offsets~,
+          branch.current_byte,
+          branch.current_point,
+          included_ranges~,
+          external_scanner_state=branch.last_external_scanner_state,
+          logger~,
+        )
+      })
+      match lex_result {
+        Ok(value) => {
+          branch.lookahead = Some(value)
+          value
+        }
+        Err(LexError(_)) => {
+          if try_reduce_all_potential_at(
+              language,
+              tables,
+              branch.nodes,
+              branch.leading_extras,
+              branch.stack,
+              top.state_id,
+              fallback_byte=branch.current_byte,
+              fallback_point=branch.current_point,
+              logger~,
+            ) {
+            branches.push(branch)
+            return []
+          }
+          if branch.stack.length() > 1 &&
+            !branch.did_insert_missing_token &&
+            try_insert_missing_token_for_lex_error(
+              language,
+              tables,
+              input,
+              encoding~,
+              decode_callback~,
+              chunk_end_offsets~,
+              included_ranges~,
+              branch.nodes,
+              branch.leading_extras,
+              branch.stack,
+              top.state_id,
+              branch.current_byte,
+              branch.current_point,
+              external_scanner_state=branch.last_external_scanner_state,
+              branch.pending_extras,
+              logger~,
+            ) {
+            branch.did_insert_missing_token = true
+            branch.parse_has_error = true
+            branch.pending_extras = []
+            branches.push(branch)
+            return []
+          }
+          raise ParseError::LexError(
+            byte_offset=branch.current_byte,
+            state_id=state_id_from_int(top.state_id),
+          )
+        }
+        Err(error) => raise error
+      }
+    }
+  }
+  let token_symbol = symbol_id_from_int(token.symbol_id)
+  let accepted : Array[AcceptedParseBranch] = []
   match
     tables.parse_action_list_for_symbol(
-      state_id_from_int(state_id),
-      symbol_id_from_int(symbol_id),
+      state_id_from_int(top.state_id),
+      token_symbol,
     ) {
-    Some(action_list) => selected_parse_action(action_list.actions)
-    None => None
+    Some(action_list) => {
+      let runtime_actions = runtime_parse_actions(action_list.actions)
+      if runtime_actions.length() == 0 {
+        raise ParseError::ParseTableError(
+          state_id=state_id_from_int(top.state_id),
+          symbol_id=token_symbol,
+        )
+      } else if action_list.reusable || runtime_actions.length() == 1 {
+        let selected = match selected_parse_action(action_list.actions) {
+          Some(selected) => selected.action
+          None => runtime_actions[0]
+        }
+        match
+          apply_parse_branch_action(
+            language,
+            tables,
+            input,
+            encoding~,
+            decode_callback~,
+            chunk_end_offsets~,
+            included_ranges~,
+            branch,
+            token,
+            selected,
+            force_fragile=action_list.actions.length() > 1,
+          ) {
+          Some(result) => accepted.push(result)
+          None => branches.push(branch)
+        }
+      } else {
+        for i in 0..<runtime_actions.length() {
+          let child = parse_branch_clone(branch, order=next_order + i)
+          match
+            apply_parse_branch_action(
+              language,
+              tables,
+              input,
+              encoding~,
+              decode_callback~,
+              chunk_end_offsets~,
+              included_ranges~,
+              child,
+              token,
+              runtime_actions[i],
+              force_fragile=true,
+            ) {
+            Some(result) => accepted.push(result)
+            None => branches.push(child)
+          }
+        }
+      }
+    }
+    None =>
+      if try_reduce_all_potential(
+          language,
+          tables,
+          branch.nodes,
+          branch.leading_extras,
+          branch.stack,
+          top.state_id,
+          token,
+          branch.pending_extras,
+          logger~,
+        ) {
+        branches.push(branch)
+      } else if !branch.did_insert_missing_token &&
+        try_insert_missing_token(
+          language,
+          tables,
+          branch.nodes,
+          branch.leading_extras,
+          branch.stack,
+          top.state_id,
+          token,
+          branch.pending_extras,
+          logger~,
+        ) {
+        branch.did_insert_missing_token = true
+        branch.parse_has_error = true
+        branch.pending_extras = []
+        branches.push(branch)
+      } else if try_synchronize_stack_to_root(
+          language,
+          tables,
+          branch.nodes,
+          branch.leading_extras,
+          branch.stack,
+          branch.pending_extras,
+          token,
+          logger~,
+        ) {
+        branch.parse_has_error = true
+        branches.push(branch)
+      } else if branch.stack.length() > 1 {
+        match
+          try_skip_unexpected_token(
+            language,
+            input,
+            encoding~,
+            decode_callback~,
+            chunk_end_offsets~,
+            branch.nodes,
+            branch.leading_extras,
+            branch.pending_extras,
+            token,
+            logger~,
+          ) {
+          Some((next_byte, next_point)) => {
+            match token.external_scanner_state {
+              Some(state) => branch.last_external_scanner_state = state
+              None => ()
+            }
+            branch.current_byte = next_byte
+            branch.current_point = next_point
+            branch.lookahead = None
+            branch.parse_has_error = true
+            branches.push(branch)
+          }
+          None =>
+            raise ParseError::ParseTableError(
+              state_id=state_id_from_int(top.state_id),
+              symbol_id=token_symbol,
+            )
+        }
+      } else {
+        raise ParseError::ParseTableError(
+          state_id=state_id_from_int(top.state_id),
+          symbol_id=token_symbol,
+        )
+      }
+  }
+  accepted
+}
+
+///|
+fn runtime_parse_actions(
+  actions : Array[@tables.GeneratedParseAction],
+) -> Array[@tables.GeneratedParseAction] {
+  let result : Array[@tables.GeneratedParseAction] = []
+  for action in actions {
+    if parse_action_runtime_candidate(action) {
+      result.push(action)
+    }
+  }
+  result
+}
+
+///|
+fn apply_parse_branch_action(
+  language : Language,
+  tables : @tables.ValidatedLanguageTables,
+  input : Bytes,
+  encoding~ : @api.InputEncoding,
+  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int],
+  included_ranges~ : Array[@api.Range],
+  branch : ParseBranchState,
+  token : LexedToken,
+  action : @tables.GeneratedParseAction,
+  force_fragile~ : Bool,
+) -> AcceptedParseBranch? raise ParseError {
+  match action {
+    @tables.GeneratedParseAction::Accept => {
+      parser_log(None, Parse, "parse accept")
+      Some(
+        parse_branch_accept(
+          language,
+          branch,
+          included_ranges~,
+          input~,
+          encoding~,
+          decode_callback~,
+          chunk_end_offsets~,
+        ),
+      )
+    }
+    @tables.GeneratedParseAction::Shift(state_id~, is_repetition~) => {
+      if is_repetition {
+        raise ParseError::ParseTableError(
+          state_id=state_id_from_int(branch.stack.last().unwrap().state_id),
+          symbol_id=symbol_id_from_int(token.symbol_id),
+        )
+      }
+      let node_index = push_parser_node(
+        branch.nodes,
+        branch.leading_extras,
+        node_data_for_symbol(
+          language,
+          token.symbol_id,
+          token.start_byte,
+          token.end_byte,
+          token.start_point,
+          token.end_point,
+          external_scanner_state=token.external_scanner_state,
+          external_scanner_state_changed=token.external_scanner_state_changed,
+          external_scanner_depends_on_column=token.external_scanner_depends_on_column,
+          lookahead_byte_count=token.lookahead_byte_count,
+          parse_state=Some(
+            state_id_from_int(branch.stack.last().unwrap().state_id),
+          ),
+          next_parse_state=Some(state_id_from_int(state_id)),
+        ),
+        leading=branch.pending_extras,
+      )
+      branch.pending_extras = []
+      branch.stack.push({ state_id, node_index })
+      match token.external_scanner_state {
+        Some(state) => branch.last_external_scanner_state = state
+        None => ()
+      }
+      branch.current_byte = token.end_byte
+      branch.current_point = token.end_point
+      branch.lookahead = None
+      None
+    }
+    @tables.GeneratedParseAction::ShiftExtra => {
+      let top_state = match branch.stack.last() {
+        Some(top) => top.state_id
+        None => raise ParseError::ParseStackUnderflow
+      }
+      let node_index = push_parser_node(branch.nodes, branch.leading_extras, {
+        ..node_data_for_symbol(
+          language,
+          token.symbol_id,
+          token.start_byte,
+          token.end_byte,
+          token.start_point,
+          token.end_point,
+          external_scanner_state=token.external_scanner_state,
+          external_scanner_state_changed=token.external_scanner_state_changed,
+          external_scanner_depends_on_column=token.external_scanner_depends_on_column,
+          lookahead_byte_count=token.lookahead_byte_count,
+          parse_state=Some(state_id_from_int(top_state)),
+          next_parse_state=Some(state_id_from_int(top_state)),
+        ),
+        extra: true,
+      })
+      branch.pending_extras.push(node_index)
+      match token.external_scanner_state {
+        Some(state) => branch.last_external_scanner_state = state
+        None => ()
+      }
+      branch.current_byte = token.end_byte
+      branch.current_point = token.end_point
+      branch.lookahead = None
+      None
+    }
+    @tables.GeneratedParseAction::Recover =>
+      if token.symbol_id == 0 && token.end_byte <= token.start_byte {
+        push_empty_recovered_error_node(
+          language,
+          branch.nodes,
+          branch.leading_extras,
+          branch.stack,
+          token.start_byte,
+          token.start_point,
+          logger=None,
+        )
+        branch.parse_has_error = true
+        None
+      } else {
+        match
+          try_skip_unexpected_token(
+            language,
+            input,
+            encoding~,
+            decode_callback~,
+            chunk_end_offsets~,
+            branch.nodes,
+            branch.leading_extras,
+            branch.pending_extras,
+            token,
+            logger=None,
+          ) {
+          Some((next_byte, next_point)) => {
+            match token.external_scanner_state {
+              Some(state) => branch.last_external_scanner_state = state
+              None => ()
+            }
+            branch.current_byte = next_byte
+            branch.current_point = next_point
+            branch.lookahead = None
+            branch.parse_has_error = true
+            None
+          }
+          None =>
+            raise ParseError::ParseTableError(
+              state_id=state_id_from_int(branch.stack.last().unwrap().state_id),
+              symbol_id=symbol_id_from_int(token.symbol_id),
+            )
+        }
+      }
+    @tables.GeneratedParseAction::Reduce(
+      symbol_id~,
+      child_count~,
+      dynamic_precedence~,
+      production_id~
+    ) => {
+      reduce_stack(
+        language,
+        tables,
+        branch.nodes,
+        branch.leading_extras,
+        branch.stack,
+        symbol_id~,
+        child_count~,
+        dynamic_precedence~,
+        production_id~,
+        force_fragile~,
+        fallback_byte=token.start_byte,
+        fallback_point=token.start_point,
+        trailing_extras=[],
+      )
+      None
+    }
+  }
+}
+
+///|
+fn parse_branch_accept(
+  language : Language,
+  branch : ParseBranchState,
+  included_ranges~ : Array[@api.Range],
+  input~ : Bytes,
+  encoding~ : @api.InputEncoding,
+  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int],
+) -> AcceptedParseBranch raise ParseError {
+  let tree = parser_tree_from_stack(
+    language,
+    branch.nodes,
+    branch.leading_extras,
+    branch.stack,
+    pending_extras=branch.pending_extras,
+    included_ranges~,
+    source_bytes=if decode_callback is None { Some(input) } else { None },
+    source_encoding=encoding,
+    source_chunk_end_offsets=chunk_end_offsets,
+  )
+  let root_index = match branch.stack.last() {
+    Some(top) => top.node_index
+    None => -1
+  }
+  let (error_cost, dynamic_precedence) = if root_index >= 0 &&
+    root_index < branch.nodes.length() {
+    (
+      branch.nodes[root_index].error_cost,
+      branch.nodes[root_index].dynamic_precedence,
+    )
+  } else {
+    (0, 0)
+  }
+  { tree, error_cost, dynamic_precedence, order: branch.order }
+}
+
+///|
+fn parse_branch_clone(
+  branch : ParseBranchState,
+  order~ : Int,
+) -> ParseBranchState {
+  {
+    stack: branch.stack.copy(),
+    nodes: branch.nodes.copy(),
+    leading_extras: copy_leading_extras(branch.leading_extras),
+    pending_extras: branch.pending_extras.copy(),
+    current_byte: branch.current_byte,
+    current_point: branch.current_point,
+    lookahead: branch.lookahead,
+    last_external_scanner_state: branch.last_external_scanner_state,
+    did_insert_missing_token: branch.did_insert_missing_token,
+    parse_has_error: branch.parse_has_error,
+    order,
+  }
+}
+
+///|
+fn parse_branch_outstanding_state(
+  branch : ParseBranchState,
+) -> OutstandingParseState {
+  {
+    stack: branch.stack,
+    nodes: branch.nodes,
+    leading_extras: branch.leading_extras,
+    pending_extras: branch.pending_extras,
+    current_byte: branch.current_byte,
+    current_point: branch.current_point,
+    lookahead: branch.lookahead,
+    last_external_scanner_state: branch.last_external_scanner_state,
+    did_insert_missing_token: branch.did_insert_missing_token,
+    parse_has_error: branch.parse_has_error,
+  }
+}
+
+///|
+fn accepted_branch_prefer(
+  candidate : AcceptedParseBranch,
+  current : AcceptedParseBranch?,
+) -> Bool {
+  match current {
+    Some(current) =>
+      if candidate.error_cost != current.error_cost {
+        candidate.error_cost < current.error_cost
+      } else if candidate.dynamic_precedence != current.dynamic_precedence {
+        candidate.dynamic_precedence > current.dynamic_precedence
+      } else {
+        candidate.order < current.order
+      }
+    None => true
   }
 }
 
@@ -974,6 +1730,111 @@ fn try_insert_missing_token(
 }
 
 ///|
+fn try_insert_missing_token_for_lex_error(
+  language : Language,
+  tables : @tables.ValidatedLanguageTables,
+  input : Bytes,
+  encoding~ : @api.InputEncoding,
+  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int],
+  included_ranges~ : Array[@api.Range],
+  nodes : Array[NodeData],
+  leading_extras : Array[Array[Int]],
+  stack : Array[ParseStackEntry],
+  state_id : Int,
+  current_byte : UInt,
+  current_point : @api.Point,
+  external_scanner_state~ : Bytes,
+  pending_extras : Array[Int],
+  logger~ : Logger?,
+) -> Bool raise ParseError {
+  match tables.lex_mode(state_id_from_int(state_id)) {
+    Some(mode) =>
+      if mode.external_lex_state != 0 &&
+        mode.lex_state == @tables.lex_state_none() {
+        return false
+      }
+    None => ()
+  }
+  for candidate_id in 1..<tables.token_count() {
+    match recovery_shift_state_for_symbol(tables, state_id, candidate_id) {
+      Some(next_state) =>
+        if next_state != 0 &&
+          next_state != state_id &&
+          parse_state_can_lex_current_input(
+            tables,
+            next_state,
+            input,
+            encoding~,
+            decode_callback~,
+            chunk_end_offsets~,
+            current_byte,
+            current_point,
+            included_ranges~,
+            external_scanner_state~,
+          ) {
+          let node_index = push_parser_node(
+            nodes,
+            leading_extras,
+            {
+              ..node_data_for_symbol(
+                language, candidate_id, current_byte, current_byte, current_point,
+                current_point,
+              ),
+              missing: true,
+              has_error: true,
+              error_cost: error_cost_per_missing_tree + error_cost_per_recovery,
+              fragile_left: true,
+              fragile_right: true,
+            },
+            leading=pending_extras,
+          )
+          stack.push({ state_id: next_state, node_index })
+          parser_log(logger, Parse, "insert missing token")
+          return true
+        }
+      None => ()
+    }
+  }
+  false
+}
+
+///|
+fn parse_state_can_lex_current_input(
+  tables : @tables.ValidatedLanguageTables,
+  state_id : Int,
+  input : Bytes,
+  encoding~ : @api.InputEncoding,
+  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int],
+  current_byte : UInt,
+  current_point : @api.Point,
+  included_ranges~ : Array[@api.Range],
+  external_scanner_state~ : Bytes,
+) -> Bool raise ParseError {
+  let result : Result[LexedToken, ParseError] = capture_parser_result(() => {
+    lex_main_token(
+      tables,
+      state_id,
+      input,
+      encoding~,
+      decode_callback~,
+      chunk_end_offsets~,
+      current_byte,
+      current_point,
+      included_ranges~,
+      external_scanner_state~,
+      logger=None,
+    )
+  })
+  match result {
+    Ok(_) => true
+    Err(LexError(_)) => false
+    Err(error) => raise error
+  }
+}
+
+///|
 fn recovery_shift_state_for_symbol(
   tables : @tables.ValidatedLanguageTables,
   state_id : Int,
@@ -1009,7 +1870,32 @@ fn try_reduce_all_potential(
   stack : Array[ParseStackEntry],
   state_id : Int,
   token : LexedToken,
-  trailing_extras : Array[Int],
+  _trailing_extras : Array[Int],
+  logger~ : Logger?,
+) -> Bool raise ParseError {
+  try_reduce_all_potential_at(
+    language,
+    tables,
+    nodes,
+    leading_extras,
+    stack,
+    state_id,
+    fallback_byte=token.start_byte,
+    fallback_point=token.start_point,
+    logger~,
+  )
+}
+
+///|
+fn try_reduce_all_potential_at(
+  language : Language,
+  tables : @tables.ValidatedLanguageTables,
+  nodes : Array[NodeData],
+  leading_extras : Array[Array[Int]],
+  stack : Array[ParseStackEntry],
+  state_id : Int,
+  fallback_byte~ : UInt,
+  fallback_point~ : @api.Point,
   logger~ : Logger?,
 ) -> Bool raise ParseError {
   if tables.token_count() <= 1 {
@@ -1068,9 +1954,9 @@ fn try_reduce_all_potential(
         dynamic_precedence=action.dynamic_precedence,
         production_id=action.production_id,
         force_fragile=true,
-        fallback_byte=token.start_byte,
-        fallback_point=token.start_point,
-        trailing_extras~,
+        fallback_byte~,
+        fallback_point~,
+        trailing_extras=[],
       )
       parser_log(logger, Parse, "reduce all potential")
       true
@@ -1088,6 +1974,102 @@ fn potential_reduce_prefer(
     Some(current) => candidate.symbol_id > current.symbol_id
     None => true
   }
+}
+
+///|
+fn synthetic_extra_reduce_action(
+  tables : @tables.ValidatedLanguageTables,
+  state_id : Int,
+) -> PotentialReduceAction? {
+  let is_extra_state = tables.is_extra_state(state_id_from_int(state_id))
+  let mut selected : PotentialReduceAction? = None
+  match
+    tables.parse_action_list_for_symbol(
+      state_id_from_int(state_id),
+      symbol_id_from_int(0),
+    ) {
+    Some(action_list) =>
+      for action in action_list.actions {
+        match action {
+          @tables.GeneratedParseAction::Reduce(
+            symbol_id~,
+            child_count~,
+            dynamic_precedence~,
+            production_id~
+          ) =>
+            if tables.is_extra_symbol(symbol_id_from_int(symbol_id)) ||
+              is_extra_state {
+              let candidate = {
+                symbol_id,
+                child_count,
+                dynamic_precedence,
+                production_id,
+              }
+              if potential_reduce_prefer(candidate, selected) {
+                selected = Some(candidate)
+              }
+            }
+          _ => ()
+        }
+      }
+    None => ()
+  }
+  selected
+}
+
+///|
+fn reduce_extra_stack(
+  language : Language,
+  tables : @tables.ValidatedLanguageTables,
+  nodes : Array[NodeData],
+  leading_extras : Array[Array[Int]],
+  stack : Array[ParseStackEntry],
+  pending_extras : Array[Int],
+  action~ : PotentialReduceAction,
+  fallback_byte~ : UInt,
+  fallback_point~ : @api.Point,
+  force_fragile~ : Bool,
+) -> Unit raise ParseError {
+  reduce_stack(
+    language,
+    tables,
+    nodes,
+    leading_extras,
+    stack,
+    symbol_id=action.symbol_id,
+    child_count=action.child_count,
+    dynamic_precedence=action.dynamic_precedence,
+    production_id=action.production_id,
+    force_fragile~,
+    fallback_byte~,
+    fallback_point~,
+    trailing_extras=pending_extras,
+  )
+  guard stack.pop() is Some(extra_entry) && extra_entry.node_index >= 0 else {
+    raise ParseError::ParseStackUnderflow
+  }
+  let extra_index = extra_entry.node_index
+  let carried_leading_extras = match leading_extras.get(extra_index) {
+    Some(extras) => extras.copy()
+    None => []
+  }
+  match leading_extras.get(extra_index) {
+    Some(extras) =>
+      while !extras.is_empty() {
+        ignore(extras.pop())
+      }
+    None => ()
+  }
+  while !pending_extras.is_empty() {
+    ignore(pending_extras.pop())
+  }
+  for extra in carried_leading_extras {
+    pending_extras.push(extra)
+  }
+  if extra_index >= 0 && extra_index < nodes.length() {
+    nodes[extra_index] = { ..nodes[extra_index], extra: true }
+  }
+  pending_extras.push(extra_index)
 }
 
 ///|
@@ -1142,6 +2124,77 @@ fn try_skip_unexpected_token(
     logger~,
   )
   Some((token.end_byte, token.end_point))
+}
+
+///|
+fn try_synchronize_stack_to_root(
+  language : Language,
+  tables : @tables.ValidatedLanguageTables,
+  nodes : Array[NodeData],
+  leading_extras : Array[Array[Int]],
+  stack : Array[ParseStackEntry],
+  pending_extras : Array[Int],
+  token : LexedToken,
+  logger~ : Logger?,
+) -> Bool {
+  if stack.length() <= 1 {
+    return false
+  }
+  let root = stack[0]
+  if tables.parse_action_list_for_symbol(
+      state_id_from_int(root.state_id),
+      symbol_id_from_int(token.symbol_id),
+    )
+    is None {
+    return false
+  }
+  let children : Array[Int] = []
+  for i in 1..<stack.length() {
+    let node_index = stack[i].node_index
+    if node_index >= 0 {
+      children.push(node_index)
+    }
+  }
+  if children.is_empty() {
+    return false
+  }
+  let (start_byte, end_byte, start_point, end_point) = reduced_range(
+    nodes,
+    children,
+    fallback_byte=token.start_byte,
+    fallback_point=token.start_point,
+  )
+  let error_index = push_parser_node(
+    nodes,
+    leading_extras,
+    {
+      ..error_node_data(
+        language,
+        start_byte,
+        end_byte,
+        start_point,
+        end_point,
+        error_cost=node_children_error_cost(nodes, children) +
+          recovered_error_cost(start_byte, end_byte, start_point, end_point),
+      ),
+      children,
+    },
+    leading=pending_extras,
+  )
+  for child in children {
+    if child >= 0 && child < nodes.length() {
+      nodes[child] = { ..nodes[child], parent: error_index }
+    }
+  }
+  while stack.length() > 1 {
+    ignore(stack.pop())
+  }
+  while !pending_extras.is_empty() {
+    ignore(pending_extras.pop())
+  }
+  pending_extras.push(error_index)
+  parser_log(logger, Parse, "synchronize error")
+  true
 }
 
 ///|
@@ -1575,6 +2628,7 @@ fn validate_included_ranges(
 fn parser_tree_from_stack(
   language : Language,
   nodes : Array[NodeData],
+  leading_extras : Array[Array[Int]],
   stack : Array[ParseStackEntry],
   pending_extras? : Array[Int] = [],
   included_ranges~ : Array[@api.Range],
@@ -1585,7 +2639,16 @@ fn parser_tree_from_stack(
   guard stack.last() is Some(top) && top.node_index >= 0 else {
     raise ParseError::ParseStackUnderflow
   }
-  attach_pending_extras_to_root(nodes, top.node_index, pending_extras)
+  let root_leading_extras = match leading_extras.get(top.node_index) {
+    Some(extras) => extras
+    None => []
+  }
+  attach_extras_to_root(
+    nodes,
+    top.node_index,
+    leading_extras=root_leading_extras,
+    trailing_extras=pending_extras,
+  )
   let tree_ranges = if included_ranges.is_empty() {
     [@api.Range::unbounded(start_byte=0, start_point=@api.Point::zero())]
   } else {
@@ -1603,18 +2666,24 @@ fn parser_tree_from_stack(
 }
 
 ///|
-fn attach_pending_extras_to_root(
+fn attach_extras_to_root(
   nodes : Array[NodeData],
   root_index : Int,
-  pending_extras : Array[Int],
+  leading_extras~ : Array[Int],
+  trailing_extras~ : Array[Int],
 ) -> Unit {
-  if pending_extras.is_empty() || root_index < 0 || root_index >= nodes.length() {
+  if (leading_extras.is_empty() && trailing_extras.is_empty()) ||
+    root_index < 0 ||
+    root_index >= nodes.length() {
     return
   }
   let root = nodes[root_index]
-  let children = root.children.copy()
+  let children : Array[Int] = []
+  let mut start_byte = root.start_byte
+  let mut start_point = root.start_point
   let mut end_byte = root.end_byte
   let mut end_point = root.end_point
+  let mut fragile_left = root.fragile_left
   let mut fragile_right = root.fragile_right
   let mut has_error = root.has_error
   let mut has_external_tokens = root.has_external_tokens
@@ -1623,7 +2692,28 @@ fn attach_pending_extras_to_root(
   let mut error_cost = root.error_cost
   let mut dynamic_precedence = root.dynamic_precedence
   let mut lookahead_byte_count = root.lookahead_byte_count
-  for extra in pending_extras {
+  for extra in leading_extras {
+    if extra >= 0 && extra < nodes.length() {
+      children.push(extra)
+      set_extra_child_metadata(nodes, extra, root_index)
+      let extra_node = nodes[extra]
+      start_byte = extra_node.start_byte
+      start_point = extra_node.start_point
+      fragile_left = extra_node.fragile_left
+      has_error = has_error || extra_node.has_error || extra_node.is_error
+      has_external_tokens = has_external_tokens ||
+        extra_node.has_external_tokens
+      has_external_scanner_state_change = has_external_scanner_state_change ||
+        extra_node.has_external_scanner_state_change
+      depends_on_column = depends_on_column || extra_node.depends_on_column
+      error_cost += extra_node.error_cost
+      dynamic_precedence += extra_node.dynamic_precedence
+    }
+  }
+  for child in root.children {
+    children.push(child)
+  }
+  for extra in trailing_extras {
     if extra >= 0 && extra < nodes.length() {
       children.push(extra)
       set_extra_child_metadata(nodes, extra, root_index)
@@ -1659,8 +2749,11 @@ fn attach_pending_extras_to_root(
   nodes[root_index] = {
     ..root,
     children,
+    start_byte,
+    start_point,
     end_byte,
     end_point,
+    fragile_left,
     fragile_right,
     has_error,
     has_external_tokens,
@@ -1703,16 +2796,25 @@ fn reduce_stack(
   }
   let children : Array[Int] = []
   let extra_children : Array[Int] = []
+  let parent_leading_extras : Array[Int] = []
+  let mut saw_leading_anchor = false
   for child in structural_children {
     match leading_extras.get(child) {
       Some(extras) =>
         for extra in extras {
-          children.push(extra)
-          extra_children.push(extra)
+          if !saw_leading_anchor {
+            parent_leading_extras.push(extra)
+          } else {
+            children.push(extra)
+            extra_children.push(extra)
+          }
         }
       None => ()
     }
     children.push(child)
+    if node_blocks_parent_leading_extras(nodes, child) {
+      saw_leading_anchor = true
+    }
   }
   for extra in trailing_extras {
     children.push(extra)
@@ -1763,28 +2865,33 @@ fn reduce_stack(
   } else {
     Some(next_state)
   }
-  let parent_index = push_parser_node(nodes, leading_extras, {
-    ..node_data_for_symbol(
-      language,
-      symbol_id,
-      start_byte,
-      end_byte,
-      start_point,
-      end_point,
-      children~,
-      parse_state~,
-      next_parse_state~,
-      dynamic_precedence~,
-      lookahead_byte_count~,
-      has_external_tokens~,
-      external_scanner_state_changed=has_external_scanner_state_change,
-      external_scanner_depends_on_column=depends_on_column,
-      fragile_left~,
-      fragile_right~,
-    ),
-    has_error,
-    error_cost,
-  })
+  let parent_index = push_parser_node(
+    nodes,
+    leading_extras,
+    {
+      ..node_data_for_symbol(
+        language,
+        symbol_id,
+        start_byte,
+        end_byte,
+        start_point,
+        end_point,
+        children~,
+        parse_state~,
+        next_parse_state~,
+        dynamic_precedence~,
+        lookahead_byte_count~,
+        has_external_tokens~,
+        external_scanner_state_changed=has_external_scanner_state_change,
+        external_scanner_depends_on_column=depends_on_column,
+        fragile_left~,
+        fragile_right~,
+      ),
+      has_error,
+      error_cost,
+    },
+    leading=parent_leading_extras,
+  )
   for extra in extra_children {
     set_extra_child_metadata(nodes, extra, parent_index)
   }
@@ -1802,6 +2909,17 @@ fn reduce_stack(
     state_id: next_state.value().reinterpret_as_int(),
     node_index: parent_index,
   })
+}
+
+///|
+fn node_blocks_parent_leading_extras(
+  nodes : Array[NodeData],
+  child : Int,
+) -> Bool {
+  if child < 0 || child >= nodes.length() {
+    return false
+  }
+  nodes[child].end_byte > nodes[child].start_byte
 }
 
 ///|
@@ -2133,7 +3251,7 @@ fn node_data_for_symbol(
     start_point~,
     end_point~,
     children~,
-    visible=symbol_type_is_visible(symbol_type),
+    visible=symbol_is_visible(kind, symbol_type),
     alias_visible=default_alias is Some(_),
     named=default_alias_named(symbol_type, default_alias),
     external_scanner_state~,
@@ -2147,6 +3265,19 @@ fn node_data_for_symbol(
     fragile_left~,
     fragile_right~,
   )
+}
+
+///|
+fn symbol_is_visible(kind : String, symbol_type : @api.SymbolType?) -> Bool {
+  symbol_type_is_visible(symbol_type) && !symbol_name_has_hidden_prefix(kind)
+}
+
+///|
+fn symbol_name_has_hidden_prefix(kind : String) -> Bool {
+  match kind.get_char(0) {
+    Some('_') => true
+    _ => false
+  }
 }
 
 ///|

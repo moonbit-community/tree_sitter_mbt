@@ -156,6 +156,8 @@ pub(all) struct GeneratedLanguageTables {
   large_parse_table : Array[Array[GeneratedParseTableCell]]
   small_parse_table : Array[GeneratedSmallParseTableRow]
   small_parse_table_map : Array[Int]
+  extra_symbol_ids : Array[Int]
+  extra_state_ids : Array[Int]
   default_aliases : Array[GeneratedDefaultAlias]
   supertype_entries : Array[GeneratedSupertypeEntry]
   reserved_word_sets : Array[GeneratedTokenSet]
@@ -165,7 +167,7 @@ pub(all) struct GeneratedLanguageTables {
   main_lex_tables : Array[GeneratedLexTable]
   keyword_lex_table : GeneratedLexTable?
 } derive(Eq, @debug.Debug)
-pub fn GeneratedLanguageTables::new(name~ : String, abi_version? : Int, metadata? : LanguageMetadata, symbol_count? : Int, alias_count? : Int, token_count? : Int, external_token_count? : Int, state_count? : Int, field_count? : Int, production_id_count? : Int, max_alias_sequence_length? : Int, supertype_count? : Int, main_lex_state_count? : Int, external_lex_state_count? : Int, reserved_word_set_count? : Int, max_reserved_word_set_size? : Int, large_state_count? : Int, keyword_capture_token? : Int?, symbol_names? : Array[String], symbol_types? : Array[@api.SymbolType], public_symbol_map? : Array[Int], alias_symbols? : Array[GeneratedAlias], non_terminal_aliases? : Array[GeneratedNonTerminalAliasEntry], field_names? : Array[String], lex_modes? : Array[GeneratedLexMode], primary_state_ids? : Array[Int], parse_action_lists? : Array[GeneratedParseActionList], large_parse_table? : Array[Array[GeneratedParseTableCell]], small_parse_table? : Array[GeneratedSmallParseTableRow], small_parse_table_map? : Array[Int], default_aliases? : Array[GeneratedDefaultAlias], supertype_entries? : Array[GeneratedSupertypeEntry], reserved_word_sets? : Array[GeneratedTokenSet], external_lex_states? : Array[GeneratedExternalLexState], external_scanner? : ExternalScannerDescriptor, production_infos? : Array[GeneratedProductionInfo], main_lex_tables? : Array[GeneratedLexTable], keyword_lex_table? : GeneratedLexTable?) -> Self
+pub fn GeneratedLanguageTables::new(name~ : String, abi_version? : Int, metadata? : LanguageMetadata, symbol_count? : Int, alias_count? : Int, token_count? : Int, external_token_count? : Int, state_count? : Int, field_count? : Int, production_id_count? : Int, max_alias_sequence_length? : Int, supertype_count? : Int, main_lex_state_count? : Int, external_lex_state_count? : Int, reserved_word_set_count? : Int, max_reserved_word_set_size? : Int, large_state_count? : Int, keyword_capture_token? : Int?, symbol_names? : Array[String], symbol_types? : Array[@api.SymbolType], public_symbol_map? : Array[Int], alias_symbols? : Array[GeneratedAlias], non_terminal_aliases? : Array[GeneratedNonTerminalAliasEntry], field_names? : Array[String], lex_modes? : Array[GeneratedLexMode], primary_state_ids? : Array[Int], parse_action_lists? : Array[GeneratedParseActionList], large_parse_table? : Array[Array[GeneratedParseTableCell]], small_parse_table? : Array[GeneratedSmallParseTableRow], small_parse_table_map? : Array[Int], extra_symbol_ids? : Array[Int], extra_state_ids? : Array[Int], default_aliases? : Array[GeneratedDefaultAlias], supertype_entries? : Array[GeneratedSupertypeEntry], reserved_word_sets? : Array[GeneratedTokenSet], external_lex_states? : Array[GeneratedExternalLexState], external_scanner? : ExternalScannerDescriptor, production_infos? : Array[GeneratedProductionInfo], main_lex_tables? : Array[GeneratedLexTable], keyword_lex_table? : GeneratedLexTable?) -> Self
 
 pub(all) struct GeneratedLexMode {
   lex_state : Int
@@ -278,6 +280,8 @@ pub fn ValidatedLanguageTables::field_count(Self) -> Int
 pub fn ValidatedLanguageTables::field_id_for_name(Self, String) -> @api.FieldId?
 pub fn ValidatedLanguageTables::field_name_for_id(Self, @api.FieldId) -> String?
 pub fn ValidatedLanguageTables::goto_state_for_symbol(Self, @api.StateId, @api.SymbolId) -> @api.StateId?
+pub fn ValidatedLanguageTables::is_extra_state(Self, @api.StateId) -> Bool
+pub fn ValidatedLanguageTables::is_extra_symbol(Self, @api.SymbolId) -> Bool
 pub fn ValidatedLanguageTables::keyword_capture_token(Self) -> @api.SymbolId?
 pub fn ValidatedLanguageTables::keyword_lex_table(Self) -> GeneratedLexTable?
 pub fn ValidatedLanguageTables::large_parse_table_cell(Self, @api.StateId, @api.SymbolId) -> GeneratedParseTableCell?

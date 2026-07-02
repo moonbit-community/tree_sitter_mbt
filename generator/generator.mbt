@@ -102,6 +102,8 @@ pub fn generate_language(
     raise GenerateError::UnsupportedAbi(options.abi_version)
   }
   validate_import_aliases(options)
+  validate_start_rule_visibility(grammar)
+  validate_nullable_non_start_rules(grammar)
   validate_precedences(grammar)
   validate_indirect_recursion(grammar)
   let interned = intern_symbols(grammar)
@@ -131,6 +133,9 @@ pub fn generate_language(
   let builder = build_parse_item_set_builder(prepared, symbol_sets)
   let graph = build_parse_state_graph(builder)
   let parse_table = build_parse_table_draft(builder, graph)
+  if grammar.conflicts.is_empty() {
+    validate_no_unresolved_parse_conflicts(prepared, parse_table)
+  }
   let _ = parse_table_draft_weight(parse_table)
   let _ = character_set_smoke_weight()
   let _ = regex_parser_smoke_weight()
@@ -206,6 +211,8 @@ fn generated_language_tables_from_draft(
     large_parse_table=generated_large_parse_table(parse_table),
     small_parse_table=generated_small_parse_table(parse_table),
     small_parse_table_map=parse_table.layout.small_state_offsets.copy(),
+    extra_symbol_ids=generated_extra_symbol_ids(grammar, parse_table),
+    extra_state_ids=parse_table.nonterminal_extra_state_ids.copy(),
     default_aliases=generated_default_aliases(grammar, parse_table),
     supertype_entries=generated_supertype_entries(grammar, parse_table),
     reserved_word_sets=generated_reserved_word_sets(parse_table),
@@ -403,6 +410,21 @@ fn generated_default_aliases(
     )
   }
   aliases
+}
+
+///|
+fn generated_extra_symbol_ids(
+  grammar : PreparedGrammar,
+  parse_table : ParseTableDraft,
+) -> Array[Int] {
+  let result : Array[Int] = []
+  for symbol in grammar.syntax.extra_symbols {
+    let id = parse_table_symbol_id_for_internal(parse_table, symbol)
+    if id >= 0 {
+      result.push(id)
+    }
+  }
+  result
 }
 
 ///|
@@ -1782,7 +1804,7 @@ fn flatten_grammar(grammar : ExtractedGrammar) -> FlattenedGrammar {
       kind: variable.kind,
       productions: flatten_rule(
         variable.rule,
-        flatten_context_default(),
+        flatten_context_default(grammar.syntax.reserved_sets),
         true,
         grammar.syntax.reserved_sets,
       ),
@@ -1807,7 +1829,9 @@ fn flatten_grammar(grammar : ExtractedGrammar) -> FlattenedGrammar {
 }
 
 ///|
-fn flatten_context_default() -> FlattenContext {
+fn flatten_context_default(
+  reserved_sets : Array[ExtractedReservedSet],
+) -> FlattenContext {
   {
     alias_name: None,
     alias_named: false,
@@ -1815,8 +1839,17 @@ fn flatten_context_default() -> FlattenContext {
     precedence: None,
     associativity: Associativity::NoAssociativity,
     dynamic_precedence: 0,
-    reserved_word_set_id: 0,
+    reserved_word_set_id: default_reserved_set_id(reserved_sets),
   }
+}
+
+///|
+fn default_reserved_set_id(sets : Array[ExtractedReservedSet]) -> Int {
+  let none_id = reserved_set_id(sets, "none")
+  if none_id != 0 || (sets.length() > 0 && sets[0].name == "none") {
+    return none_id
+  }
+  reserved_set_id(sets, "global")
 }
 
 ///|
@@ -2294,6 +2327,21 @@ fn expand_repeats_in_rule(
         content, current_name, base_variables, auxiliary_variables, repeat_symbols,
         repeat_counts,
       )
+      InternedRule::IRChoice([
+        InternedRule::IRSymbol(
+          repeat_symbol(
+            inner, current_name, base_variables, auxiliary_variables, repeat_symbols,
+            repeat_counts,
+          ),
+        ),
+        InternedRule::IRBlank,
+      ])
+    }
+    IRRepeat1(content) => {
+      let inner = expand_repeats_in_rule(
+        content, current_name, base_variables, auxiliary_variables, repeat_symbols,
+        repeat_counts,
+      )
       InternedRule::IRSymbol(
         repeat_symbol(
           inner, current_name, base_variables, auxiliary_variables, repeat_symbols,
@@ -2301,13 +2349,6 @@ fn expand_repeats_in_rule(
         ),
       )
     }
-    IRRepeat1(content) =>
-      InternedRule::IRRepeat1(
-        expand_repeats_in_rule(
-          content, current_name, base_variables, auxiliary_variables, repeat_symbols,
-          repeat_counts,
-        ),
-      )
     IRField(name~, content~) =>
       InternedRule::IRField(
         name~,
@@ -2524,22 +2565,21 @@ fn extract_tokens(
   let replacements : Array[(InternalSymbol, InternalSymbol)] = []
   let initial_variables : Array[InternedVariable] = []
   for variable in grammar.variables {
+    let is_start = is_start_symbol(variable.symbol, grammar.start_symbol)
     let default_kind = start_rule_lexical_default_kind(
       variable.rule,
       variable.kind,
-      is_start=is_start_symbol(variable.symbol, grammar.start_symbol),
+      is_start~,
     )
     let rule = extract_tokens_in_rule(
       variable.rule,
       lexical_variables,
       variable.name,
       default_kind,
+      top_level=true,
     )
     match rule {
-      IRSymbol(Terminal(_)) if !is_start_symbol(
-          variable.symbol,
-          grammar.start_symbol,
-        ) => {
+      IRSymbol(Terminal(_)) if !is_start => {
         if contains_internal_symbol(grammar.supertype_symbols, variable.symbol) {
           raise GenerateError::TerminalSupertype(variable.name)
         }
@@ -2548,6 +2588,7 @@ fn extract_tokens(
             terminal,
             variable.kind,
             lexical_variables,
+            is_start~,
           ) {
           lexical_renames.push((terminal, variable.name, variable.kind))
         }
@@ -2563,21 +2604,22 @@ fn extract_tokens(
     }
   }
 
-  let variables : Array[InternedVariable] = []
-  for variable in initial_variables {
-    variables.push({
-      symbol: variable.symbol,
-      name: variable.name,
-      kind: variable.kind,
-      rule: replace_symbols_in_rule(variable.rule, replacements),
-    })
-  }
+  let variables = extracted_syntax_variables_with_placeholders(
+    grammar.variables,
+    initial_variables,
+    replacements,
+  )
   let external_tokens = extract_external_tokens(
     grammar.external_tokens,
     replacements,
     lexical_variables,
   )
   let extras = extract_extras(grammar.extras, replacements, lexical_variables)
+  let reserved_sets = extract_reserved_sets(
+    grammar.reserved_sets,
+    replacements,
+    lexical_variables,
+  )
   {
     syntax: {
       name: grammar.name,
@@ -2592,7 +2634,7 @@ fn extract_tokens(
       ),
       precedence_orderings: grammar.precedence_orderings,
       word_symbol: replace_optional_symbol(grammar.word_symbol, replacements),
-      reserved_sets: replace_reserved_sets(grammar.reserved_sets, replacements),
+      reserved_sets,
       supertype_symbols: replace_symbol_array(
         grammar.supertype_symbols,
         replacements,
@@ -2603,6 +2645,47 @@ fn extract_tokens(
       separators: extras.separators,
     },
   }
+}
+
+///|
+fn extracted_syntax_variables_with_placeholders(
+  original_variables : Array[InternedVariable],
+  retained_variables : Array[InternedVariable],
+  replacements : Array[(InternalSymbol, InternalSymbol)],
+) -> Array[InternedVariable] {
+  let variables : Array[InternedVariable] = []
+  for original in original_variables {
+    match find_retained_variable(retained_variables, original.symbol) {
+      Some(variable) =>
+        variables.push({
+          symbol: variable.symbol,
+          name: variable.name,
+          kind: variable.kind,
+          rule: replace_symbols_in_rule(variable.rule, replacements),
+        })
+      None =>
+        variables.push({
+          symbol: original.symbol,
+          name: original.name,
+          kind: VariableKind::Auxiliary,
+          rule: InternedRule::IRChoice([]),
+        })
+    }
+  }
+  variables
+}
+
+///|
+fn find_retained_variable(
+  variables : Array[InternedVariable],
+  symbol : InternalSymbol,
+) -> InternedVariable? {
+  for variable in variables {
+    if variable.symbol == symbol {
+      return Some(variable)
+    }
+  }
+  None
 }
 
 ///|
@@ -2639,7 +2722,11 @@ fn should_transfer_lexical_name(
   symbol : InternalSymbol,
   syntax_kind : VariableKind,
   lexical_variables : Array[LexicalVariable],
+  is_start~ : Bool,
 ) -> Bool {
+  if is_start {
+    return false
+  }
   match symbol {
     Terminal(index) =>
       if index >= 0 && index < lexical_variables.length() {
@@ -2702,14 +2789,20 @@ fn extract_tokens_in_rule(
   lexical_variables : Array[LexicalVariable],
   default_name : String,
   default_kind : VariableKind,
+  top_level? : Bool = false,
 ) -> InternedRule {
   if is_direct_lexical_rule(rule) {
+    let token_kind = if top_level {
+      lexical_rule_kind(rule, default_kind)
+    } else {
+      lexical_rule_kind(rule, VariableKind::Anonymous)
+    }
     return InternedRule::IRSymbol(
       find_or_create_lexical_variable(
         lexical_variables,
         rule,
         lexical_rule_name(rule, default_name, lexical_variables.length()),
-        lexical_rule_kind(rule, default_kind),
+        token_kind,
       ),
     )
   }
@@ -2828,6 +2921,7 @@ fn lexical_rule_name(
 ) -> String {
   match rule {
     IRString(value) => value
+    IRToken(IRString(value)) | IRImmediateToken(IRString(value)) => value
     _ =>
       if default_name.is_empty() {
         "_token\{fallback_index}"
@@ -2897,6 +2991,7 @@ fn extract_external_tokens(
       lexical_variables,
       token.name,
       token.kind,
+      top_level=true,
     )
     let rule = replace_symbols_in_rule(extracted, replacements)
     let corresponding_internal_token = match rule {
@@ -2983,16 +3078,24 @@ fn replace_symbol_matrix(
 }
 
 ///|
-fn replace_reserved_sets(
+fn extract_reserved_sets(
   sets : Array[InternedReservedSet],
   replacements : Array[(InternalSymbol, InternalSymbol)],
+  lexical_variables : Array[LexicalVariable],
 ) -> Array[ExtractedReservedSet] {
   let result : Array[ExtractedReservedSet] = []
   for set in sets {
-    result.push({
-      name: set.name,
-      rules: replace_symbols_in_rule_array(set.rules, replacements),
-    })
+    let rules : Array[InternedRule] = []
+    for rule in set.rules {
+      let extracted = extract_tokens_in_rule(
+        rule,
+        lexical_variables,
+        "",
+        VariableKind::Anonymous,
+      )
+      rules.push(replace_symbols_in_rule(extracted, replacements))
+    }
+    result.push({ name: set.name, rules })
   }
   result
 }
@@ -3328,6 +3431,102 @@ fn variable_kind(name : String, supertypes : Array[String]) -> VariableKind {
 fn has_hidden_prefix(name : String) -> Bool {
   let chars = name.to_array()
   chars.length() > 0 && chars[0] == '_'
+}
+
+///|
+fn validate_start_rule_visibility(
+  grammar : @grammar.InputGrammar,
+) -> Unit raise GenerateError {
+  match grammar.start_rule {
+    Some(name) =>
+      if has_hidden_prefix(name) {
+        raise GenerateError::InvalidGrammar(
+          "start rule `\{name}` must be visible",
+        )
+      }
+    None => ()
+  }
+}
+
+///|
+fn validate_nullable_non_start_rules(
+  grammar : @grammar.InputGrammar,
+) -> Unit raise GenerateError {
+  for variable in grammar.rules {
+    if Some(variable.name) == grammar.start_rule {
+      continue
+    }
+    if input_rule_nullable(grammar, variable.rule, visiting=[variable.name]) {
+      raise GenerateError::InvalidGrammar(
+        "rule `\{variable.name}` matches empty string",
+      )
+    }
+  }
+}
+
+///|
+fn input_rule_nullable(
+  grammar : @grammar.InputGrammar,
+  rule : @grammar.Rule,
+  visiting~ : Array[String],
+) -> Bool {
+  match rule {
+    Blank => true
+    String(_) | Pattern(_) => false
+    Symbol(name) => {
+      if contains_string(visiting, name) {
+        return false
+      }
+      match input_grammar_rule_for_name(grammar, name) {
+        Some(nested) => {
+          let next_visiting = visiting.copy()
+          next_visiting.push(name)
+          input_rule_nullable(grammar, nested.rule, visiting=next_visiting)
+        }
+        None => false
+      }
+    }
+    Seq(members) => {
+      for part in members {
+        if !input_rule_nullable(grammar, part, visiting~) {
+          return false
+        }
+      }
+      true
+    }
+    Choice(members) => {
+      for part in members {
+        if input_rule_nullable(grammar, part, visiting~) {
+          return true
+        }
+      }
+      false
+    }
+    Repeat(_) => true
+    Repeat1(content) => input_rule_nullable(grammar, content, visiting~)
+    Alias(content~, ..)
+    | Field(content~, ..)
+    | Prec(content~, ..)
+    | PrecLeft(content~, ..)
+    | PrecRight(content~, ..)
+    | PrecDynamic(content~, ..)
+    | Token(content)
+    | ImmediateToken(content)
+    | Reserved(content~, ..) => input_rule_nullable(grammar, content, visiting~)
+  }
+}
+
+///|
+fn input_grammar_rule_for_name(
+  grammar : @grammar.InputGrammar,
+  name : String,
+) -> @grammar.NamedRule? {
+  for variable in grammar.rules {
+    if variable.name == name {
+      return Some(variable)
+    }
+  }
+  None
 }
 
 ///|

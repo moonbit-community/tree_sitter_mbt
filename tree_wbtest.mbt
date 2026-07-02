@@ -1015,7 +1015,7 @@ test "pending external extras propagate metadata to root" {
       depends_on_column=true,
     ),
   ]
-  attach_pending_extras_to_root(nodes, 0, [2])
+  attach_extras_to_root(nodes, 0, leading_extras=[], trailing_extras=[2])
 
   assert_true(nodes[0].children == [1, 2])
   assert_eq(nodes[0].end_byte, 2)

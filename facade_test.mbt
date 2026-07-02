@@ -2179,6 +2179,80 @@ test "parser prefers higher dynamic precedence among reduce alternatives" {
 }
 
 ///|
+test "parser prefers higher dynamic precedence across shift reduce branches" {
+  let parser = Parser::new()
+  parser.set_language(
+    generated_language_from(
+      (
+        #|{
+        #|  "name": "dynamic_shift_reduce",
+        #|  "rules": {
+        #|    "program": {
+        #|      "type": "CHOICE",
+        #|      "members": [
+        #|        { "type": "SYMBOL", "name": "declaration" },
+        #|        { "type": "SYMBOL", "name": "expression" }
+        #|      ]
+        #|    },
+        #|    "expression": {
+        #|      "type": "CHOICE",
+        #|      "members": [
+        #|        {
+        #|          "type": "PREC_LEFT",
+        #|          "value": 0,
+        #|          "content": {
+        #|            "type": "SEQ",
+        #|            "members": [
+        #|              { "type": "SYMBOL", "name": "expression" },
+        #|              { "type": "STRING", "value": "*" },
+        #|              { "type": "SYMBOL", "name": "expression" }
+        #|            ]
+        #|          }
+        #|        },
+        #|        { "type": "SYMBOL", "name": "identifier" }
+        #|      ]
+        #|    },
+        #|    "declaration": {
+        #|      "type": "SEQ",
+        #|      "members": [
+        #|        { "type": "SYMBOL", "name": "type" },
+        #|        { "type": "SYMBOL", "name": "declarator" }
+        #|      ]
+        #|    },
+        #|    "declarator": {
+        #|      "type": "CHOICE",
+        #|      "members": [
+        #|        {
+        #|          "type": "PREC_DYNAMIC",
+        #|          "value": 1,
+        #|          "content": {
+        #|            "type": "SEQ",
+        #|            "members": [
+        #|              { "type": "STRING", "value": "*" },
+        #|              { "type": "SYMBOL", "name": "identifier" }
+        #|            ]
+        #|          }
+        #|        },
+        #|        { "type": "SYMBOL", "name": "identifier" }
+        #|      ]
+        #|    },
+        #|    "type": { "type": "SYMBOL", "name": "identifier" },
+        #|    "identifier": { "type": "PATTERN", "value": "[a-z-A-Z]+" }
+        #|  },
+        #|  "extras": [{ "type": "PATTERN", "value": "\\s" }],
+        #|  "conflicts": [["expression", "type"]]
+        #|}
+      ),
+    ),
+  )
+  let tree = parser.parse_bytes(b"T * x")
+  assert_eq(
+    tree.to_sexp(),
+    "(program (declaration (type (identifier)) (declarator (identifier))))",
+  )
+}
+
+///|
 test "parser skips lexed unexpected token before reducing" {
   let logs : Array[String] = []
   let parser = Parser::new()
@@ -6168,6 +6242,67 @@ test "parser omits inlined named helper rules" {
   let root = tree.root_node()
   assert_eq(root.child_count(), 2)
   assert_eq(root.named_child_count(), 0)
+}
+
+///|
+test "parser generated repeat1 accepts multiple items" {
+  let parser = Parser::new()
+  parser.set_language(
+    generated_language_from(
+      (
+        #|{
+        #|  "name": "repeat1_items",
+        #|  "rules": {
+        #|    "document": {
+        #|      "type": "REPEAT1",
+        #|      "content": { "type": "SYMBOL", "name": "item" }
+        #|    },
+        #|    "item": { "type": "STRING", "value": "a" }
+        #|  }
+        #|}
+      ),
+    ),
+  )
+
+  let tree = parser.parse_bytes(b"aa")
+  assert_eq(tree.to_sexp(), "(document (item) (item))")
+}
+
+///|
+test "parser inserts missing token before unlexable next sibling" {
+  let parser = Parser::new()
+  parser.set_language(
+    generated_language_from(
+      (
+        #|{
+        #|  "name": "next_sibling_from_zwt",
+        #|  "rules": {
+        #|    "source": {
+        #|      "type": "SEQ",
+        #|      "members": [
+        #|        { "type": "STRING", "value": "a" },
+        #|        { "type": "SYMBOL", "name": "_bc" },
+        #|        { "type": "STRING", "value": "d" },
+        #|        { "type": "STRING", "value": "e" },
+        #|        { "type": "STRING", "value": "f" }
+        #|      ]
+        #|    },
+        #|    "_bc": {
+        #|      "type": "SEQ",
+        #|      "members": [
+        #|        { "type": "STRING", "value": "b" },
+        #|        { "type": "STRING", "value": "c" }
+        #|      ]
+        #|    }
+        #|  },
+        #|  "extras": [{ "type": "PATTERN", "value": "\\s|\\\\\\r?\\n" }]
+        #|}
+      ),
+    ),
+  )
+
+  let tree = parser.parse_bytes(b"abdef")
+  assert_eq(tree.to_sexp(), "(source (MISSING \"c\"))")
 }
 
 ///|

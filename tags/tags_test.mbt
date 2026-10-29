@@ -230,7 +230,7 @@ test "tags compute trimmed line and utf16 columns" {
   assert_eq(tag.name, "é")
   assert_true(tag.line_range.start_byte == 2U)
   assert_true(tag.line_range.end_byte == 4U)
-  assert_true(tag.utf16_column_range == { start: 2U, end: 3U })
+  assert_true(tag.utf16_column_range == { start: 2U, end: 3U, })
 }
 
 ///|

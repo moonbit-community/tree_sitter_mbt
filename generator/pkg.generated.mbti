@@ -11,7 +11,7 @@ pub fn generate_language(String, options? : GenerateOptions) -> GeneratedLanguag
 
 // Errors
 pub(all) suberror GenerateError {
-  UnsupportedAbi(Int)
+  UnsupportedAbi(Int32)
   InvalidImportAlias(String)
   InvalidGrammar(String)
   UndeclaredPrecedence(String)
@@ -25,12 +25,12 @@ pub(all) suberror GenerateError {
   InvalidInline(String)
   ImproperNonTerminalExtra(String)
   AmbiguousExtra(Array[String])
-  ParseTableValueOutOfRange(kind~ : String, value~ : Int, min~ : Int, max~ : Int)
+  ParseTableValueOutOfRange(kind~ : String, value~ : Int32, min~ : Int32, max~ : Int32)
 } derive(Eq, @debug.Debug)
 
 // Types and methods
 pub(all) struct GenerateOptions {
-  abi_version : Int
+  abi_version : Int32
   language_name : String
   semantic_version : @tables.LanguageMetadata?
   root_alias : String
@@ -50,7 +50,7 @@ pub(all) struct GeneratedLanguage {
   node_types_json : String
   tables : @tables.GeneratedLanguageTables
   language_name : String
-  abi_version : Int
+  abi_version : Int32
   metadata : @tables.LanguageMetadata
   warnings : Array[GenerateWarning]
 } derive(Eq, @debug.Debug)
@@ -63,4 +63,3 @@ pub(all) struct GeneratedSource {
 // Type aliases
 
 // Traits
-

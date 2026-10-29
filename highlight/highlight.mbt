@@ -11,7 +11,7 @@ pub(all) suberror HighlightError {
 
 ///|
 pub(all) enum HighlightEvent {
-  Source(start_byte~ : UInt, end_byte~ : UInt)
+  Source(start_byte~ : UInt32, end_byte~ : UInt32)
   HighlightStart(String)
   HighlightEnd(String)
 } derive(Eq, Debug)
@@ -26,7 +26,7 @@ pub(all) enum HighlightProgressPhase {
 ///|
 pub(all) struct HighlightProgressState {
   phase : HighlightProgressPhase
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
 } derive(Eq, Debug)
 
 ///|
@@ -43,13 +43,13 @@ struct HighlightConfiguration {
   combined_injections_query : @query.Query?
   mut capture_highlight_names : Array[String?]
   non_local_variable_patterns : Array[Bool]
-  local_definition_capture_index : Int?
-  local_definition_value_capture_index : Int?
-  local_reference_capture_index : Int?
-  local_scope_capture_index : Int?
+  local_definition_capture_index : Int32?
+  local_definition_value_capture_index : Int32?
+  local_reference_capture_index : Int32?
+  local_scope_capture_index : Int32?
   local_scope_inherits_patterns : Array[Bool]
-  injection_pattern_start : Int
-  local_pattern_start : Int
+  injection_pattern_start : Int32
+  local_pattern_start : Int32
 }
 
 ///|
@@ -59,34 +59,34 @@ struct Highlighter {
 
 ///|
 priv struct HighlightRange {
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   name : String
-  pattern_index : Int
-  capture_index : Int
-  depth : Int
+  pattern_index : Int32
+  capture_index : Int32
+  depth : Int32
 }
 
 ///|
 priv struct HighlightBoundary {
-  byte : UInt
+  byte : UInt32
   is_end : Bool
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   name : String
-  depth : Int
+  depth : Int32
 }
 
 ///|
 priv struct HighlightInjectionLayer {
   config : HighlightConfiguration
   ranges : Array[@api.Range]
-  depth : Int
+  depth : Int32
 }
 
 ///|
 priv struct HighlightCombinedInjectionGroup {
-  pattern_index : Int
+  pattern_index : Int32
   language_name : String
   config : HighlightConfiguration
   ranges : Array[@api.Range]
@@ -94,23 +94,23 @@ priv struct HighlightCombinedInjectionGroup {
 
 ///|
 priv struct HighlightLocalRange {
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
 }
 
 ///|
 priv struct HighlightLocalDefinition {
-  start_byte : UInt
-  value_end_byte : UInt
+  start_byte : UInt32
+  value_end_byte : UInt32
   name : Bytes
   highlight_name : String?
-  scope_index : Int
+  scope_index : Int32
 }
 
 ///|
 priv struct HighlightLocalScope {
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   inherits : Bool
 }
 
@@ -125,9 +125,9 @@ pub fn HighlightConfiguration::new(
   language : @tree_sitter_mbt.Language,
   language_name : String,
   highlights_query : String,
-  injections_query? : String = "",
-  locals_query? : String = "",
-  highlight_names? : Array[String] = [],
+  injections_query~ : String = "",
+  locals_query~ : String = "",
+  highlight_names~ : Array[String] = [],
 ) -> HighlightConfiguration raise HighlightError {
   let highlight_query = compile_highlight_query(language, highlights_query)
   let injection_query = compile_highlight_query(language, injections_query)
@@ -193,28 +193,28 @@ pub fn HighlightConfiguration::language_name(
 ///|
 pub fn HighlightConfiguration::highlight_pattern_start(
   _self : HighlightConfiguration,
-) -> Int {
+) -> Int32 {
   0
 }
 
 ///|
 pub fn HighlightConfiguration::injection_pattern_start(
   self : HighlightConfiguration,
-) -> Int {
+) -> Int32 {
   self.injection_pattern_start
 }
 
 ///|
 pub fn HighlightConfiguration::local_pattern_start(
   self : HighlightConfiguration,
-) -> Int {
+) -> Int32 {
   self.local_pattern_start
 }
 
 ///|
 pub fn HighlightConfiguration::pattern_count(
   self : HighlightConfiguration,
-) -> Int {
+) -> Int32 {
   self.query.pattern_count()
 }
 
@@ -246,7 +246,7 @@ pub fn HighlightConfiguration::configure(
 ///|
 pub fn HighlightConfiguration::nonconformant_capture_names(
   self : HighlightConfiguration,
-  capture_names? : Array[String] = [],
+  capture_names~ : Array[String] = [],
 ) -> Array[String] {
   let allowed_names = if capture_names.is_empty() {
     standard_highlight_capture_names()
@@ -264,7 +264,7 @@ pub fn HighlightConfiguration::nonconformant_capture_names(
 
 ///|
 pub fn Highlighter::new() -> Highlighter {
-  { marker: true }
+  { marker: true, }
 }
 
 ///|
@@ -272,7 +272,7 @@ pub fn Highlighter::highlight(
   self : Highlighter,
   config : HighlightConfiguration,
   source : Bytes,
-  options? : HighlightOptions = HighlightOptions::default(),
+  options~ : HighlightOptions = HighlightOptions::default(),
 ) -> Array[HighlightEvent] raise HighlightError {
   self.highlight_encoded(config, source, encoding=Utf8, options~)
 }
@@ -282,8 +282,8 @@ pub fn Highlighter::highlight_encoded(
   self : Highlighter,
   config : HighlightConfiguration,
   source : Bytes,
-  encoding? : @api.InputEncoding = Utf8,
-  options? : HighlightOptions = HighlightOptions::default(),
+  encoding~ : @api.InputEncoding = Utf8,
+  options~ : HighlightOptions = HighlightOptions::default(),
 ) -> Array[HighlightEvent] raise HighlightError {
   self.highlight_with_injection_callback(config, source, encoding, options, _ => {
     None
@@ -296,8 +296,8 @@ pub fn Highlighter::highlight_with_injections(
   config : HighlightConfiguration,
   source : Bytes,
   injection_callback : (String) -> HighlightConfiguration?,
-  encoding? : @api.InputEncoding = Utf8,
-  options? : HighlightOptions = HighlightOptions::default(),
+  encoding~ : @api.InputEncoding = Utf8,
+  options~ : HighlightOptions = HighlightOptions::default(),
 ) -> Array[HighlightEvent] raise HighlightError {
   self.highlight_with_injection_callback(
     config, source, encoding, options, injection_callback,
@@ -339,28 +339,28 @@ fn Highlighter::highlight_with_injection_callback(
 ///|
 pub fn HighlightProgressState::new(
   phase~ : HighlightProgressPhase,
-  current_byte_offset~ : UInt,
+  current_byte_offset~ : UInt32,
 ) -> HighlightProgressState {
-  { phase, current_byte_offset }
+  { phase, current_byte_offset, }
 }
 
 ///|
 pub fn HighlightOptions::default() -> HighlightOptions {
-  { cancellation_state: None, progress_callback: None }
+  { cancellation_state: None, progress_callback: None, }
 }
 
 ///|
 pub fn HighlightOptions::cancelled(
   state : HighlightProgressState,
 ) -> HighlightOptions {
-  { cancellation_state: Some(state), progress_callback: None }
+  { cancellation_state: Some(state), progress_callback: None, }
 }
 
 ///|
 pub fn HighlightOptions::progress(
   callback : (HighlightProgressState) -> Bool,
 ) -> HighlightOptions {
-  { cancellation_state: None, progress_callback: Some(callback) }
+  { cancellation_state: None, progress_callback: Some(callback), }
 }
 
 ///|
@@ -368,14 +368,14 @@ pub fn HighlightOptions::with_progress(
   self : HighlightOptions,
   callback : (HighlightProgressState) -> Bool,
 ) -> HighlightOptions {
-  { ..self, progress_callback: Some(callback) }
+  { ..self, progress_callback: Some(callback), }
 }
 
 ///|
 pub fn render_html(
   events : Array[HighlightEvent],
   source : Bytes,
-  encoding? : @api.InputEncoding = Utf8,
+  encoding~ : @api.InputEncoding = Utf8,
 ) -> String raise HighlightError {
   let out = StringBuilder::new()
   for event in events {
@@ -447,7 +447,7 @@ fn collect_highlight_layer(
   options : HighlightOptions,
   injection_callback : (String) -> HighlightConfiguration?,
   parent_config : HighlightConfiguration?,
-  depth : Int,
+  depth : Int32,
   ranges : Array[HighlightRange],
 ) -> Unit raise HighlightError {
   let layer_ranges = collect_highlight_ranges(
@@ -594,7 +594,7 @@ fn classify_highlight_query_predicates(
 
 ///|
 fn highlight_pattern_has_property(
-  pattern_index : Int,
+  pattern_index : Int32,
   key : String,
   settings : Array[@query.QueryPropertySetting],
 ) -> Bool {
@@ -613,7 +613,7 @@ fn collect_highlight_ranges(
   encoding : @api.InputEncoding,
   root : @tree_sitter_mbt.Node,
   options : HighlightOptions,
-  depth : Int,
+  depth : Int32,
 ) -> Array[HighlightRange] raise HighlightError {
   let matches = collect_highlight_query_matches(
     config.query,
@@ -699,7 +699,7 @@ fn collect_highlight_injection_layers(
   options : HighlightOptions,
   injection_callback : (String) -> HighlightConfiguration?,
   parent_config : HighlightConfiguration?,
-  depth : Int,
+  depth : Int32,
 ) -> Array[HighlightInjectionLayer] raise HighlightError {
   let classes = classify_highlight_query_predicates(config.query)
   let matches = collect_highlight_query_matches(
@@ -787,7 +787,7 @@ fn highlight_injection_layer_from_match(
   included_ranges : Array[@api.Range],
   injection_callback : (String) -> HighlightConfiguration?,
   parent_config : HighlightConfiguration?,
-  depth : Int,
+  depth : Int32,
 ) -> HighlightInjectionLayer? {
   let include_children = highlight_injection_include_children(
     matched.pattern_index,
@@ -829,7 +829,7 @@ fn highlight_injection_layer_from_match(
   )
   match injection_config {
     Some(injection_config) =>
-      Some({ config: injection_config, ranges, depth: depth + 1 })
+      Some({ config: injection_config, ranges, depth: depth + 1, })
     None => None
   }
 }
@@ -837,7 +837,7 @@ fn highlight_injection_layer_from_match(
 ///|
 fn add_highlight_combined_injection_group(
   groups : Array[HighlightCombinedInjectionGroup],
-  pattern_index : Int,
+  pattern_index : Int32,
   config : HighlightConfiguration,
   ranges : Array[@api.Range],
 ) -> Unit {
@@ -852,12 +852,12 @@ fn add_highlight_combined_injection_group(
       return
     }
   }
-  groups.push({ pattern_index, language_name, config, ranges })
+  groups.push({ pattern_index, language_name, config, ranges, })
 }
 
 ///|
 fn highlight_injection_include_children(
-  pattern_index : Int,
+  pattern_index : Int32,
   settings : Array[@query.QueryPropertySetting],
 ) -> Bool {
   match
@@ -909,7 +909,7 @@ fn highlight_injection_language_name(
 fn highlight_injection_config(
   config : HighlightConfiguration,
   parent_config : HighlightConfiguration?,
-  pattern_index : Int,
+  pattern_index : Int32,
   settings : Array[@query.QueryPropertySetting],
   language_name : String?,
   injection_callback : (String) -> HighlightConfiguration?,
@@ -937,7 +937,7 @@ fn highlight_injection_config(
 ///|
 fn highlight_capture_text_for_id(
   matched : @query.QueryMatch,
-  capture_id : Int,
+  capture_id : Int32,
   source : Bytes,
   encoding : @api.InputEncoding,
 ) -> String? {
@@ -963,8 +963,8 @@ fn highlight_node_text(
 ///|
 fn highlight_source_text(
   source : Bytes,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
   encoding : @api.InputEncoding,
 ) -> String? {
   highlight_source_text_for_int_range(
@@ -978,8 +978,8 @@ fn highlight_source_text(
 ///|
 fn highlight_source_text_for_int_range(
   source : Bytes,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   encoding : @api.InputEncoding,
 ) -> String? {
   if start < 0 || end < start || end > source.length() {
@@ -1041,7 +1041,7 @@ fn highlight_sanitize_html_class_part(part : StringView) -> String {
 ///|
 fn highlight_html_class_char_is_allowed(char : Char) -> Bool {
   match char {
-    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => true
+    'a'..<='z' | 'A'..<='Z' | '0'..<='9' | '_' | '-' => true
     _ => false
   }
 }
@@ -1186,7 +1186,7 @@ fn highlight_intersect_ranges(
 }
 
 ///|
-fn highlight_range_byte_compare(left : @api.Range, right : @api.Range) -> Int {
+fn highlight_range_byte_compare(left : @api.Range, right : @api.Range) -> Int32 {
   if left.start_byte < right.start_byte {
     -1
   } else if left.start_byte > right.start_byte {
@@ -1202,7 +1202,7 @@ fn highlight_range_byte_compare(left : @api.Range, right : @api.Range) -> Int {
 
 ///|
 fn highlight_match_has_property(
-  pattern_index : Int,
+  pattern_index : Int32,
   key : String,
   settings : Array[@query.QueryPropertySetting],
 ) -> Bool {
@@ -1216,7 +1216,7 @@ fn highlight_match_has_property(
 
 ///|
 fn highlight_property_value_for_pattern(
-  pattern_index : Int,
+  pattern_index : Int32,
   key : String,
   settings : Array[@query.QueryPropertySetting],
 ) -> String? {
@@ -1320,7 +1320,7 @@ fn highlight_text_predicate_matches(
 ///|
 fn highlight_captures_for_id(
   matched : @query.QueryMatch,
-  capture_id : Int,
+  capture_id : Int32,
 ) -> Array[@query.QueryCapture] {
   let result : Array[@query.QueryCapture] = []
   for capture in matched.captures {
@@ -1833,9 +1833,9 @@ fn highlight_decode_utf16(
 ///|
 fn highlight_read_utf16_code_unit(
   source : BytesView,
-  offset : Int,
+  offset : Int32,
   little_endian~ : Bool,
-) -> Int {
+) -> Int32 {
   let first = source[offset].to_int()
   let second = source[offset + 1].to_int()
   if little_endian {
@@ -1880,8 +1880,8 @@ fn highlight_normalize_text_regex(regex : String) -> String {
 ///|
 fn highlight_normalize_regex_class(
   regex : String,
-  start : Int,
-) -> (String, Int) {
+  start : Int32,
+) -> (String, Int32) {
   let class_builder = StringBuilder::new()
   let complements : Array[String] = []
   let mut has_positive_atom = false
@@ -2002,7 +2002,7 @@ fn highlight_write_regex_class_escape(
 }
 
 ///|
-fn highlight_min_int(left : Int, right : Int) -> Int {
+fn highlight_min_int(left : Int32, right : Int32) -> Int32 {
   if left < right {
     left
   } else {
@@ -2047,7 +2047,7 @@ fn add_highlight_capture_range(
   ranges : Array[HighlightRange],
   local_ranges : Array[HighlightLocalRange],
   capture : @query.QueryCapture,
-  depth : Int,
+  depth : Int32,
 ) -> Unit {
   if capture.pattern_index >= config.injection_pattern_start {
     return
@@ -2109,7 +2109,7 @@ fn collect_highlight_local_context(
   config : HighlightConfiguration,
   source : Bytes,
   matches : Array[@query.QueryMatch],
-  depth : Int,
+  depth : Int32,
 ) -> HighlightLocalContext {
   let scopes = collect_highlight_local_scopes(
     config,
@@ -2125,7 +2125,7 @@ fn collect_highlight_local_context(
         let start_byte = capture.node.start_byte()
         let end_byte = capture.node.end_byte()
         if start_byte < end_byte {
-          ranges.push({ start_byte, end_byte })
+          ranges.push({ start_byte, end_byte, })
         }
       }
       if Some(capture.index) == config.local_definition_capture_index {
@@ -2160,17 +2160,17 @@ fn collect_highlight_local_context(
       }
     }
   }
-  { ranges, inherited_ranges }
+  { ranges, inherited_ranges, }
 }
 
 ///|
 fn collect_highlight_local_scopes(
   config : HighlightConfiguration,
-  source_length : UInt,
+  source_length : UInt32,
   matches : Array[@query.QueryMatch],
 ) -> Array[HighlightLocalScope] {
   let scopes : Array[HighlightLocalScope] = [
-    { start_byte: 0U, end_byte: source_length, inherits: true },
+    { start_byte: 0U, end_byte: source_length, inherits: true, },
   ]
   for matched in matches {
     for capture in matched.captures {
@@ -2231,8 +2231,8 @@ fn collect_highlight_local_definition(
 fn highlight_local_definition_value_end(
   config : HighlightConfiguration,
   matched : @query.QueryMatch,
-  fallback_end_byte : UInt,
-) -> UInt {
+  fallback_end_byte : UInt32,
+) -> UInt32 {
   let mut value_end_byte = fallback_end_byte
   for capture in matched.captures {
     if Some(capture.index) == config.local_definition_value_capture_index {
@@ -2245,7 +2245,7 @@ fn highlight_local_definition_value_end(
 ///|
 fn highlight_local_scope_inherits(
   config : HighlightConfiguration,
-  pattern_index : Int,
+  pattern_index : Int32,
 ) -> Bool {
   match config.local_scope_inherits_patterns.get(pattern_index) {
     Some(inherits) => inherits
@@ -2299,9 +2299,9 @@ fn highlight_definition_for_reference(
 ///|
 fn highlight_scope_for_range(
   scopes : Array[HighlightLocalScope],
-  start_byte : UInt,
-  end_byte : UInt,
-) -> Int {
+  start_byte : UInt32,
+  end_byte : UInt32,
+) -> Int32 {
   let mut result = 0
   for index, scope in scopes {
     if highlight_scope_contains(scope, start_byte, end_byte) &&
@@ -2315,10 +2315,10 @@ fn highlight_scope_for_range(
 ///|
 fn highlight_scope_chain_for_range(
   scopes : Array[HighlightLocalScope],
-  start_byte : UInt,
-  end_byte : UInt,
-) -> Array[Int] {
-  let result : Array[Int] = []
+  start_byte : UInt32,
+  end_byte : UInt32,
+) -> Array[Int32] {
+  let result : Array[Int32] = []
   for index, scope in scopes {
     if highlight_scope_contains(scope, start_byte, end_byte) {
       result.push(index)
@@ -2333,8 +2333,8 @@ fn highlight_scope_chain_for_range(
 ///|
 fn highlight_scope_contains(
   scope : HighlightLocalScope,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bool {
   scope.start_byte <= start_byte && end_byte <= scope.end_byte
 }
@@ -2342,9 +2342,9 @@ fn highlight_scope_contains(
 ///|
 fn highlight_scope_index_compare(
   scopes : Array[HighlightLocalScope],
-  left_index : Int,
-  right_index : Int,
-) -> Int {
+  left_index : Int32,
+  right_index : Int32,
+) -> Int32 {
   let left = scopes[left_index]
   let right = scopes[right_index]
   let left_size = left.end_byte - left.start_byte
@@ -2366,8 +2366,8 @@ fn highlight_scope_index_compare(
 fn highlight_best_name_for_range(
   config : HighlightConfiguration,
   matches : Array[@query.QueryMatch],
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
   is_local~ : Bool,
 ) -> String? {
   let mut best : HighlightRange? = None
@@ -2411,8 +2411,8 @@ fn highlight_best_name_for_range(
 ///|
 fn highlight_source_bytes(
   source : Bytes,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bytes {
   source[start_byte.reinterpret_as_int():end_byte.reinterpret_as_int()].to_owned()
 }
@@ -2429,7 +2429,7 @@ fn highlight_capture_is_local(
 ///|
 fn highlight_pattern_is_non_local(
   config : HighlightConfiguration,
-  pattern_index : Int,
+  pattern_index : Int32,
 ) -> Bool {
   match config.non_local_variable_patterns.get(pattern_index) {
     Some(value) => value
@@ -2440,8 +2440,8 @@ fn highlight_pattern_is_non_local(
 ///|
 fn highlight_range_is_local(
   local_ranges : Array[HighlightLocalRange],
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bool {
   for range in local_ranges {
     if range.start_byte == start_byte && range.end_byte == end_byte {
@@ -2478,7 +2478,7 @@ fn highlight_capture_name_map(
 }
 
 ///|
-fn highlight_capture_id(query : @query.Query, capture_name : String) -> Int? {
+fn highlight_capture_id(query : @query.Query, capture_name : String) -> Int32? {
   for capture_id in 0..<query.capture_count() {
     if query.capture_name_for_id(capture_id) == Some(capture_name) {
       return Some(capture_id)
@@ -2489,7 +2489,7 @@ fn highlight_capture_id(query : @query.Query, capture_name : String) -> Int? {
 
 ///|
 fn highlight_non_local_variable_patterns(
-  pattern_count : Int,
+  pattern_count : Int32,
   assertions : Array[@query.QueryPropertyAssertion],
 ) -> Array[Bool] {
   let result : Array[Bool] = []
@@ -2509,7 +2509,7 @@ fn highlight_non_local_variable_patterns(
 
 ///|
 fn highlight_local_scope_inherits_patterns(
-  pattern_count : Int,
+  pattern_count : Int32,
   settings : Array[@query.QueryPropertySetting],
 ) -> Array[Bool] {
   let result : Array[Bool] = []
@@ -2585,9 +2585,9 @@ fn standard_highlight_capture_names() -> Array[String] {
 ///|
 fn find_exact_highlight_range(
   ranges : Array[HighlightRange],
-  start_byte : UInt,
-  end_byte : UInt,
-) -> Int? {
+  start_byte : UInt32,
+  end_byte : UInt32,
+) -> Int32? {
   for index, range in ranges {
     if range.start_byte == start_byte && range.end_byte == end_byte {
       return Some(index)
@@ -2616,7 +2616,7 @@ fn highlight_range_overrides(
 
 ///|
 fn render_highlight_events(
-  source_length : UInt,
+  source_length : UInt32,
   ranges : Array[HighlightRange],
   options : HighlightOptions,
 ) -> Array[HighlightEvent] raise HighlightError {
@@ -2681,7 +2681,7 @@ fn render_highlight_events(
 fn highlight_range_compare(
   left : HighlightRange,
   right : HighlightRange,
-) -> Int {
+) -> Int32 {
   if left.start_byte < right.start_byte {
     -1
   } else if left.start_byte > right.start_byte {
@@ -2707,7 +2707,7 @@ fn highlight_range_compare(
 fn highlight_boundary_compare(
   left : HighlightBoundary,
   right : HighlightBoundary,
-) -> Int {
+) -> Int32 {
   if left.byte < right.byte {
     -1
   } else if left.byte > right.byte {

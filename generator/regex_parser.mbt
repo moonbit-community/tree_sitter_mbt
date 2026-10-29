@@ -1,17 +1,17 @@
 ///|
 priv enum RegexAst {
   RegexEmpty
-  RegexLiteral(UInt)
+  RegexLiteral(UInt32)
   RegexClass(CharacterSet)
   RegexSeq(Array[RegexAst])
   RegexChoice(Array[RegexAst])
-  RegexRepeat(content~ : RegexAst, min~ : Int, max~ : Int?)
+  RegexRepeat(content~ : RegexAst, min~ : Int32, max~ : Int32?)
 }
 
 ///|
 priv struct RegexParser {
   chars : Array[Char]
-  mut index : Int
+  mut index : Int32
 }
 
 ///|
@@ -30,7 +30,7 @@ fn parse_regex(pattern : String) -> Result[RegexAst, String] {
 
 ///|
 fn RegexParser::new(pattern : String) -> RegexParser {
-  { chars: pattern.to_array(), index: 0 }
+  { chars: pattern.to_array(), index: 0, }
 }
 
 ///|
@@ -48,7 +48,7 @@ fn RegexParser::peek(self : RegexParser) -> Char? {
 }
 
 ///|
-fn RegexParser::peek_offset(self : RegexParser, offset : Int) -> Char? {
+fn RegexParser::peek_offset(self : RegexParser, offset : Int32) -> Char? {
   let index = self.index + offset
   if index >= 0 && index < self.chars.length() {
     Some(self.chars[index])
@@ -295,7 +295,7 @@ fn RegexParser::parse_escape_atom(
 
 ///|
 priv enum EscapeValue {
-  EscapeChar(UInt)
+  EscapeChar(UInt32)
   EscapeSet(CharacterSet)
 }
 
@@ -341,7 +341,7 @@ fn RegexParser::parse_escape_set_or_char(
 ///|
 fn RegexParser::parse_unicode_escape(
   self : RegexParser,
-  fixed_digits : Int,
+  fixed_digits : Int32,
 ) -> Result[EscapeValue, String] {
   if self.consume('{') {
     let mut value = 0U
@@ -544,7 +544,7 @@ fn RegexParser::parse_class_atom(
 }
 
 ///|
-fn RegexParser::parse_decimal(self : RegexParser) -> Int? {
+fn RegexParser::parse_decimal(self : RegexParser) -> Int32? {
   let mut value = 0
   let mut digits = 0
   while !self.is_eof() {
@@ -574,12 +574,12 @@ fn is_ascii_digit_char(char : Char) -> Bool {
 }
 
 ///|
-fn digit_value(char : Char) -> Int {
+fn digit_value(char : Char) -> Int32 {
   (char.to_uint() - 48U).reinterpret_as_int()
 }
 
 ///|
-fn hex_value(char : Char) -> UInt? {
+fn hex_value(char : Char) -> UInt32? {
   let value = char.to_uint()
   if 48U <= value && value <= 57U {
     Some(value - 48U)
@@ -641,11 +641,11 @@ fn character_set_unicode_letter() -> CharacterSet {
     character_set_union(
       character_set_unicode_lowercase_letter(),
       character_set_from_ranges([
-        { start: 880U, end: 1023U },
-        { start: 4256U, end: 4351U },
-        { start: 12592U, end: 12687U },
-        { start: 19968U, end: 40959U },
-        { start: 44032U, end: 55203U },
+        { start: 880U, end: 1023U, },
+        { start: 4256U, end: 4351U, },
+        { start: 12592U, end: 12687U, },
+        { start: 19968U, end: 40959U, },
+        { start: 44032U, end: 55203U, },
       ]),
     ),
   )
@@ -654,33 +654,33 @@ fn character_set_unicode_letter() -> CharacterSet {
 ///|
 fn character_set_unicode_uppercase_letter() -> CharacterSet {
   character_set_from_ranges([
-    { start: 65U, end: 90U },
-    { start: 192U, end: 214U },
-    { start: 216U, end: 222U },
-    { start: 346U, end: 346U },
-    { start: 385U, end: 385U },
-    { start: 390U, end: 390U },
-    { start: 391U, end: 391U },
-    { start: 393U, end: 394U },
-    { start: 398U, end: 401U },
-    { start: 404U, end: 404U },
-    { start: 406U, end: 408U },
-    { start: 913U, end: 929U },
-    { start: 931U, end: 939U },
+    { start: 65U, end: 90U, },
+    { start: 192U, end: 214U, },
+    { start: 216U, end: 222U, },
+    { start: 346U, end: 346U, },
+    { start: 385U, end: 385U, },
+    { start: 390U, end: 390U, },
+    { start: 391U, end: 391U, },
+    { start: 393U, end: 394U, },
+    { start: 398U, end: 401U, },
+    { start: 404U, end: 404U, },
+    { start: 406U, end: 408U, },
+    { start: 913U, end: 929U, },
+    { start: 931U, end: 939U, },
   ])
 }
 
 ///|
 fn character_set_unicode_lowercase_letter() -> CharacterSet {
   character_set_from_ranges([
-    { start: 97U, end: 122U },
-    { start: 223U, end: 246U },
-    { start: 248U, end: 255U },
-    { start: 345U, end: 345U },
-    { start: 347U, end: 347U },
-    { start: 357U, end: 357U },
-    { start: 384U, end: 384U },
-    { start: 940U, end: 974U },
+    { start: 97U, end: 122U, },
+    { start: 223U, end: 246U, },
+    { start: 248U, end: 255U, },
+    { start: 345U, end: 345U, },
+    { start: 347U, end: 347U, },
+    { start: 357U, end: 357U, },
+    { start: 384U, end: 384U, },
+    { start: 940U, end: 974U, },
   ])
 }
 
@@ -695,48 +695,48 @@ fn character_set_unicode_number() -> CharacterSet {
 ///|
 fn character_set_unicode_decimal_number() -> CharacterSet {
   character_set_from_ranges([
-    { start: 48U, end: 57U },
-    { start: 1632U, end: 1641U },
-    { start: 1776U, end: 1785U },
-    { start: 2406U, end: 2415U },
-    { start: 65296U, end: 65305U },
+    { start: 48U, end: 57U, },
+    { start: 1632U, end: 1641U, },
+    { start: 1776U, end: 1785U, },
+    { start: 2406U, end: 2415U, },
+    { start: 65296U, end: 65305U, },
   ])
 }
 
 ///|
 fn character_set_unicode_letter_number() -> CharacterSet {
   character_set_from_ranges([
-    { start: 5870U, end: 5872U },
-    { start: 8544U, end: 8584U },
-    { start: 12321U, end: 12329U },
-    { start: 12344U, end: 12346U },
+    { start: 5870U, end: 5872U, },
+    { start: 8544U, end: 8584U, },
+    { start: 12321U, end: 12329U, },
+    { start: 12344U, end: 12346U, },
   ])
 }
 
 ///|
 fn character_set_unicode_math_symbol() -> CharacterSet {
   character_set_from_ranges([
-    { start: 43U, end: 43U },
-    { start: 172U, end: 172U },
-    { start: 177U, end: 177U },
-    { start: 215U, end: 215U },
-    { start: 247U, end: 247U },
-    { start: 8704U, end: 8959U },
-    { start: 10752U, end: 11007U },
+    { start: 43U, end: 43U, },
+    { start: 172U, end: 172U, },
+    { start: 177U, end: 177U, },
+    { start: 215U, end: 215U, },
+    { start: 247U, end: 247U, },
+    { start: 8704U, end: 8959U, },
+    { start: 10752U, end: 11007U, },
   ])
 }
 
 ///|
 fn character_set_unicode_separator() -> CharacterSet {
   character_set_from_ranges([
-    { start: 32U, end: 32U },
-    { start: 160U, end: 160U },
-    { start: 5760U, end: 5760U },
-    { start: 8192U, end: 8202U },
-    { start: 8232U, end: 8233U },
-    { start: 8239U, end: 8239U },
-    { start: 8287U, end: 8287U },
-    { start: 12288U, end: 12288U },
+    { start: 32U, end: 32U, },
+    { start: 160U, end: 160U, },
+    { start: 5760U, end: 5760U, },
+    { start: 8192U, end: 8202U, },
+    { start: 8232U, end: 8233U, },
+    { start: 8239U, end: 8239U, },
+    { start: 8287U, end: 8287U, },
+    { start: 12288U, end: 12288U, },
   ])
 }
 
@@ -751,24 +751,24 @@ fn character_set_unicode_white_space() -> CharacterSet {
 ///|
 fn character_set_unicode_emoji() -> CharacterSet {
   character_set_from_ranges([
-    { start: 35U, end: 35U },
-    { start: 42U, end: 42U },
-    { start: 48U, end: 57U },
-    { start: 169U, end: 169U },
-    { start: 174U, end: 174U },
-    { start: 8252U, end: 8252U },
-    { start: 8265U, end: 8265U },
-    { start: 8482U, end: 8482U },
-    { start: 8505U, end: 8505U },
-    { start: 8986U, end: 8987U },
-    { start: 9193U, end: 9203U },
-    { start: 9208U, end: 9210U },
-    { start: 127744U, end: 129791U },
+    { start: 35U, end: 35U, },
+    { start: 42U, end: 42U, },
+    { start: 48U, end: 57U, },
+    { start: 169U, end: 169U, },
+    { start: 174U, end: 174U, },
+    { start: 8252U, end: 8252U, },
+    { start: 8265U, end: 8265U, },
+    { start: 8482U, end: 8482U, },
+    { start: 8505U, end: 8505U, },
+    { start: 8986U, end: 8987U, },
+    { start: 9193U, end: 9203U, },
+    { start: 9208U, end: 9210U, },
+    { start: 127744U, end: 129791U, },
   ])
 }
 
 ///|
-fn regex_parser_smoke_weight() -> Int {
+fn regex_parser_smoke_weight() -> Int32 {
   match parse_regex("(a|b){1,2}\\d") {
     Ok(ast) => regex_ast_weight(ast)
     Err(message) => message.length()
@@ -824,7 +824,7 @@ fn case_insensitive_character_set(set : CharacterSet) -> CharacterSet {
 }
 
 ///|
-fn case_insensitive_code_point_set(code_point : UInt) -> CharacterSet {
+fn case_insensitive_code_point_set(code_point : UInt32) -> CharacterSet {
   remove_unintentional_long_s(
     character_set_range(code_point, code_point),
     case_insensitive_code_point_set_raw(code_point),
@@ -832,12 +832,12 @@ fn case_insensitive_code_point_set(code_point : UInt) -> CharacterSet {
 }
 
 ///|
-fn case_insensitive_code_point_set_raw(code_point : UInt) -> CharacterSet {
+fn case_insensitive_code_point_set_raw(code_point : UInt32) -> CharacterSet {
   if 65U <= code_point && code_point <= 90U {
     let lower = code_point + 32U
     let set = character_set_from_ranges([
-      { start: code_point, end: code_point },
-      { start: lower, end: lower },
+      { start: code_point, end: code_point, },
+      { start: lower, end: lower, },
     ])
     if code_point == 83U {
       character_set_union(set, character_set_range(383U, 383U))
@@ -846,8 +846,8 @@ fn case_insensitive_code_point_set_raw(code_point : UInt) -> CharacterSet {
     }
   } else if 97U <= code_point && code_point <= 122U {
     let set = character_set_from_ranges([
-      { start: code_point - 32U, end: code_point - 32U },
-      { start: code_point, end: code_point },
+      { start: code_point - 32U, end: code_point - 32U, },
+      { start: code_point, end: code_point, },
     ])
     if code_point == 115U {
       character_set_union(set, character_set_range(383U, 383U))
@@ -856,9 +856,9 @@ fn case_insensitive_code_point_set_raw(code_point : UInt) -> CharacterSet {
     }
   } else if code_point == 383U {
     character_set_from_ranges([
-      { start: 83U, end: 83U },
-      { start: 115U, end: 115U },
-      { start: 383U, end: 383U },
+      { start: 83U, end: 83U, },
+      { start: 115U, end: 115U, },
+      { start: 383U, end: 383U, },
     ])
   } else {
     character_set_range(code_point, code_point)
@@ -882,7 +882,7 @@ fn remove_unintentional_long_s(
 }
 
 ///|
-fn regex_ast_weight(ast : RegexAst) -> Int {
+fn regex_ast_weight(ast : RegexAst) -> Int32 {
   match ast {
     RegexEmpty => 1
     RegexLiteral(value) => value.reinterpret_as_int()

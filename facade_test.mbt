@@ -87,7 +87,7 @@ test "parser accepts same-language old tree with full reparse fallback" {
 }
 
 ///|
-fn facade_range(start_byte : UInt, end_byte : UInt) -> @api.Range {
+fn facade_range(start_byte : UInt32, end_byte : UInt32) -> @api.Range {
   @api.Range::new(
     start_byte~,
     end_byte~,
@@ -97,7 +97,7 @@ fn facade_range(start_byte : UInt, end_byte : UInt) -> @api.Range {
 }
 
 ///|
-fn facade_range_at(start_byte : UInt, end_byte : UInt) -> @api.Range {
+fn facade_range_at(start_byte : UInt32, end_byte : UInt32) -> @api.Range {
   @api.Range::new(
     start_byte~,
     end_byte~,
@@ -2298,7 +2298,7 @@ test "parser attaches recovered lex error before generated missing token" {
 ///|
 fn external_scanner_language(
   scanner : @tables.ExternalScannerDescriptor,
-  main_lex? : Bool = false,
+  main_lex~ : Bool = false,
 ) -> Language raise {
   let token_lex_state = if main_lex { 0 } else { @tables.lex_state_none() }
   let eof_lex_state = if main_lex { 1 } else { 0 }
@@ -2411,7 +2411,7 @@ fn external_scanner_language(
 ///|
 fn external_internal_line_break_language(
   scanner : @tables.ExternalScannerDescriptor,
-  internal_token_name? : String = "line_break",
+  internal_token_name~ : String = "line_break",
 ) -> Language raise {
   language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
@@ -2656,10 +2656,10 @@ fn epsilon_external_then_token_language(
 ///|
 fn utf16_surrogate_scanner_language(
   scanner : @tables.ExternalScannerDescriptor,
-  language_name? : String = "utf16_surrogate_oob",
-  first_token_name? : String = "surrogate",
-  second_token_name? : String = "supplementary",
-  root_name? : String = "program",
+  language_name~ : String = "utf16_surrogate_oob",
+  first_token_name~ : String = "surrogate",
+  second_token_name~ : String = "supplementary",
+  root_name~ : String = "program",
 ) -> Language raise {
   language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
@@ -4176,7 +4176,7 @@ test "parser external scanner context updates eof after advance" {
 
 ///|
 test "parser external scanner mark_end at included range start uses previous range end" {
-  let scan_offsets : Array[UInt] = []
+  let scan_offsets : Array[UInt32] = []
   let parser = Parser::new()
   parser.set_language(
     external_pair_scanner_language(
@@ -4288,7 +4288,7 @@ test "external scanner get_column works at EOF" {
 
 ///|
 test "external scanner repeated get_column after advance is bounded" {
-  let columns : Array[UInt] = []
+  let columns : Array[UInt32] = []
   let parser = Parser::new()
   parser.set_language(
     external_scanner_language(
@@ -4303,7 +4303,7 @@ test "external scanner repeated get_column after advance is bounded" {
   )
   let result = @test.expect_error(() => parser.parse_bytes(b"\nHello"))
   ignore(result)
-  let expected_prefix : Array[UInt] = [0, 1, 2, 3, 4, 5, 5, 5, 5, 5]
+  let expected_prefix : Array[UInt32] = [0, 1, 2, 3, 4, 5, 5, 5, 5, 5]
   assert_true(columns.length() >= expected_prefix.length())
   for i in 0..<expected_prefix.length() {
     assert_eq(columns[i], expected_prefix[i])
@@ -4500,7 +4500,7 @@ test "parser validates external scanner consumed included range bounds" {
 fn scalar_token_language(
   name : String,
   token_name : String,
-  codepoint : Int,
+  codepoint : Int32,
 ) -> Language raise {
   language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
@@ -4599,9 +4599,9 @@ fn scalar_token_language(
 fn scalar_pair_language(
   name : String,
   first_token : String,
-  first_codepoint : Int,
+  first_codepoint : Int32,
   second_token : String,
-  second_codepoint : Int,
+  second_codepoint : Int32,
 ) -> Language raise {
   language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
@@ -5314,8 +5314,8 @@ test "parser parses UTF-8 Input facade" {
 test "parser reads chunked Input callback" {
   let parser = Parser::new()
   parser.set_language(parser_smoke_language())
-  let offsets : Array[UInt] = []
-  let columns : Array[UInt] = []
+  let offsets : Array[UInt32] = []
+  let columns : Array[UInt32] = []
   let input = Input::from_callback((byte, point) => {
     offsets.push(byte)
     columns.push(point.column)
@@ -5334,7 +5334,7 @@ test "parser reads chunked Input callback" {
 ///|
 test "parser checks Input language before reading callback" {
   let parser = Parser::new()
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   let input = Input::from_callback((byte, _point) => {
     offsets.push(byte)
     InputChunk::new(chunk=None, bytes_read=1)
@@ -5366,7 +5366,7 @@ test "parser checks Input old tree before reading callback" {
 
   let parser = Parser::new()
   parser.set_language(parser_smoke_language())
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   let input = Input::from_callback((byte, _point) => {
     offsets.push(byte)
     InputChunk::new(chunk=None, bytes_read=1)
@@ -5385,7 +5385,7 @@ test "parser checks Input old tree before reading callback" {
 test "parser can cancel Input before reading callback" {
   let parser = Parser::new()
   parser.set_language(parser_smoke_language())
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   let input = Input::from_callback((byte, _point) => {
     offsets.push(byte)
     InputChunk::from_bytes(b"a")
@@ -5407,8 +5407,8 @@ test "parser can cancel Input before reading callback" {
 test "parser checks Input progress once at initial byte" {
   let parser = Parser::new()
   parser.set_language(parser_smoke_language())
-  let progress_offsets : Array[UInt] = []
-  let input_offsets : Array[UInt] = []
+  let progress_offsets : Array[UInt32] = []
+  let input_offsets : Array[UInt32] = []
   let input = Input::from_callback((byte, _point) => {
     input_offsets.push(byte)
     if byte == 0 {
@@ -5446,9 +5446,9 @@ test "parser advances Input callback point across newlines" {
   parser.set_language(
     scalar_pair_language("input_callback_newline_point", "newline", 10, "a", 97),
   )
-  let offsets : Array[UInt] = []
-  let rows : Array[UInt] = []
-  let columns : Array[UInt] = []
+  let offsets : Array[UInt32] = []
+  let rows : Array[UInt32] = []
+  let columns : Array[UInt32] = []
   let input = Input::from_callback((byte, point) => {
     offsets.push(byte)
     rows.push(point.row)
@@ -5485,7 +5485,7 @@ test "parser Input resume skips fresh initial progress check" {
     _ => fail("expected progress callback cancellation")
   }
 
-  let resume_offsets : Array[UInt] = []
+  let resume_offsets : Array[UInt32] = []
   let tree = parser.parse(
     Input::from_bytes(b"ab"),
     options=ParseOptions::progress(state => {
@@ -5623,7 +5623,7 @@ test "parser preconfigured cancellation skips external scanner create" {
 test "parser progress callback can cancel during parsing" {
   let parser = Parser::new()
   parser.set_language(scalar_pair_language("progress_cancel", "a", 97, "b", 98))
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   let result = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
@@ -5658,7 +5658,7 @@ test "parser resumes outstanding parse after progress cancellation" {
     _ => fail("expected progress callback cancellation")
   }
 
-  let resume_offsets : Array[UInt] = []
+  let resume_offsets : Array[UInt32] = []
   let tree = parser.parse_bytes(
     b"ab",
     options=ParseOptions::progress(state => {
@@ -5744,7 +5744,7 @@ test "parser preconfigured cancellation preserves outstanding parse state" {
     _ => fail("expected preconfigured cancellation")
   }
 
-  let resume_offsets : Array[UInt] = []
+  let resume_offsets : Array[UInt32] = []
   let tree = parser.parse_bytes(
     b"ab",
     options=ParseOptions::progress(state => {
@@ -5900,8 +5900,8 @@ test "parser maps custom negative code point to decode error sentinel" {
 test "parser advances custom Input callback point by consumed bytes" {
   let parser = Parser::new()
   parser.set_language(parser_smoke_language())
-  let offsets : Array[UInt] = []
-  let columns : Array[UInt] = []
+  let offsets : Array[UInt32] = []
+  let columns : Array[UInt32] = []
   let input = Input::from_custom_callback(
     (byte, point) => {
       offsets.push(byte)
@@ -5927,8 +5927,8 @@ test "parser passes absolute offsets to custom decoder across chunks" {
   parser.set_language(
     scalar_pair_language("custom_decoder_offsets", "a", 97, "b", 98),
   )
-  let read_offsets : Array[UInt] = []
-  let decode_offsets : Array[Int] = []
+  let read_offsets : Array[UInt32] = []
+  let decode_offsets : Array[Int32] = []
   let input = Input::from_custom_callback(
     (byte, _point) => {
       read_offsets.push(byte)
@@ -5989,7 +5989,7 @@ test "parser rejects custom Input without decoder" {
 test "parser rejects custom callback without decoder before reading" {
   let parser = Parser::new()
   parser.set_language(parser_smoke_language())
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   let input = Input::from_callback(
     (byte, _point) => {
       offsets.push(byte)

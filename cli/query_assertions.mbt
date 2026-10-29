@@ -1,7 +1,7 @@
 ///|
 priv struct CliQueryAssertion {
   position : @api.Point
-  length : UInt
+  length : UInt32
   negative : Bool
   expected_capture_name : String
 }
@@ -17,7 +17,7 @@ fn assert_cli_query_captures(
   source : Bytes,
   root : @tree_sitter_mbt.Node,
   captures : Array[CliQueryCaptureInfo],
-) -> Result[Int, String] {
+) -> Result[Int32, String] {
   match parse_cli_query_assertions(source, root) {
     Ok(assertions) => {
       let captures = cli_query_captures_with_utf8_columns(source, captures)
@@ -36,7 +36,7 @@ fn assert_cli_query_captures(
 ///|
 fn render_cli_query_test_success(
   source_name : String?,
-  assertion_count : Int,
+  assertion_count : Int32,
 ) -> String {
   let noun = if assertion_count == 1 { "assertion" } else { "assertions" }
   "\{cli_query_test_source_label(source_name)}\t\{assertion_count} \{noun} passed\n"
@@ -77,7 +77,7 @@ fn collect_cli_query_assertions(
     match parse_cli_query_comment_assertion(source, node) {
       Some(assertion) => {
         assertions.push(assertion)
-        ranges.push({ start: node.start_point(), end: node.end_point() })
+        ranges.push({ start: node.start_point(), end: node.end_point(), })
       }
       None => ()
     }
@@ -150,9 +150,9 @@ fn cli_query_node_source_view(
 ///|
 fn cli_query_assertion_after_arrow(
   text : BytesView,
-  arrow_end : Int,
+  arrow_end : Int32,
   position : @api.Point,
-  length : UInt,
+  length : UInt32,
 ) -> CliQueryAssertion? {
   let mut offset = arrow_end
   let mut negative = false
@@ -239,8 +239,8 @@ fn adjust_cli_query_assertions(
 }
 
 ///|
-fn cli_query_source_line_lengths(source : Bytes) -> Array[UInt] {
-  let lengths : Array[UInt] = []
+fn cli_query_source_line_lengths(source : Bytes) -> Array[UInt32] {
+  let lengths : Array[UInt32] = []
   let mut line_start = 0
   let mut offset = 0
   while offset < source.length() {
@@ -256,10 +256,10 @@ fn cli_query_source_line_lengths(source : Bytes) -> Array[UInt] {
 
 ///|
 fn cli_query_assertion_needs_row_adjustment(
-  row : UInt,
-  column : UInt,
+  row : UInt32,
+  column : UInt32,
   ranges : Array[CliQueryAssertionRange],
-  line_lengths : Array[UInt],
+  line_lengths : Array[UInt32],
 ) -> Bool {
   cli_query_assertion_row_is_in_ranges(row, ranges) ||
   cli_query_assertion_line_too_short(row, column, line_lengths)
@@ -267,7 +267,7 @@ fn cli_query_assertion_needs_row_adjustment(
 
 ///|
 fn cli_query_assertion_row_is_in_ranges(
-  row : UInt,
+  row : UInt32,
   ranges : Array[CliQueryAssertionRange],
 ) -> Bool {
   for range in ranges {
@@ -280,9 +280,9 @@ fn cli_query_assertion_row_is_in_ranges(
 
 ///|
 fn cli_query_assertion_line_too_short(
-  row : UInt,
-  column : UInt,
-  line_lengths : Array[UInt],
+  row : UInt32,
+  column : UInt32,
+  line_lengths : Array[UInt32],
 ) -> Bool {
   let index = row.reinterpret_as_int()
   if index < 0 || index >= line_lengths.length() {
@@ -396,8 +396,8 @@ fn cli_query_point_with_utf8_column(
 ///|
 fn cli_query_line_prefix_view(
   source : Bytes,
-  row : UInt,
-  byte_column : UInt,
+  row : UInt32,
+  byte_column : UInt32,
 ) -> BytesView? {
   let mut current_row = 0U
   let mut line_start = 0
@@ -420,12 +420,12 @@ fn cli_query_line_prefix_view(
   if column < 0 {
     return None
   }
-  let prefix_end = Int::min(line_start + column, line_end)
+  let prefix_end = Int32::min(line_start + column, line_end)
   Some(source[line_start:prefix_end])
 }
 
 ///|
-fn cli_query_utf8_grapheme_length(bytes : BytesView) -> UInt {
+fn cli_query_utf8_grapheme_length(bytes : BytesView) -> UInt32 {
   let mut count = 0U
   for _char in @utf8.decode_lossy(bytes) {
     count += 1U
@@ -442,12 +442,12 @@ fn cli_query_capture_name_matches(
 }
 
 ///|
-fn cli_query_assertion_end_column(assertion : CliQueryAssertion) -> UInt {
+fn cli_query_assertion_end_column(assertion : CliQueryAssertion) -> UInt32 {
   assertion.position.column + assertion.length - 1U
 }
 
 ///|
-fn cli_query_point_compare(left : @api.Point, right : @api.Point) -> Int {
+fn cli_query_point_compare(left : @api.Point, right : @api.Point) -> Int32 {
   if left.row < right.row {
     -1
   } else if left.row > right.row {

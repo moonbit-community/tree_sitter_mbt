@@ -1,59 +1,59 @@
 ///|
 priv struct LexTokenSet {
-  terminals : Array[Int]
-  externals : Array[Int]
+  terminals : Array[Int32]
+  externals : Array[Int32]
   eof : Bool
 }
 
 ///|
 priv struct LexExternalTokenSlot {
-  external_index : Int
+  external_index : Int32
   symbol : InternalSymbol
   corresponding_internal_token : InternalSymbol?
 }
 
 ///|
 priv struct LexAccept {
-  variable_index : Int
+  variable_index : Int32
   symbol : InternalSymbol?
-  precedence : Int
-  implicit_precedence : Int
+  precedence : Int32
+  implicit_precedence : Int32
 }
 
 ///|
 priv struct LexDfaTransition {
   characters : CharacterSet
-  target_state : Int
+  target_state : Int32
   is_separator : Bool
-  precedence : Int
+  precedence : Int32
 }
 
 ///|
 priv struct LexDfaState {
-  nfa_states : Array[Int]
+  nfa_states : Array[Int32]
   eof_valid : Bool
   accept : LexAccept?
-  eof_action : Int?
+  eof_action : Int32?
   transitions : Array[LexDfaTransition]
 }
 
 ///|
 priv struct LexDfa {
   states : Array[LexDfaState]
-  start_state : Int
+  start_state : Int32
   external_tokens : Array[LexExternalTokenSlot]
 }
 
 ///|
 priv struct LexDfaStateKey {
-  nfa_states : Array[Int]
+  nfa_states : Array[Int32]
   eof_valid : Bool
 }
 
 ///|
 priv struct LexDfaQueueEntry {
-  state_id : Int
-  nfa_states : Array[Int]
+  state_id : Int32
+  nfa_states : Array[Int32]
   eof_valid : Bool
 }
 
@@ -64,26 +64,26 @@ priv struct LexDfaBuilder {
   states : Array[LexDfaState]
   keys : Array[LexDfaStateKey]
   queue : Array[LexDfaQueueEntry]
-  mut queue_index : Int
+  mut queue_index : Int32
 }
 
 ///|
 fn lex_token_set(
-  terminals : Array[Int],
-  eof? : Bool = false,
-  externals? : Array[Int] = [],
+  terminals : Array[Int32],
+  eof~ : Bool = false,
+  externals~ : Array[Int32] = [],
 ) -> LexTokenSet {
-  let normalized : Array[Int] = []
+  let normalized : Array[Int32] = []
   for terminal in terminals {
     push_unique_int(normalized, terminal)
   }
   normalized.sort()
-  let normalized_externals : Array[Int] = []
+  let normalized_externals : Array[Int32] = []
   for external_token in externals {
     push_unique_int(normalized_externals, external_token)
   }
   normalized_externals.sort()
-  { terminals: normalized, externals: normalized_externals, eof }
+  { terminals: normalized, externals: normalized_externals, eof, }
 }
 
 ///|
@@ -122,8 +122,8 @@ fn lex_nfa_for_token_set(
     NfaState::NfaSplit([]),
     NfaState::NfaSplit([]),
   ]
-  let starts : Array[Int] = []
-  let after_separator_starts : Array[Int] = []
+  let starts : Array[Int32] = []
+  let after_separator_starts : Array[Int32] = []
   for i in 0..<lexical.variables.length() {
     if lex_token_set_contains(tokens, i) {
       let variable = lexical.variables[i]
@@ -147,7 +147,7 @@ fn lex_nfa_for_token_set(
   }
   states[0] = NfaState::NfaSplit(starts)
   states[1] = NfaState::NfaSplit(after_separator_starts)
-  { states, start: 0 }
+  { states, start: 0, }
 }
 
 ///|
@@ -175,8 +175,8 @@ fn lex_should_include_separators(
 fn append_separator_nfa_states(
   target : Array[NfaState],
   separator : Nfa,
-  offset : Int,
-  after_separator_state : Int,
+  offset : Int32,
+  after_separator_state : Int32,
 ) -> Unit {
   for state in separator.states {
     match state {
@@ -193,14 +193,14 @@ fn append_separator_nfa_states(
 }
 
 ///|
-fn lex_token_set_contains(tokens : LexTokenSet, terminal : Int) -> Bool {
+fn lex_token_set_contains(tokens : LexTokenSet, terminal : Int32) -> Bool {
   contains_int(tokens.terminals, terminal)
 }
 
 ///|
 fn lex_token_set_contains_external(
   tokens : LexTokenSet,
-  external_token : Int,
+  external_token : Int32,
 ) -> Bool {
   contains_int(tokens.externals, external_token)
 }
@@ -242,9 +242,9 @@ fn lex_external_token_corresponds_to_terminal(
 ///|
 fn lex_dfa_add_state(
   builder : LexDfaBuilder,
-  nfa_states : Array[Int],
+  nfa_states : Array[Int32],
   eof_valid : Bool,
-) -> Int {
+) -> Int32 {
   let key = {
     nfa_states: nfa_canonical_state_ids(builder.nfa, nfa_states),
     eof_valid,
@@ -261,7 +261,7 @@ fn lex_dfa_add_state(
         eof_action: None,
         transitions: [],
       })
-      builder.queue.push({ state_id, nfa_states: key.nfa_states, eof_valid })
+      builder.queue.push({ state_id, nfa_states: key.nfa_states, eof_valid, })
       state_id
     }
   }
@@ -271,7 +271,7 @@ fn lex_dfa_add_state(
 fn lex_dfa_find_state(
   keys : Array[LexDfaStateKey],
   key : LexDfaStateKey,
-) -> Int? {
+) -> Int32? {
   for i in 0..<keys.length() {
     if lex_dfa_state_key_matches(keys[i], key) {
       return Some(i)
@@ -293,7 +293,7 @@ fn lex_dfa_populate_state(
   builder : LexDfaBuilder,
   entry : LexDfaQueueEntry,
 ) -> Unit {
-  let cursor : NfaCursor = { nfa: builder.nfa, state_ids: entry.nfa_states }
+  let cursor : NfaCursor = { nfa: builder.nfa, state_ids: entry.nfa_states, }
   let completion = lex_dfa_completion(
     builder.nfa,
     builder.lexical,
@@ -356,7 +356,7 @@ fn lex_dfa_populate_state(
 fn lex_dfa_completion(
   nfa : Nfa,
   lexical : ExpandedLexicalGrammar,
-  state_ids : Array[Int],
+  state_ids : Array[Int32],
 ) -> LexAccept? {
   let mut result : LexAccept? = None
   for state_id in state_ids {
@@ -385,8 +385,8 @@ fn lex_dfa_completion(
 ///|
 fn lex_accept_for_variable(
   lexical : ExpandedLexicalGrammar,
-  variable_index : Int,
-  precedence : Int,
+  variable_index : Int32,
+  precedence : Int32,
 ) -> LexAccept {
   let implicit_precedence = if variable_index >= 0 &&
     variable_index < lexical.variables.length() {
@@ -454,8 +454,8 @@ fn lex_dfa_should_keep_transition(
 fn lex_transition_can_reach_variable(
   nfa : Nfa,
   lexical : ExpandedLexicalGrammar,
-  state_ids : Array[Int],
-  variable_index : Int,
+  state_ids : Array[Int32],
+  variable_index : Int32,
 ) -> Bool {
   let closure = nfa_epsilon_closure(nfa, state_ids)
   for state_id in closure {
@@ -471,9 +471,9 @@ fn lex_transition_can_reach_variable(
 }
 
 ///|
-fn lex_dfa_smoke_weight(lexical : ExpandedLexicalGrammar) -> Int {
+fn lex_dfa_smoke_weight(lexical : ExpandedLexicalGrammar) -> Int32 {
   let token_count = lexical.variables.length()
-  let terminals : Array[Int] = []
+  let terminals : Array[Int32] = []
   for i in 0..<token_count {
     terminals.push(i)
   }
@@ -482,7 +482,7 @@ fn lex_dfa_smoke_weight(lexical : ExpandedLexicalGrammar) -> Int {
 }
 
 ///|
-fn lex_dfa_weight(dfa : LexDfa) -> Int {
+fn lex_dfa_weight(dfa : LexDfa) -> Int32 {
   let mut weight = dfa.start_state
   for external_token in dfa.external_tokens {
     weight += external_token.external_index

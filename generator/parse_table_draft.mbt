@@ -1,7 +1,7 @@
 ///|
 priv enum ParseTerminalSymbol {
-  ParseTerminal(Int)
-  ParseExternal(Int)
+  ParseTerminal(Int32)
+  ParseExternal(Int32)
   ParseEnd
   ParseEndOfNonTerminalExtra
 }
@@ -9,9 +9,9 @@ priv enum ParseTerminalSymbol {
 ///|
 priv enum ParseTableSymbolDraft {
   ParseSymbolEnd
-  ParseSymbolTerminal(Int)
-  ParseSymbolExternal(Int)
-  ParseSymbolNonTerminal(Int)
+  ParseSymbolTerminal(Int32)
+  ParseSymbolExternal(Int32)
+  ParseSymbolNonTerminal(Int32)
 }
 
 ///|
@@ -25,16 +25,16 @@ priv struct ParseShiftContributor {
 priv enum ParseActionDraft {
   DraftAccept
   DraftShift(
-    state_id~ : Int,
+    state_id~ : Int32,
     is_repetition~ : Bool,
     contributors~ : Array[ParseShiftContributor]
   )
   DraftShiftExtra
   DraftReduce(
     symbol~ : InternalSymbol,
-    child_count~ : Int,
-    dynamic_precedence~ : Int,
-    production_id~ : Int,
+    child_count~ : Int32,
+    dynamic_precedence~ : Int32,
+    production_id~ : Int32,
     precedence~ : @grammar.PrecedenceValue?,
     associativity~ : Associativity
   )
@@ -58,15 +58,15 @@ priv enum ParseShiftReduceDecision {
 
 ///|
 priv enum ParseGotoDraft {
-  DraftGoto(Int)
+  DraftGoto(Int32)
   DraftGotoShiftExtra
 }
 
 ///|
 priv enum ParseTableCellDraft {
   ParseCellEmpty
-  ParseCellAction(Int)
-  ParseCellState(Int)
+  ParseCellAction(Int32)
+  ParseCellState(Int32)
 }
 
 ///|
@@ -79,7 +79,7 @@ priv enum ParseSmallParseTableSectionKindDraft {
 priv struct ParseTerminalEntryDraft {
   symbol : ParseTerminalSymbol
   actions : Array[ParseActionDraft]
-  mut action_list_id : Int
+  mut action_list_id : Int32
 }
 
 ///|
@@ -90,8 +90,8 @@ priv struct ParseGotoEntryDraft {
 
 ///|
 priv struct ParseStateDraft {
-  id : Int
-  core_id : Int
+  id : Int32
+  core_id : Int32
   terminal_entries : Array[ParseTerminalEntryDraft]
   nonterminal_entries : Array[ParseGotoEntryDraft]
   mut reserved_words : ParseTokenSet
@@ -105,7 +105,7 @@ priv struct ParseAliasDraft {
 
 ///|
 priv struct ParseFieldLocationDraft {
-  index : Int
+  index : Int32
   inherited : Bool
 }
 
@@ -130,57 +130,57 @@ priv struct ParseActionListDraft {
 ///|
 priv struct ParseUsedSymbolsDraft {
   tokens : ParseTokenSet
-  nonterminals : Array[Int]
+  nonterminals : Array[Int32]
 }
 
 ///|
 priv struct ParseReservedWordSetsDraft {
   sets : Array[ParseTokenSet]
-  state_ids : Array[Int]
-  mut max_size : Int
+  state_ids : Array[Int32]
+  mut max_size : Int32
 }
 
 ///|
 priv struct ParseExternalLexStatesDraft {
   sets : Array[ParseTokenSet]
-  state_ids : Array[Int]
+  state_ids : Array[Int32]
 }
 
 ///|
 priv struct ParseSmallParseTableSectionDraft {
   kind : ParseSmallParseTableSectionKindDraft
-  value : Int
+  value : Int32
   first_symbol : ParseTableSymbolDraft
   symbols : Array[ParseTableSymbolDraft]
 }
 
 ///|
 priv struct ParseSmallParseTableRowDraft {
-  state_id : Int
-  offset : Int
+  state_id : Int32
+  offset : Int32
   sections : Array[ParseSmallParseTableSectionDraft]
 }
 
 ///|
 priv struct ParseTableLayoutDraft {
-  large_state_count : Int
+  large_state_count : Int32
   large_rows : Array[Array[ParseTableCellDraft]]
   small_rows : Array[ParseSmallParseTableRowDraft]
-  small_state_offsets : Array[Int]
+  small_state_offsets : Array[Int32]
 }
 
 ///|
 priv struct ParseTableDraft {
   mut states : Array[ParseStateDraft]
   mut symbols : Array[ParseTableSymbolDraft]
-  mut primary_state_ids : Array[Int]
-  nonterminal_extra_state_ids : Array[Int]
+  mut primary_state_ids : Array[Int32]
+  nonterminal_extra_state_ids : Array[Int32]
   mut reserved_word_sets : ParseReservedWordSetsDraft
   mut external_lex_states : ParseExternalLexStatesDraft
   parse_action_lists : Array[ParseActionListDraft]
   mut layout : ParseTableLayoutDraft
   production_infos : Array[ParseProductionInfoDraft]
-  mut max_aliased_production_length : Int
+  mut max_aliased_production_length : Int32
   mut used_symbols : ParseUsedSymbolsDraft
 }
 
@@ -255,22 +255,22 @@ fn build_parse_table_draft(
 
 ///|
 fn parse_used_symbols_empty() -> ParseUsedSymbolsDraft {
-  { tokens: parse_token_set_empty(), nonterminals: [] }
+  { tokens: parse_token_set_empty(), nonterminals: [], }
 }
 
 ///|
 fn parse_action_list_empty() -> ParseActionListDraft {
-  { actions: [], reusable: false }
+  { actions: [], reusable: false, }
 }
 
 ///|
 fn parse_reserved_word_sets_empty() -> ParseReservedWordSetsDraft {
-  { sets: [parse_token_set_empty()], state_ids: [], max_size: 0 }
+  { sets: [parse_token_set_empty()], state_ids: [], max_size: 0, }
 }
 
 ///|
 fn parse_external_lex_states_empty() -> ParseExternalLexStatesDraft {
-  { sets: [parse_token_set_empty()], state_ids: [] }
+  { sets: [parse_token_set_empty()], state_ids: [], }
 }
 
 ///|
@@ -353,9 +353,9 @@ fn parse_item_set_has_nonterminal_extra_end(item_set : ParseItemSet) -> Bool {
 ///|
 fn parse_external_token_for_internal(
   grammar : PreparedGrammar,
-  terminal_index : Int,
-) -> Int? {
-  let mut result : Int? = None
+  terminal_index : Int32,
+) -> Int32? {
+  let mut result : Int32? = None
   for i in 0..<grammar.syntax.external_tokens.length() {
     if grammar.syntax.external_tokens[i].corresponding_internal_token ==
       Some(InternalSymbol::Terminal(terminal_index)) {
@@ -369,7 +369,7 @@ fn parse_external_token_for_internal(
 fn parse_external_lex_state_id(
   table : ParseExternalLexStatesDraft,
   set : ParseTokenSet,
-) -> Int {
+) -> Int32 {
   for i in 0..<table.sets.length() {
     if parse_token_set_same(table.sets[i], set) {
       return i
@@ -384,7 +384,7 @@ fn parse_external_lex_state_id(
 fn parse_reserved_word_set_id(
   table : ParseReservedWordSetsDraft,
   set : ParseTokenSet,
-) -> Int {
+) -> Int32 {
   for i in 0..<table.sets.length() {
     if parse_token_set_same(table.sets[i], set) {
       return i
@@ -396,7 +396,7 @@ fn parse_reserved_word_set_id(
 }
 
 ///|
-fn parse_token_set_symbol_count(set : ParseTokenSet) -> Int {
+fn parse_token_set_symbol_count(set : ParseTokenSet) -> Int32 {
   let mut count = set.terminals.length() + set.externals.length()
   if set.eof {
     count += 1
@@ -408,8 +408,10 @@ fn parse_token_set_symbol_count(set : ParseTokenSet) -> Int {
 }
 
 ///|
-fn parse_table_primary_state_ids(states : Array[ParseStateDraft]) -> Array[Int] {
-  let primary_ids : Array[Int] = []
+fn parse_table_primary_state_ids(
+  states : Array[ParseStateDraft],
+) -> Array[Int32] {
+  let primary_ids : Array[Int32] = []
   for i in 0..<states.length() {
     primary_ids.push(parse_table_primary_state_id(states, i))
   }
@@ -419,8 +421,8 @@ fn parse_table_primary_state_ids(states : Array[ParseStateDraft]) -> Array[Int] 
 ///|
 fn parse_table_primary_state_id(
   states : Array[ParseStateDraft],
-  state_index : Int,
-) -> Int {
+  state_index : Int32,
+) -> Int32 {
   for i in 0..<=state_index {
     if states[i].core_id == states[state_index].core_id {
       return states[i].id
@@ -610,12 +612,14 @@ fn internal_symbol_summary(symbol : InternalSymbol) -> String {
 }
 
 ///|
-fn parse_reserved_word_set_id_max(table : ParseReservedWordSetsDraft) -> Int {
+fn parse_reserved_word_set_id_max(table : ParseReservedWordSetsDraft) -> Int32 {
   min_int(table.sets.length() - 1, parse_table_u16_reserved_max())
 }
 
 ///|
-fn parse_external_lex_state_id_max(table : ParseExternalLexStatesDraft) -> Int {
+fn parse_external_lex_state_id_max(
+  table : ParseExternalLexStatesDraft,
+) -> Int32 {
   min_int(table.sets.length() - 1, parse_table_u16_reserved_max())
 }
 
@@ -820,9 +824,9 @@ fn validate_parse_small_section_width(
 ///|
 fn parse_table_validate_range(
   kind : String,
-  value : Int,
-  min : Int,
-  max : Int,
+  value : Int32,
+  min : Int32,
+  max : Int32,
 ) -> Unit raise GenerateError {
   if value < min || value > max {
     raise GenerateError::ParseTableValueOutOfRange(kind~, value~, min~, max~)
@@ -830,42 +834,42 @@ fn parse_table_validate_range(
 }
 
 ///|
-fn parse_table_u8_max() -> Int {
+fn parse_table_u8_max() -> Int32 {
   255
 }
 
 ///|
-fn parse_table_i16_min() -> Int {
+fn parse_table_i16_min() -> Int32 {
   -32768
 }
 
 ///|
-fn parse_table_i16_max() -> Int {
+fn parse_table_i16_max() -> Int32 {
   32767
 }
 
 ///|
-fn parse_table_u16_max() -> Int {
+fn parse_table_u16_max() -> Int32 {
   65535
 }
 
 ///|
-fn parse_table_u16_reserved_max() -> Int {
+fn parse_table_u16_reserved_max() -> Int32 {
   65534
 }
 
 ///|
-fn parse_table_u16_count_max() -> Int {
+fn parse_table_u16_count_max() -> Int32 {
   65536
 }
 
 ///|
-fn parse_table_u16_id_count_max() -> Int {
+fn parse_table_u16_id_count_max() -> Int32 {
   65535
 }
 
 ///|
-fn parse_table_int_index_max() -> Int {
+fn parse_table_int_index_max() -> Int32 {
   2147483647
 }
 
@@ -873,7 +877,7 @@ fn parse_table_int_index_max() -> Int {
 fn parse_table_symbol_id_for_internal(
   table : ParseTableDraft,
   symbol : InternalSymbol,
-) -> Int {
+) -> Int32 {
   parse_table_find_symbol_id(
     table.symbols,
     parse_table_symbol_from_internal(symbol),
@@ -961,7 +965,7 @@ fn parse_symbols_have_declared_conflict(
 fn parse_table_draft_action_list_id(
   table : ParseTableDraft,
   action_list : ParseActionListDraft,
-) -> Int {
+) -> Int32 {
   for i in 0..<table.parse_action_lists.length() {
     if parse_action_list_same(table.parse_action_lists[i], action_list) {
       return i
@@ -1016,7 +1020,7 @@ fn parse_action_draft_same(
 }
 
 ///|
-fn parse_action_draft_rank(action : ParseActionDraft) -> Int {
+fn parse_action_draft_rank(action : ParseActionDraft) -> Int32 {
   match action {
     DraftAccept => 0
     DraftShift(_) => 1
@@ -1026,7 +1030,7 @@ fn parse_action_draft_rank(action : ParseActionDraft) -> Int {
 }
 
 ///|
-fn parse_action_draft_state_id(action : ParseActionDraft) -> Int {
+fn parse_action_draft_state_id(action : ParseActionDraft) -> Int32 {
   match action {
     DraftShift(state_id~, ..) => state_id
     DraftAccept | DraftShiftExtra | DraftReduce(_) => 0
@@ -1053,7 +1057,7 @@ fn parse_action_draft_reduce_symbol(
 }
 
 ///|
-fn parse_action_draft_child_count(action : ParseActionDraft) -> Int {
+fn parse_action_draft_child_count(action : ParseActionDraft) -> Int32 {
   match action {
     DraftReduce(child_count~, ..) => child_count
     DraftAccept | DraftShift(_) | DraftShiftExtra => 0
@@ -1061,7 +1065,7 @@ fn parse_action_draft_child_count(action : ParseActionDraft) -> Int {
 }
 
 ///|
-fn parse_action_draft_dynamic_precedence(action : ParseActionDraft) -> Int {
+fn parse_action_draft_dynamic_precedence(action : ParseActionDraft) -> Int32 {
   match action {
     DraftReduce(dynamic_precedence~, ..) => dynamic_precedence
     DraftAccept | DraftShift(_) | DraftShiftExtra => 0
@@ -1069,7 +1073,7 @@ fn parse_action_draft_dynamic_precedence(action : ParseActionDraft) -> Int {
 }
 
 ///|
-fn parse_action_draft_production_id(action : ParseActionDraft) -> Int {
+fn parse_action_draft_production_id(action : ParseActionDraft) -> Int32 {
   match action {
     DraftReduce(production_id~, ..) => production_id
     DraftAccept | DraftShift(_) | DraftShiftExtra => 0
@@ -1116,7 +1120,7 @@ fn parse_table_layout_from_draft(
     large_rows.push(parse_table_large_row(table, table.states[i], i))
   }
   let small_rows : Array[ParseSmallParseTableRowDraft] = []
-  let small_state_offsets : Array[Int] = []
+  let small_state_offsets : Array[Int32] = []
   let mut offset = 0
   for i in large_state_count..<table.states.length() {
     small_state_offsets.push(offset)
@@ -1124,11 +1128,11 @@ fn parse_table_layout_from_draft(
     offset += parse_table_small_row_encoded_length(row)
     small_rows.push(row)
   }
-  { large_state_count, large_rows, small_rows, small_state_offsets }
+  { large_state_count, large_rows, small_rows, small_state_offsets, }
 }
 
 ///|
-fn parse_table_large_state_count(table : ParseTableDraft) -> Int {
+fn parse_table_large_state_count(table : ParseTableDraft) -> Int32 {
   let threshold = min_int(64, parse_table_half_int(table.symbols.length()))
   let mut count = 0
   for i in 0..<table.states.length() {
@@ -1143,7 +1147,7 @@ fn parse_table_large_state_count(table : ParseTableDraft) -> Int {
 }
 
 ///|
-fn parse_table_half_int(value : Int) -> Int {
+fn parse_table_half_int(value : Int32) -> Int32 {
   let mut remaining = value
   let mut result = 0
   while remaining >= 2 {
@@ -1154,7 +1158,7 @@ fn parse_table_half_int(value : Int) -> Int {
 }
 
 ///|
-fn parse_state_draft_entry_count(state : ParseStateDraft) -> Int {
+fn parse_state_draft_entry_count(state : ParseStateDraft) -> Int32 {
   state.terminal_entries.length() + state.nonterminal_entries.length()
 }
 
@@ -1162,7 +1166,7 @@ fn parse_state_draft_entry_count(state : ParseStateDraft) -> Int {
 fn parse_table_large_row(
   table : ParseTableDraft,
   state : ParseStateDraft,
-  state_index : Int,
+  state_index : Int32,
 ) -> Array[ParseTableCellDraft] {
   let row : Array[ParseTableCellDraft] = []
   for symbol in table.symbols {
@@ -1174,7 +1178,7 @@ fn parse_table_large_row(
 ///|
 fn parse_table_cell_for_state_symbol(
   state : ParseStateDraft,
-  state_index : Int,
+  state_index : Int32,
   symbol : ParseTableSymbolDraft,
 ) -> ParseTableCellDraft {
   match parse_state_draft_terminal_entry_for_symbol(state, symbol) {
@@ -1194,8 +1198,8 @@ fn parse_table_cell_for_state_symbol(
 fn parse_table_small_row(
   table : ParseTableDraft,
   state : ParseStateDraft,
-  state_index : Int,
-  offset : Int,
+  state_index : Int32,
+  offset : Int32,
 ) -> ParseSmallParseTableRowDraft {
   let sections : Array[ParseSmallParseTableSectionDraft] = []
   for symbol in table.symbols {
@@ -1230,7 +1234,7 @@ fn parse_table_small_row(
 ///|
 fn parse_table_small_row_encoded_length(
   row : ParseSmallParseTableRowDraft,
-) -> Int {
+) -> Int32 {
   let mut length = 1
   for section in row.sections {
     length += 2 + section.symbols.length()
@@ -1243,7 +1247,7 @@ fn parse_small_sections_add_symbol(
   table_symbols : Array[ParseTableSymbolDraft],
   sections : Array[ParseSmallParseTableSectionDraft],
   kind : ParseSmallParseTableSectionKindDraft,
-  value : Int,
+  value : Int32,
   symbol : ParseTableSymbolDraft,
 ) -> Unit {
   for i in 0..<sections.length() {
@@ -1254,7 +1258,7 @@ fn parse_small_sections_add_symbol(
       return
     }
   }
-  sections.push({ kind, value, first_symbol: symbol, symbols: [symbol] })
+  sections.push({ kind, value, first_symbol: symbol, symbols: [symbol], })
 }
 
 ///|
@@ -1309,7 +1313,7 @@ fn compare_parse_small_section(
   table_symbols : Array[ParseTableSymbolDraft],
   left : ParseSmallParseTableSectionDraft,
   right : ParseSmallParseTableSectionDraft,
-) -> Int {
+) -> Int32 {
   let mut comparison = compare_int(
     left.symbols.length(),
     right.symbols.length(),
@@ -1338,7 +1342,7 @@ fn compare_parse_small_section(
 ///|
 fn parse_small_section_kind_rank(
   kind : ParseSmallParseTableSectionKindDraft,
-) -> Int {
+) -> Int32 {
   match kind {
     ParseSmallAction => 0
     ParseSmallState => 1
@@ -1350,7 +1354,7 @@ fn compare_parse_table_symbol_by_order(
   table_symbols : Array[ParseTableSymbolDraft],
   left : ParseTableSymbolDraft,
   right : ParseTableSymbolDraft,
-) -> Int {
+) -> Int32 {
   compare_int(
     parse_table_symbol_index(table_symbols, left),
     parse_table_symbol_index(table_symbols, right),
@@ -1361,7 +1365,7 @@ fn compare_parse_table_symbol_by_order(
 fn parse_table_symbol_index(
   table_symbols : Array[ParseTableSymbolDraft],
   symbol : ParseTableSymbolDraft,
-) -> Int {
+) -> Int32 {
   let index = parse_table_find_symbol_id(table_symbols, symbol)
   if index >= 0 {
     return index
@@ -1373,7 +1377,7 @@ fn parse_table_symbol_index(
 fn parse_table_find_symbol_id(
   table_symbols : Array[ParseTableSymbolDraft],
   symbol : ParseTableSymbolDraft,
-) -> Int {
+) -> Int32 {
   for i in 0..<table_symbols.length() {
     if parse_table_symbol_same(table_symbols[i], symbol) {
       return i
@@ -1392,7 +1396,7 @@ fn parse_table_symbol_same(
 }
 
 ///|
-fn parse_table_symbol_kind_rank(symbol : ParseTableSymbolDraft) -> Int {
+fn parse_table_symbol_kind_rank(symbol : ParseTableSymbolDraft) -> Int32 {
   match symbol {
     ParseSymbolEnd => 0
     ParseSymbolTerminal(_) => 1
@@ -1402,7 +1406,7 @@ fn parse_table_symbol_kind_rank(symbol : ParseTableSymbolDraft) -> Int {
 }
 
 ///|
-fn parse_table_symbol_value(symbol : ParseTableSymbolDraft) -> Int {
+fn parse_table_symbol_value(symbol : ParseTableSymbolDraft) -> Int32 {
   match symbol {
     ParseSymbolEnd => 0
     ParseSymbolTerminal(index)
@@ -1716,7 +1720,7 @@ fn parse_table_draft_production_id(
   table : ParseTableDraft,
   grammar : PreparedGrammar,
   item : ParseItem,
-) -> Int {
+) -> Int32 {
   let info = parse_production_info_for_item(grammar, item)
   if item.production.steps.length() > table.max_aliased_production_length {
     table.max_aliased_production_length = item.production.steps.length()
@@ -1742,7 +1746,7 @@ fn parse_production_info_for_item(
     let step = item.production.steps[i]
     match step.alias_name {
       Some(value) =>
-        alias_sequence.push(Some({ value, named: step.alias_named }))
+        alias_sequence.push(Some({ value, named: step.alias_named, }))
       None => alias_sequence.push(None)
     }
     match step.field_name {
@@ -1763,18 +1767,18 @@ fn parse_production_info_for_item(
         alias_sequence[alias_sequence.length() - 1] is None {
     ignore(alias_sequence.pop())
   }
-  { alias_sequence, field_map }
+  { alias_sequence, field_map, }
 }
 
 ///|
 fn parse_production_info_empty() -> ParseProductionInfoDraft {
-  { alias_sequence: [], field_map: [] }
+  { alias_sequence: [], field_map: [], }
 }
 
 ///|
 fn parse_nonterminal_fields_are_inherited(
   grammar : PreparedGrammar,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> Bool {
   variable_index >= 0 &&
   variable_index < grammar.syntax.variables.length() &&
@@ -1787,7 +1791,7 @@ fn parse_nonterminal_fields_are_inherited(
 ///|
 fn parse_variable_field_names(
   grammar : PreparedGrammar,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> Array[String] {
   let names : Array[String] = []
   if variable_index >= 0 && variable_index < grammar.syntax.variables.length() {
@@ -1807,21 +1811,21 @@ fn parse_variable_field_names(
 fn parse_field_map_insert(
   field_map : Array[ParseFieldMapEntryDraft],
   name : String,
-  index : Int,
+  index : Int32,
   inherited : Bool,
 ) -> Unit {
   for i in 0..<field_map.length() {
     let comparison = field_map[i].name.compare(name)
     if comparison == 0 {
-      field_map[i].locations.push({ index, inherited })
+      field_map[i].locations.push({ index, inherited, })
       return
     }
     if comparison > 0 {
-      field_map.insert(i, { name, locations: [{ index, inherited }] })
+      field_map.insert(i, { name, locations: [{ index, inherited, }], })
       return
     }
   }
-  field_map.push({ name, locations: [{ index, inherited }] })
+  field_map.push({ name, locations: [{ index, inherited, }], })
 }
 
 ///|
@@ -1934,8 +1938,8 @@ fn parse_table_symbol_from_internal(
 ///|
 fn parse_goto_draft_state_id(
   action : ParseGotoDraft,
-  current_state : Int,
-) -> Int {
+  current_state : Int32,
+) -> Int32 {
   match action {
     DraftGoto(state_id) => state_id
     DraftGotoShiftExtra => current_state
@@ -2373,12 +2377,12 @@ fn parse_state_draft_terminal_entry(
       return state.terminal_entries[i]
     }
     if comparison > 0 {
-      let entry = { symbol, actions: [], action_list_id: 0 }
+      let entry = { symbol, actions: [], action_list_id: 0, }
       state.terminal_entries.insert(i, entry)
       return entry
     }
   }
-  let entry = { symbol, actions: [], action_list_id: 0 }
+  let entry = { symbol, actions: [], action_list_id: 0, }
   state.terminal_entries.push(entry)
   entry
 }
@@ -2395,22 +2399,22 @@ fn parse_state_draft_add_goto(
       symbol,
     )
     if comparison == 0 {
-      state.nonterminal_entries[i] = { symbol, action }
+      state.nonterminal_entries[i] = { symbol, action, }
       return
     }
     if comparison > 0 {
-      state.nonterminal_entries.insert(i, { symbol, action })
+      state.nonterminal_entries.insert(i, { symbol, action, })
       return
     }
   }
-  state.nonterminal_entries.push({ symbol, action })
+  state.nonterminal_entries.push({ symbol, action, })
 }
 
 ///|
 fn compare_parse_terminal_symbol(
   left : ParseTerminalSymbol,
   right : ParseTerminalSymbol,
-) -> Int {
+) -> Int32 {
   let mut comparison = compare_int(
     parse_terminal_symbol_rank(left),
     parse_terminal_symbol_rank(right),
@@ -2426,7 +2430,7 @@ fn compare_parse_terminal_symbol(
 }
 
 ///|
-fn parse_terminal_symbol_rank(symbol : ParseTerminalSymbol) -> Int {
+fn parse_terminal_symbol_rank(symbol : ParseTerminalSymbol) -> Int32 {
   match symbol {
     ParseTerminal(_) => 0
     ParseExternal(_) => 1
@@ -2436,7 +2440,7 @@ fn parse_terminal_symbol_rank(symbol : ParseTerminalSymbol) -> Int {
 }
 
 ///|
-fn parse_terminal_symbol_index(symbol : ParseTerminalSymbol) -> Int {
+fn parse_terminal_symbol_index(symbol : ParseTerminalSymbol) -> Int32 {
   match symbol {
     ParseTerminal(index) | ParseExternal(index) => index
     ParseEnd | ParseEndOfNonTerminalExtra => 0
@@ -2444,7 +2448,7 @@ fn parse_terminal_symbol_index(symbol : ParseTerminalSymbol) -> Int {
 }
 
 ///|
-fn parse_table_draft_weight(draft : ParseTableDraft) -> Int {
+fn parse_table_draft_weight(draft : ParseTableDraft) -> Int32 {
   let mut weight = 0
   for state in draft.states {
     weight += state.id
@@ -2486,7 +2490,7 @@ fn parse_table_draft_weight(draft : ParseTableDraft) -> Int {
 }
 
 ///|
-fn parse_action_draft_weight(action : ParseActionDraft) -> Int {
+fn parse_action_draft_weight(action : ParseActionDraft) -> Int32 {
   match action {
     DraftAccept => 1
     DraftShift(state_id~, is_repetition~, ..) =>
@@ -2506,7 +2510,7 @@ fn parse_action_draft_weight(action : ParseActionDraft) -> Int {
 }
 
 ///|
-fn parse_goto_draft_weight(action : ParseGotoDraft) -> Int {
+fn parse_goto_draft_weight(action : ParseGotoDraft) -> Int32 {
   match action {
     DraftGoto(state_id) => state_id + 1
     DraftGotoShiftExtra => 31
@@ -2514,7 +2518,7 @@ fn parse_goto_draft_weight(action : ParseGotoDraft) -> Int {
 }
 
 ///|
-fn parse_table_symbol_weight(symbol : ParseTableSymbolDraft) -> Int {
+fn parse_table_symbol_weight(symbol : ParseTableSymbolDraft) -> Int32 {
   match symbol {
     ParseSymbolEnd => 4001
     ParseSymbolTerminal(index) => index + 4011
@@ -2524,7 +2528,7 @@ fn parse_table_symbol_weight(symbol : ParseTableSymbolDraft) -> Int {
 }
 
 ///|
-fn parse_action_list_weight(action_list : ParseActionListDraft) -> Int {
+fn parse_action_list_weight(action_list : ParseActionListDraft) -> Int32 {
   let mut weight = if action_list.reusable { 7001 } else { 0 }
   for action in action_list.actions {
     weight += parse_action_draft_weight(action)
@@ -2533,7 +2537,7 @@ fn parse_action_list_weight(action_list : ParseActionListDraft) -> Int {
 }
 
 ///|
-fn parse_table_layout_weight(layout : ParseTableLayoutDraft) -> Int {
+fn parse_table_layout_weight(layout : ParseTableLayoutDraft) -> Int32 {
   let mut weight = layout.large_state_count
   for row in layout.large_rows {
     for cell in row {
@@ -2558,7 +2562,7 @@ fn parse_table_layout_weight(layout : ParseTableLayoutDraft) -> Int {
 }
 
 ///|
-fn parse_reserved_word_sets_weight(table : ParseReservedWordSetsDraft) -> Int {
+fn parse_reserved_word_sets_weight(table : ParseReservedWordSetsDraft) -> Int32 {
   let mut weight = table.max_size
   for set in table.sets {
     weight += parse_token_set_weight(set)
@@ -2570,7 +2574,9 @@ fn parse_reserved_word_sets_weight(table : ParseReservedWordSetsDraft) -> Int {
 }
 
 ///|
-fn parse_external_lex_states_weight(table : ParseExternalLexStatesDraft) -> Int {
+fn parse_external_lex_states_weight(
+  table : ParseExternalLexStatesDraft,
+) -> Int32 {
   let mut weight = 0
   for set in table.sets {
     weight += parse_token_set_weight(set)
@@ -2582,7 +2588,7 @@ fn parse_external_lex_states_weight(table : ParseExternalLexStatesDraft) -> Int 
 }
 
 ///|
-fn parse_table_cell_weight(cell : ParseTableCellDraft) -> Int {
+fn parse_table_cell_weight(cell : ParseTableCellDraft) -> Int32 {
   match cell {
     ParseCellEmpty => 0
     ParseCellAction(index) => index + 8009
@@ -2591,7 +2597,7 @@ fn parse_table_cell_weight(cell : ParseTableCellDraft) -> Int {
 }
 
 ///|
-fn parse_production_info_weight(info : ParseProductionInfoDraft) -> Int {
+fn parse_production_info_weight(info : ParseProductionInfoDraft) -> Int32 {
   let mut weight = info.alias_sequence.length()
   for alias_entry in info.alias_sequence {
     match alias_entry {
@@ -2617,7 +2623,7 @@ fn parse_production_info_weight(info : ParseProductionInfoDraft) -> Int {
 }
 
 ///|
-fn parse_used_symbols_weight(used : ParseUsedSymbolsDraft) -> Int {
+fn parse_used_symbols_weight(used : ParseUsedSymbolsDraft) -> Int32 {
   let mut weight = parse_token_set_weight(used.tokens)
   for symbol in used.nonterminals {
     weight += symbol + 3001

@@ -80,7 +80,7 @@ test "parse item set ordering mirrors upstream inherited-field quirk" {
 ///|
 fn parse_item_entry_for_variable(
   set : ParseItemSet,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> ParseItemSetEntry? {
   for entry in set.entries {
     if entry.item.variable_index == variable_index {
@@ -222,7 +222,7 @@ test "parse item set builder propagates reserved set when word token follows" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(2))],

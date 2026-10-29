@@ -1,7 +1,7 @@
 ///|
 fn parse_analysis_step(
   symbol : InternalSymbol,
-  reserved? : Int = 0,
+  reserved~ : Int32 = 0,
 ) -> ProductionStep {
   {
     symbol,
@@ -18,12 +18,12 @@ fn parse_analysis_step(
 fn parse_analysis_production(
   steps : Array[ProductionStep],
 ) -> FlattenedProduction {
-  { steps, dynamic_precedence: 0 }
+  { steps, dynamic_precedence: 0, }
 }
 
 ///|
 fn parse_analysis_variable(
-  index : Int,
+  index : Int32,
   productions : Array[FlattenedProduction],
 ) -> FlattenedVariable {
   {
@@ -35,7 +35,7 @@ fn parse_analysis_variable(
 }
 
 ///|
-fn parse_analysis_external_token(index : Int) -> ExtractedExternalToken {
+fn parse_analysis_external_token(index : Int32) -> ExtractedExternalToken {
   {
     symbol: InternalSymbol::External(index),
     name: "external\{index}",
@@ -46,12 +46,12 @@ fn parse_analysis_external_token(index : Int) -> ExtractedExternalToken {
 }
 
 ///|
-fn parse_analysis_lexical_variable(index : Int) -> ExpandedLexicalVariable {
+fn parse_analysis_lexical_variable(index : Int32) -> ExpandedLexicalVariable {
   {
     symbol: InternalSymbol::Terminal(index),
     name: "terminal\{index}",
     kind: VariableKind::Anonymous,
-    nfa: { states: [NfaState::NfaAccept(index, 0)], start: 0 },
+    nfa: { states: [NfaState::NfaAccept(index, 0)], start: 0, },
     immediate: false,
     explicit_precedence: None,
     implicit_precedence: 0,
@@ -63,14 +63,14 @@ fn parse_analysis_lexical_variable(index : Int) -> ExpandedLexicalVariable {
 ///|
 fn parse_analysis_prepared(
   variables : Array[FlattenedVariable],
-  external_count? : Int = 0,
-  terminal_count? : Int = 0,
-  extra_symbols? : Array[InternalSymbol] = [],
-  inline_symbols? : Array[InternalSymbol] = [],
-  conflict_symbols? : Array[Array[InternalSymbol]] = [],
+  external_count~ : Int32 = 0,
+  terminal_count~ : Int32 = 0,
+  extra_symbols~ : Array[InternalSymbol] = [],
+  inline_symbols~ : Array[InternalSymbol] = [],
+  conflict_symbols~ : Array[Array[InternalSymbol]] = [],
   word_symbol? : InternalSymbol,
-  reserved_sets? : Array[ExtractedReservedSet] = [],
-  inlines? : InlinedProductionMap = { productions: [], entries: [] },
+  reserved_sets~ : Array[ExtractedReservedSet] = [],
+  inlines~ : InlinedProductionMap = { productions: [], entries: [], },
 ) -> PreparedGrammar {
   let external_tokens : Array[ExtractedExternalToken] = []
   for i in 0..<external_count {
@@ -106,8 +106,8 @@ fn parse_analysis_prepared(
 
 ///|
 fn parse_analysis_token_set(
-  terminals : Array[Int],
-  externals : Array[Int],
+  terminals : Array[Int32],
+  externals : Array[Int32],
 ) -> ParseTokenSet {
   let set = parse_token_set_empty()
   for terminal in terminals {
@@ -337,7 +337,7 @@ test "following token sets add reserved first set terminals" {
     ],
     terminal_count=5,
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(4))],

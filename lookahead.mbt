@@ -3,7 +3,7 @@ struct LookaheadIterator {
   mut language : Language
   mut state_id : @api.StateId
   mut symbols : Array[@api.SymbolId]
-  mut index : Int
+  mut index : Int32
 }
 
 ///|
@@ -12,7 +12,7 @@ pub fn Language::lookahead_iterator(
   state_id : @api.StateId,
 ) -> LookaheadIterator? {
   match self.tables.lookahead_symbols(state_id) {
-    Some(symbols) => Some({ language: self, state_id, symbols, index: -1 })
+    Some(symbols) => Some({ language: self, state_id, symbols, index: -1, })
     None => None
   }
 }

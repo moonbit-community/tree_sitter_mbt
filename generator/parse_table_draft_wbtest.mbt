@@ -51,7 +51,7 @@ fn parse_table_field_entry(
 fn parse_table_has_field_location(
   draft : ParseTableDraft,
   name : String,
-  index : Int,
+  index : Int32,
   inherited : Bool,
 ) -> Bool {
   for info in draft.production_infos {
@@ -71,7 +71,7 @@ fn parse_table_has_field_location(
 ///|
 fn parse_table_small_row_for_state(
   layout : ParseTableLayoutDraft,
-  state_id : Int,
+  state_id : Int32,
 ) -> ParseSmallParseTableRowDraft? {
   for row in layout.small_rows {
     if row.state_id == state_id {
@@ -87,7 +87,7 @@ fn parse_table_shift_action(
   associativity : Associativity,
 ) -> ParseActionDraft {
   ParseActionDraft::DraftShift(state_id=9, is_repetition=false, contributors=[
-    { symbol: InternalSymbol::NonTerminal(0), precedence, associativity },
+    { symbol: InternalSymbol::NonTerminal(0), precedence, associativity, },
   ])
 }
 
@@ -109,7 +109,7 @@ fn parse_table_reduce_action(
 ///|
 fn parse_table_prec_step(
   symbol : InternalSymbol,
-  precedence : Int,
+  precedence : Int32,
   associativity : Associativity,
 ) -> ProductionStep {
   {
@@ -314,9 +314,9 @@ fn parse_table_simple_terminal_draft() -> ParseTableDraft raise GenerateError {
 fn assert_parse_table_range_error(
   result : GenerateError,
   kind : String,
-  value : Int,
-  min : Int,
-  max : Int,
+  value : Int32,
+  min : Int32,
+  max : Int32,
 ) -> Unit raise {
   guard result
     is GenerateError::ParseTableValueOutOfRange(
@@ -981,7 +981,7 @@ test "parse table draft records paired external lex states" {
   )
   let grammar : PreparedGrammar = {
     ..base,
-    syntax: { ..base.syntax, external_tokens: [paired_external] },
+    syntax: { ..base.syntax, external_tokens: [paired_external], },
   }
   let draft = parse_table_draft_for(grammar)
 
@@ -1008,7 +1008,7 @@ test "parse table draft records reserved words as used tokens" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],
@@ -1147,7 +1147,7 @@ test "parse table draft records reserved words for next word token" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],
@@ -1191,7 +1191,7 @@ test "parse table draft records reserved words through nonterminal first set" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],
@@ -1240,7 +1240,7 @@ test "parse table draft records reserved words for done item word lookahead" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],
@@ -1274,7 +1274,7 @@ test "parse table draft dedupes reserved word sets by token set" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],

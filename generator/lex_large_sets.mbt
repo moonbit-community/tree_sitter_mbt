@@ -1,5 +1,5 @@
 ///|
-let large_character_range_count : Int = 8
+let large_character_range_count : Int32 = 8
 
 ///|
 priv struct LargeCharacterSet {
@@ -9,7 +9,7 @@ priv struct LargeCharacterSet {
 
 ///|
 priv struct LargeCharacterSetChoice {
-  set_index : Int
+  set_index : Int32
   additions : CharacterSet
   removals : CharacterSet
 }
@@ -60,7 +60,7 @@ fn push_unique_large_character_set(
       return
     }
   }
-  sets.push({ symbol, characters })
+  sets.push({ symbol, characters, })
 }
 
 ///|
@@ -106,7 +106,7 @@ fn choose_large_character_set(
       }
       None => ()
     }
-    best = Some({ set_index: index, additions, removals })
+    best = Some({ set_index: index, additions, removals, })
   }
   best
 }
@@ -120,7 +120,7 @@ fn character_set_simplify_ignoring(
 }
 
 ///|
-fn large_character_sets_weight(sets : Array[LargeCharacterSet]) -> Int {
+fn large_character_sets_weight(sets : Array[LargeCharacterSet]) -> Int32 {
   let mut weight = sets.length()
   for set in sets {
     match set.symbol {
@@ -135,7 +135,7 @@ fn large_character_sets_weight(sets : Array[LargeCharacterSet]) -> Int {
 ///|
 fn lex_large_character_sets_smoke_weight(
   lexical : ExpandedLexicalGrammar,
-) -> Int {
+) -> Int32 {
   let sets = collect_large_character_sets(lexical)
   let mut weight = large_character_sets_weight(sets)
   match

@@ -32,7 +32,7 @@ test "cli global config path candidates follow loader precedence" {
       "/tree-sitter-dir/config.json", "/xdg/tree-sitter/config.json", "/home/user/.tree-sitter/config.json",
     ],
   )
-  let without_xdg = { ..environment, xdg_config_home: None }
+  let without_xdg = { ..environment, xdg_config_home: None, }
   assert_true(
     cli_global_config_path_candidates_for_environment(None, without_xdg) ==
     [
@@ -238,7 +238,7 @@ test "cli injection language selection uses longest regex match" {
 ///|
 fn cli_selection_test_language_config(
   scope : String,
-  file_types? : Array[String] = [],
+  file_types~ : Array[String] = [],
   first_line_regex? : String,
 ) -> CliLanguageConfig {
   CliLanguageConfig::{

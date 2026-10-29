@@ -7,7 +7,7 @@ pub(all) suberror CliTagsRunError {
 pub(all) struct CliTagsCommandSourceResult {
   name : String?
   output : String
-  tag_count : Int
+  tag_count : Int32
   has_parse_error : Bool
   successful : Bool
 } derive(Eq, Debug)
@@ -16,7 +16,7 @@ pub(all) struct CliTagsCommandSourceResult {
 pub(all) struct CliTagsCommandRunResult {
   results : Array[CliTagsCommandSourceResult]
   stdout : String
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -33,7 +33,7 @@ pub fn run_cli_tags_command(
     stdout.write_string(result.output)
     results.push(result)
   }
-  { results, stdout: stdout.to_string(), exit_code: 0 }
+  { results, stdout: stdout.to_string(), exit_code: 0, }
 }
 
 ///|
@@ -137,7 +137,7 @@ fn cli_tags_docs_suffix(docs : String) -> String {
 }
 
 ///|
-fn cli_tags_truncate_docs(text : String, limit : Int) -> (String, Bool) {
+fn cli_tags_truncate_docs(text : String, limit : Int32) -> (String, Bool) {
   let out = StringBuilder::new()
   let mut width = 0
   for char in text {
@@ -152,7 +152,7 @@ fn cli_tags_truncate_docs(text : String, limit : Int) -> (String, Bool) {
 }
 
 ///|
-fn cli_tags_pad_right(text : String, width : Int) -> String {
+fn cli_tags_pad_right(text : String, width : Int32) -> String {
   let out = StringBuilder::new()
   out.write_string(text)
   let mut padding = width - text.length()

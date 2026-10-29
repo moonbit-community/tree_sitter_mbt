@@ -5,8 +5,8 @@ priv struct ExpandedLexicalVariable {
   kind : VariableKind
   nfa : Nfa
   immediate : Bool
-  explicit_precedence : Int?
-  implicit_precedence : Int
+  explicit_precedence : Int32?
+  implicit_precedence : Int32
   main_token : Bool
   literal : String?
 }
@@ -36,7 +36,7 @@ priv struct TokenExpandedGrammar {
 priv struct TokenExpansionContext {
   mut immediate : Bool
   mut main_token : Bool
-  mut explicit_precedence : Int?
+  mut explicit_precedence : Int32?
   mut string_token : Bool
 }
 
@@ -58,7 +58,7 @@ fn expand_tokens(
   }
   {
     syntax: grammar.syntax,
-    lexical: { variables, separators, external_tokens },
+    lexical: { variables, separators, external_tokens, },
   }
 }
 
@@ -144,7 +144,7 @@ fn token_expansion_context_default() -> TokenExpansionContext {
 }
 
 ///|
-fn token_implicit_precedence(context : TokenExpansionContext) -> Int {
+fn token_implicit_precedence(context : TokenExpansionContext) -> Int32 {
   let string_precedence = if context.string_token { 2 } else { 0 }
   let token_precedence = if context.main_token || context.immediate {
     1
@@ -155,7 +155,7 @@ fn token_implicit_precedence(context : TokenExpansionContext) -> Int {
 }
 
 ///|
-fn optional_int_or_zero(value : Int?) -> Int {
+fn optional_int_or_zero(value : Int32?) -> Int32 {
   match value {
     Some(number) => number
     None => 0
@@ -163,7 +163,7 @@ fn optional_int_or_zero(value : Int?) -> Int {
 }
 
 ///|
-fn terminal_index_for_symbol(symbol : InternalSymbol) -> Int {
+fn terminal_index_for_symbol(symbol : InternalSymbol) -> Int32 {
   match symbol {
     Terminal(index) => index
     _ => -1
@@ -331,7 +331,7 @@ fn regex_flags_contains(flags : String, target : Char) -> Bool {
 }
 
 ///|
-fn token_expanded_snapshot_weight(snapshot : TokenExpandedGrammar) -> Int {
+fn token_expanded_snapshot_weight(snapshot : TokenExpandedGrammar) -> Int32 {
   let mut weight = flattened_syntax_grammar_weight(snapshot.syntax)
   for variable in snapshot.lexical.variables {
     weight += internal_symbol_weight(variable.symbol)
@@ -365,7 +365,7 @@ fn token_expanded_snapshot_weight(snapshot : TokenExpandedGrammar) -> Int {
 }
 
 ///|
-fn flattened_syntax_grammar_weight(syntax : FlattenedSyntaxGrammar) -> Int {
+fn flattened_syntax_grammar_weight(syntax : FlattenedSyntaxGrammar) -> Int32 {
   let mut weight = syntax.name.length()
   weight += optional_internal_symbol_weight(syntax.start_symbol)
   for variable in syntax.variables {
@@ -415,7 +415,7 @@ fn flattened_syntax_grammar_weight(syntax : FlattenedSyntaxGrammar) -> Int {
 }
 
 ///|
-fn nfa_weight(nfa : Nfa) -> Int {
+fn nfa_weight(nfa : Nfa) -> Int32 {
   let mut weight = nfa.start
   for state in nfa.states {
     weight += nfa_state_weight(state)
@@ -424,7 +424,7 @@ fn nfa_weight(nfa : Nfa) -> Int {
 }
 
 ///|
-fn nfa_state_weight(state : NfaState) -> Int {
+fn nfa_state_weight(state : NfaState) -> Int32 {
   match state {
     NfaAdvance(set, target, is_separator, precedence) => {
       let separator_weight = if is_separator { 1 } else { 0 }

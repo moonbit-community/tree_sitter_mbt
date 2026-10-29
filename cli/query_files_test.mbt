@@ -66,17 +66,17 @@ test "cli classifies explicit query paths without defaults" {
 ///|
 test "cli combines query files without inserted separators" {
   let combined = combine_cli_query_files([
-    { path: "a.scm", content: "a" },
-    { path: "b.scm", content: "b\n" },
-    { path: "unicode.scm", content: "é" },
+    { path: "a.scm", content: "a", },
+    { path: "b.scm", content: "b\n", },
+    { path: "unicode.scm", content: "é", },
   ])
   assert_eq(combined.source, "ab\né")
   assert_true(
     combined.ranges ==
     [
-      { path: "a.scm", start_byte: 0, end_byte: 1 },
-      { path: "b.scm", start_byte: 1, end_byte: 3 },
-      { path: "unicode.scm", start_byte: 3, end_byte: 5 },
+      { path: "a.scm", start_byte: 0, end_byte: 1, },
+      { path: "b.scm", start_byte: 1, end_byte: 3, },
+      { path: "unicode.scm", start_byte: 3, end_byte: 5, },
     ],
   )
 }
@@ -84,25 +84,25 @@ test "cli combines query files without inserted separators" {
 ///|
 test "cli maps combined query byte offsets to source files" {
   let combined = combine_cli_query_files([
-    { path: "a.scm", content: "a" },
-    { path: "b.scm", content: "b\n" },
-    { path: "unicode.scm", content: "é" },
+    { path: "a.scm", content: "a", },
+    { path: "b.scm", content: "b\n", },
+    { path: "unicode.scm", content: "é", },
   ])
   assert_true(
     cli_query_file_offset(combined, 0) ==
-    Some({ path: "a.scm", byte_offset: 0 }),
+    Some({ path: "a.scm", byte_offset: 0, }),
   )
   assert_true(
     cli_query_file_offset(combined, 1) ==
-    Some({ path: "b.scm", byte_offset: 0 }),
+    Some({ path: "b.scm", byte_offset: 0, }),
   )
   assert_true(
     cli_query_file_offset(combined, 3) ==
-    Some({ path: "unicode.scm", byte_offset: 0 }),
+    Some({ path: "unicode.scm", byte_offset: 0, }),
   )
   assert_true(
     cli_query_file_offset(combined, 5) ==
-    Some({ path: "unicode.scm", byte_offset: 2 }),
+    Some({ path: "unicode.scm", byte_offset: 2, }),
   )
   assert_true(cli_query_file_offset(combined, -1) is None)
   assert_true(cli_query_file_offset(combined, 6) is None)
@@ -111,13 +111,13 @@ test "cli maps combined query byte offsets to source files" {
 ///|
 test "cli maps query errors to source files" {
   let combined = combine_cli_query_files([
-    { path: "first.scm", content: "(document) @root" },
-    { path: "second.scm", content: "(missing) @bad" },
+    { path: "first.scm", content: "(document) @root", },
+    { path: "second.scm", content: "(missing) @bad", },
   ])
   let error = @query.QueryError::NodeType(byte_offset=18, name="missing")
   assert_eq(cli_query_error_byte_offset(error), 18)
   assert_true(
     cli_query_error_file_offset(combined, error) ==
-    Some({ path: "second.scm", byte_offset: 2 }),
+    Some({ path: "second.scm", byte_offset: 2, }),
   )
 }

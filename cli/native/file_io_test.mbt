@@ -107,7 +107,7 @@ fn native_generate_command(
   grammar_path : String?,
   output_dir : String?,
   no_parser : Bool,
-  js_runtime? : String? = None,
+  js_runtime~ : String? = None,
 ) -> @cli.CliGenerateCommand {
   @cli.CliGenerateCommand::{
     grammar_path,
@@ -465,7 +465,7 @@ async test "native test-number input reads corpus case and language marker" {
   assert_true(zero_sources[0].name == Some("First case"))
   assert_true(zero_sources[0].contents == b"x")
   assert_true(zero_sources[0].language_names == ["source.first"])
-  let parse_command = { ..zero_command, test_number: Some(2U) }
+  let parse_command = { ..zero_command, test_number: Some(2U), }
   let parse_sources = read_cli_parse_command_sources(parse_command)
   assert_eq(parse_sources.length(), 1)
   assert_true(parse_sources[0].name == Some("Second case"))
@@ -824,7 +824,11 @@ async test "native query file readers preserve combined source ranges" {
   assert_true(
     combined.ranges ==
     [
-      @cli.CliQuerySourceRange::{ path: first_path, start_byte: 0, end_byte: 1 },
+      @cli.CliQuerySourceRange::{
+        path: first_path,
+        start_byte: 0,
+        end_byte: 1,
+      },
       @cli.CliQuerySourceRange::{
         path: second_path,
         start_byte: 1,

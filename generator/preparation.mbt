@@ -14,15 +14,15 @@ priv struct AliasExtractedGrammar {
 
 ///|
 priv enum InlinedProductionSource {
-  GrammarProduction(variable_index~ : Int, production_index~ : Int)
-  GeneratedProduction(Int)
+  GrammarProduction(variable_index~ : Int32, production_index~ : Int32)
+  GeneratedProduction(Int32)
 } derive(Eq)
 
 ///|
 priv struct InlinedProductionEntry {
   source : InlinedProductionSource
-  step_index : Int
-  production_indices : Array[Int]
+  step_index : Int32
+  production_indices : Array[Int32]
 }
 
 ///|
@@ -44,7 +44,7 @@ priv struct AliasCount {
   symbol : InternalSymbol
   value : String
   named : Bool
-  count : Int
+  count : Int32
 }
 
 ///|
@@ -90,11 +90,11 @@ fn record_alias(
   for i in 0..<alias_counts.length() {
     let entry = alias_counts[i]
     if entry.symbol == symbol && entry.value == value && entry.named == named {
-      alias_counts[i] = { ..entry, count: entry.count + 1 }
+      alias_counts[i] = { ..entry, count: entry.count + 1, }
       return
     }
   }
-  alias_counts.push({ symbol, value, named, count: 1 })
+  alias_counts.push({ symbol, value, named, count: 1, })
 }
 
 ///|
@@ -213,7 +213,7 @@ fn clear_default_aliases_in_productions(
 fn clear_default_aliases_in_production(
   production : FlattenedProduction,
   all_productions : Array[FlattenedProduction],
-  production_index : Int,
+  production_index : Int32,
   default_aliases : Array[DefaultAlias],
 ) -> FlattenedProduction {
   let steps : Array[ProductionStep] = []
@@ -223,12 +223,12 @@ fn clear_default_aliases_in_production(
       !other_productions_need_alias(
         all_productions, production_index, step_index, step, default_aliases,
       ) {
-      steps.push({ ..step, alias_name: None, alias_named: false })
+      steps.push({ ..step, alias_name: None, alias_named: false, })
     } else {
       steps.push(step)
     }
   }
-  { steps, dynamic_precedence: production.dynamic_precedence }
+  { steps, dynamic_precedence: production.dynamic_precedence, }
 }
 
 ///|
@@ -268,8 +268,8 @@ fn default_alias_matches(
 ///|
 fn other_productions_need_alias(
   productions : Array[FlattenedProduction],
-  current_index : Int,
-  step_index : Int,
+  current_index : Int32,
+  step_index : Int32,
   step : ProductionStep,
   default_aliases : Array[DefaultAlias],
 ) -> Bool {
@@ -331,7 +331,7 @@ fn process_inlines(
     syntax: grammar.syntax,
     lexical: grammar.lexical,
     default_aliases: grammar.default_aliases,
-    inlines: { productions: builder.productions, entries: builder.entries },
+    inlines: { productions: builder.productions, entries: builder.entries, },
   }
 }
 
@@ -362,7 +362,7 @@ fn validate_inline_symbols(
 ///|
 fn external_token_name_at(
   syntax : FlattenedSyntaxGrammar,
-  index : Int,
+  index : Int32,
 ) -> String {
   if index >= 0 && index < syntax.external_tokens.length() {
     syntax.external_tokens[index].name
@@ -374,7 +374,7 @@ fn external_token_name_at(
 ///|
 fn lexical_variable_name_at(
   lexical : ExpandedLexicalGrammar,
-  index : Int,
+  index : Int32,
 ) -> String {
   if index >= 0 && index < lexical.variables.length() {
     lexical.variables[index].name
@@ -386,7 +386,7 @@ fn lexical_variable_name_at(
 ///|
 fn syntax_variable_name_at(
   syntax : FlattenedSyntaxGrammar,
-  index : Int,
+  index : Int32,
 ) -> String {
   if index >= 0 && index < syntax.variables.length() {
     syntax.variables[index].name
@@ -411,7 +411,7 @@ fn process_inline_entries_for_production(
     if contains_internal_symbol(syntax.inline_symbols, step.symbol) {
       let inlined = inline_production_at_step(production, step_index, syntax)
       let production_indices = store_inlined_productions(builder, inlined)
-      builder.entries.push({ source, step_index, production_indices })
+      builder.entries.push({ source, step_index, production_indices, })
       for index in production_indices {
         process_inline_entries_for_production(
           builder,
@@ -440,7 +440,7 @@ fn contains_inlined_source(
 ///|
 fn inline_production_at_step(
   production : FlattenedProduction,
-  step_index : Int,
+  step_index : Int32,
   syntax : FlattenedSyntaxGrammar,
 ) -> Array[FlattenedProduction] {
   let mut candidates : Array[FlattenedProduction] = [production]
@@ -467,7 +467,7 @@ fn inline_production_at_step(
 ///|
 fn replace_candidate_with_inlined_productions(
   candidates : Array[FlattenedProduction],
-  index : Int,
+  index : Int32,
   replacements : Array[FlattenedProduction],
 ) -> Array[FlattenedProduction] {
   let result : Array[FlattenedProduction] = []
@@ -486,7 +486,7 @@ fn replace_candidate_with_inlined_productions(
 ///|
 fn inline_single_candidate(
   production : FlattenedProduction,
-  step_index : Int,
+  step_index : Int32,
   syntax : FlattenedSyntaxGrammar,
 ) -> Array[FlattenedProduction] {
   match production.steps[step_index].symbol {
@@ -509,7 +509,7 @@ fn inline_single_candidate(
 ///|
 fn inline_production_once(
   production : FlattenedProduction,
-  step_index : Int,
+  step_index : Int32,
   inline_production : FlattenedProduction,
 ) -> FlattenedProduction {
   let removed_step = production.steps[step_index]
@@ -555,7 +555,7 @@ fn apply_outer_inline_metadata(
     None => ()
   }
   match removed_step.field_name {
-    Some(value) => result = { ..result, field_name: Some(value) }
+    Some(value) => result = { ..result, field_name: Some(value), }
     None => ()
   }
   result
@@ -568,10 +568,10 @@ fn inherit_inline_tail_metadata(
 ) -> ProductionStep {
   let with_precedence = match inserted_step.precedence {
     Some(_) => inserted_step
-    None => { ..inserted_step, precedence: removed_step.precedence }
+    None => { ..inserted_step, precedence: removed_step.precedence, }
   }
   if with_precedence.associativity is Associativity::NoAssociativity {
-    { ..with_precedence, associativity: removed_step.associativity }
+    { ..with_precedence, associativity: removed_step.associativity, }
   } else {
     with_precedence
   }
@@ -581,8 +581,8 @@ fn inherit_inline_tail_metadata(
 fn store_inlined_productions(
   builder : InlinedProductionMapBuilder,
   productions : Array[FlattenedProduction],
-) -> Array[Int] {
-  let indices : Array[Int] = []
+) -> Array[Int32] {
+  let indices : Array[Int32] = []
   for production in productions {
     indices.push(store_inlined_production(builder, production))
   }
@@ -593,7 +593,7 @@ fn store_inlined_productions(
 fn store_inlined_production(
   builder : InlinedProductionMapBuilder,
   production : FlattenedProduction,
-) -> Int {
+) -> Int32 {
   for i in 0..<builder.productions.length() {
     if same_production(builder.productions[i], production) {
       return i
@@ -604,7 +604,7 @@ fn store_inlined_production(
 }
 
 ///|
-fn prepared_snapshot_weight(snapshot : PreparedGrammar) -> Int {
+fn prepared_snapshot_weight(snapshot : PreparedGrammar) -> Int32 {
   let mut weight = flattened_syntax_grammar_weight(snapshot.syntax)
   weight += expanded_lexical_grammar_weight(snapshot.lexical)
   for default_alias in snapshot.default_aliases {
@@ -619,7 +619,7 @@ fn prepared_snapshot_weight(snapshot : PreparedGrammar) -> Int {
 }
 
 ///|
-fn expanded_lexical_grammar_weight(lexical : ExpandedLexicalGrammar) -> Int {
+fn expanded_lexical_grammar_weight(lexical : ExpandedLexicalGrammar) -> Int32 {
   let mut weight = 0
   for variable in lexical.variables {
     weight += internal_symbol_weight(variable.symbol)
@@ -653,7 +653,7 @@ fn expanded_lexical_grammar_weight(lexical : ExpandedLexicalGrammar) -> Int {
 }
 
 ///|
-fn inlined_production_map_weight(map : InlinedProductionMap) -> Int {
+fn inlined_production_map_weight(map : InlinedProductionMap) -> Int32 {
   let mut weight = 0
   for production in map.productions {
     weight += flattened_production_weight(production)
@@ -669,7 +669,7 @@ fn inlined_production_map_weight(map : InlinedProductionMap) -> Int {
 }
 
 ///|
-fn inlined_source_weight(source : InlinedProductionSource) -> Int {
+fn inlined_source_weight(source : InlinedProductionSource) -> Int32 {
   match source {
     GrammarProduction(variable_index~, production_index~) =>
       variable_index + production_index

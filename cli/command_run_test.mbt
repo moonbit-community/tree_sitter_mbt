@@ -90,7 +90,7 @@ test "cli parse command runner maps command options to parse runner" {
     rebuild: false,
   }
   let result = run_cli_parse_command(command, parser, [
-    { name: Some("sample.mbt"), contents: b"ab", language_names: [] },
+    { name: Some("sample.mbt"), contents: b"ab", language_names: [], },
   ])
   assert_eq(result.results.length(), 1)
   assert_eq(result.exit_code, 0)
@@ -126,7 +126,7 @@ test "cli parse command runner appends first parse problem summary" {
     rebuild: false,
   }
   let result = run_cli_parse_command(command, parser, [
-    { name: Some("bad.mbt"), contents: b"x", language_names: [] },
+    { name: Some("bad.mbt"), contents: b"x", language_names: [], },
   ])
   assert_eq(result.results.length(), 1)
   assert_eq(result.exit_code, 1)
@@ -156,7 +156,7 @@ test "cli parse command runner appends timing summary when requested" {
     rebuild: false,
   }
   let result = run_cli_parse_command(command, parser, [
-    { name: Some("timed.mbt"), contents: b"ab", language_names: [] },
+    { name: Some("timed.mbt"), contents: b"ab", language_names: [], },
   ])
   assert_eq(result.exit_code, 0)
   assert_true(result.stdout.has_prefix("timed.mbt\tParse: "))
@@ -281,7 +281,7 @@ test "cli query command runner renders captures with text predicates" {
     command,
     cli_parse_pair_language(),
     "(item) @node (#eq? @node \"a\")",
-    [{ name: Some("source.mbt"), contents: b"ab", language_names: [] }],
+    [{ name: Some("source.mbt"), contents: b"ab", language_names: [], }],
   )
   assert_eq(result.exit_code, 0)
   assert_eq(result.results.length(), 1)
@@ -305,14 +305,14 @@ test "cli query command runner renders matches and applies byte ranges" {
     rebuild: false,
     output: CliQueryMatches,
     byte_range: None,
-    containing_byte_range: Some({ start: 0U, end: 1U }),
+    containing_byte_range: Some({ start: 0U, end: 1U, }),
     test_mode: false,
   }
   let result = run_cli_query_command(
     command,
     cli_parse_pair_language(),
     "(document) @root (item) @node",
-    [{ name: None, contents: b"ab", language_names: [] }],
+    [{ name: None, contents: b"ab", language_names: [], }],
   )
   assert_eq(result.exit_code, 0)
   assert_eq(result.results[0].match_count, 1)
@@ -390,7 +390,7 @@ test "cli query command runner test mode uses utf8 grapheme columns" {
     command,
     cli_query_utf8_column_language(),
     "(item) @node",
-    [{ name: Some("utf8.mbt"), contents: source, language_names: [] }],
+    [{ name: Some("utf8.mbt"), contents: source, language_names: [], }],
   )
   assert_eq(result.exit_code, 0)
   assert_true(result.results[0].successful)
@@ -442,7 +442,7 @@ test "cli tags command runner renders upstream style rows" {
     "(item) @definition.function @name",
   )
   let result = run_cli_tags_command(cli_tags_test_command(), config, [
-    { name: Some("source.mbt"), contents: b"ab", language_names: [] },
+    { name: Some("source.mbt"), contents: b"ab", language_names: [], },
   ])
   assert_eq(result.exit_code, 0)
   assert_eq(result.results.length(), 1)

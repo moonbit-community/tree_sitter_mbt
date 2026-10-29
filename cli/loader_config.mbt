@@ -46,7 +46,7 @@ pub(all) struct CliLanguageConfig {
 pub(all) struct CliLanguageFileTypeMatch {
   file_type : String
   exact_filename : Bool
-  suffix_length : Int
+  suffix_length : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -254,7 +254,7 @@ pub fn cli_language_file_type_match(
     } else {
       match cli_config_extension_suffix_length(base, file_type) {
         Some(length) =>
-          Some({ file_type, exact_filename: false, suffix_length: length })
+          Some({ file_type, exact_filename: false, suffix_length: length, })
         None => None
       }
     }
@@ -634,7 +634,7 @@ fn cli_config_parse_semantic_version_part(
   part : String,
   path : String,
   value : String,
-) -> Int raise CliConfigError {
+) -> Int32 raise CliConfigError {
   if part.is_empty() || (part.length() > 1 && part.get_char(0) == Some('0')) {
     raise CliConfigError::InvalidSemanticVersion(path~, value~)
   }
@@ -694,7 +694,7 @@ fn cli_config_basename(path : String) -> String {
 fn cli_config_extension_suffix_length(
   base : String,
   file_type : String,
-) -> Int? {
+) -> Int32? {
   if file_type.is_empty() {
     None
   } else if file_type.has_prefix(".") {
@@ -726,7 +726,7 @@ fn cli_config_file_type_match_is_better(
 }
 
 ///|
-fn cli_config_file_type_score(file_match : CliLanguageFileTypeMatch) -> Int {
+fn cli_config_file_type_score(file_match : CliLanguageFileTypeMatch) -> Int32 {
   if file_match.exact_filename {
     1000000 + file_match.suffix_length
   } else {
@@ -738,7 +738,7 @@ fn cli_config_file_type_score(file_match : CliLanguageFileTypeMatch) -> Int {
 fn cli_config_content_regex_score(
   config : CliLanguageConfig,
   source : String?,
-) -> (Int, Int) raise CliConfigError {
+) -> (Int32, Int32) raise CliConfigError {
   match config.content_regex {
     None => (0, 0)
     Some(pattern) =>
@@ -763,10 +763,10 @@ fn cli_config_content_regex_score(
 
 ///|
 fn cli_config_content_score_is_better(
-  rank : Int,
-  length : Int,
-  best_rank : Int,
-  best_length : Int,
+  rank : Int32,
+  length : Int32,
+  best_rank : Int32,
+  best_length : Int32,
 ) -> Bool {
   rank > best_rank || (rank == best_rank && length > best_length)
 }

@@ -17,18 +17,18 @@ fn token_expansion_fixture(
       reserved_sets: [],
       supertype_symbols: [],
     },
-    lexical: { variables, separators },
+    lexical: { variables, separators, },
   }
 }
 
 ///|
 fn lexical_variable(
-  index : Int,
+  index : Int32,
   name : String,
   kind : VariableKind,
   rule : InternedRule,
 ) -> LexicalVariable {
-  { symbol: InternalSymbol::Terminal(index), name, kind, rule }
+  { symbol: InternalSymbol::Terminal(index), name, kind, rule, }
 }
 
 ///|

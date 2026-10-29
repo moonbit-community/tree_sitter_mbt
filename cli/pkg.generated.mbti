@@ -20,7 +20,7 @@ pub fn cli_corpus_correction_from_example(CliCorpusExample, output? : String) ->
 
 pub fn cli_corpus_example_is_selected(CliCorpusExample, include_pattern? : String, exclude_pattern? : String, file_name? : String) -> Bool
 
-pub fn cli_corpus_run_exit_code(Array[CliCorpusRunResult]) -> Int
+pub fn cli_corpus_run_exit_code(Array[CliCorpusRunResult]) -> Int32
 
 pub fn cli_corpus_run_results_have_failure(Array[CliCorpusRunResult]) -> Bool
 
@@ -32,17 +32,17 @@ pub fn cli_language_config_grammar_root(String, CliLanguageConfig) -> String
 
 pub fn cli_language_file_type_match(CliLanguageConfig, String) -> CliLanguageFileTypeMatch?
 
-pub fn cli_parse_exit_code(Array[CliParseResult]) -> Int
+pub fn cli_parse_exit_code(Array[CliParseResult]) -> Int32
 
 pub fn cli_parse_results_have_error(Array[CliParseResult]) -> Bool
 
-pub fn cli_query_error_byte_offset(@query.QueryError) -> Int
+pub fn cli_query_error_byte_offset(@query.QueryError) -> Int32
 
 pub fn cli_query_error_file_offset(CliCombinedQuery, @query.QueryError) -> CliQueryFileOffset?
 
-pub fn cli_query_file_offset(CliCombinedQuery, Int) -> CliQueryFileOffset?
+pub fn cli_query_file_offset(CliCombinedQuery, Int32) -> CliQueryFileOffset?
 
-pub fn cli_query_range_for_byte_offset(CliCombinedQuery, Int) -> CliQuerySourceRange?
+pub fn cli_query_range_for_byte_offset(CliCombinedQuery, Int32) -> CliQuerySourceRange?
 
 pub fn cli_tree_sitter_config_path(String) -> String
 
@@ -52,13 +52,13 @@ pub fn detect_utf16_bom_encoding(Bytes) -> @api.InputEncoding?
 
 pub fn first_parse_problem(@tree_sitter_mbt.Tree) -> CliParseProblem?
 
-pub fn format_cli_corpus_sexp(String, initial_indent_level? : Int) -> String
+pub fn format_cli_corpus_sexp(String, initial_indent_level? : Int32) -> String
 
 pub fn locate_cli_language_configs(String, CliTreeSitterConfig) -> Array[CliLanguageConfigLocation]
 
 pub fn normalize_corpus_sexp_output(String) -> CliCorpusNormalizedOutput
 
-pub fn normalize_test_number(UInt) -> UInt
+pub fn normalize_test_number(UInt32) -> UInt32
 
 pub fn parse_cli_command_args(Array[String]) -> CliCommand raise CliArgsError
 
@@ -136,7 +136,7 @@ pub fn select_cli_language_location(Array[CliLanguageConfigLocation], lib_path? 
 
 pub fn select_cli_language_location_for_scope(Array[CliLanguageConfigLocation], String) -> CliLanguageConfigLocation?
 
-pub fn select_input_source(paths_file_contents? : String, positional_paths? : Array[CliPathExpansion], test_number? : UInt) -> CliInputSource raise CliInputError
+pub fn select_input_source(paths_file_contents? : String, positional_paths? : Array[CliPathExpansion], test_number? : UInt32) -> CliInputSource raise CliInputError
 
 pub fn strip_cli_corpus_sexp_fields(String) -> String
 
@@ -193,8 +193,8 @@ pub(all) suberror CliTagsRunError {
 
 // Types and methods
 pub(all) struct CliByteRange {
-  start : UInt
-  end : UInt
+  start : UInt32
+  end : UInt32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliCombinedQuery {
@@ -223,16 +223,16 @@ pub(all) struct CliCorpusCorrection {
   input : String
   output : String
   attributes_str : String
-  header_delim_len : Int
-  divider_delim_len : Int
+  header_delim_len : Int32
+  divider_delim_len : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliCorpusExample {
   name : String
   input : Bytes
   output : String
-  header_delim_len : Int
-  divider_delim_len : Int
+  header_delim_len : Int32
+  divider_delim_len : Int32
   has_fields : Bool
   attributes_str : String
   attributes : CliCorpusAttributes
@@ -297,7 +297,7 @@ pub(all) struct CliGenerateCommand {
 pub(all) struct CliGenerateRunResult {
   files : Array[CliOutputFile]
   language_name : String
-  abi_version : Int
+  abi_version : Int32
   warnings : Array[@generator.GenerateWarning]
   json_summary : String?
 } derive(Eq, @debug.Debug)
@@ -316,7 +316,7 @@ pub(all) struct CliGlobalConfigPathEnvironment {
 pub(all) enum CliInputSource {
   Stdin
   Paths(Array[String])
-  TestNumber(UInt)
+  TestNumber(UInt32)
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliLanguageConfig {
@@ -342,7 +342,7 @@ pub(all) struct CliLanguageConfigLocation {
 pub(all) struct CliLanguageFileTypeMatch {
   file_type : String
   exact_filename : Bool
-  suffix_length : Int
+  suffix_length : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) enum CliLanguageSelection {
@@ -378,14 +378,14 @@ pub(all) struct CliParseCommand {
   no_ranges : Bool
   time : Bool
   encoding : @api.InputEncoding?
-  test_number : UInt?
+  test_number : UInt32?
   rebuild : Bool
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliParseCommandRunResult {
   results : Array[CliParseCommandSourceResult]
   stdout : String
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliParseCommandSource {
@@ -409,8 +409,8 @@ pub(all) struct CliParseProblem {
   kind : CliParseProblemKind
   node_type : String
   is_named : Bool
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   start_point : @api.Point
   end_point : @api.Point
 } derive(Eq, @debug.Debug)
@@ -441,7 +441,7 @@ pub(all) struct CliQueryCommand {
   lang_name : String?
   scope : String?
   encoding : @api.InputEncoding?
-  test_number : UInt?
+  test_number : UInt32?
   rebuild : Bool
   output : CliQueryOutputMode
   byte_range : CliByteRange?
@@ -452,14 +452,14 @@ pub(all) struct CliQueryCommand {
 pub(all) struct CliQueryCommandRunResult {
   results : Array[CliQueryCommandSourceResult]
   stdout : String
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliQueryCommandSourceResult {
   name : String?
   output : String
-  match_count : Int
-  capture_count : Int
+  match_count : Int32
+  capture_count : Int32
   has_parse_error : Bool
   successful : Bool
 } derive(Eq, @debug.Debug)
@@ -479,7 +479,7 @@ pub(all) enum CliQueryFileKind {
 
 pub(all) struct CliQueryFileOffset {
   path : String
-  byte_offset : Int
+  byte_offset : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliQueryFilePathSet {
@@ -497,8 +497,8 @@ pub(all) enum CliQueryOutputMode {
 
 pub(all) struct CliQuerySourceRange {
   path : String
-  start_byte : Int
-  end_byte : Int
+  start_byte : Int32
+  end_byte : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliTagsCommand {
@@ -509,20 +509,20 @@ pub(all) struct CliTagsCommand {
   scope : String?
   time : Bool
   quiet : Bool
-  test_number : UInt?
+  test_number : UInt32?
   rebuild : Bool
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliTagsCommandRunResult {
   results : Array[CliTagsCommandSourceResult]
   stdout : String
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliTagsCommandSourceResult {
   name : String?
   output : String
-  tag_count : Int
+  tag_count : Int32
   has_parse_error : Bool
   successful : Bool
 } derive(Eq, @debug.Debug)
@@ -561,15 +561,15 @@ pub(all) struct CliTestCommandRunResult {
   summary : CliTestRunSummary
   stdout : String
   json_summary : String?
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct CliTestRunSummary {
-  total : Int
-  passed : Int
-  failed : Int
-  skipped : Int
-  platform_skipped : Int
+  total : Int32
+  passed : Int32
+  failed : Int32
+  skipped : Int32
+  platform_skipped : Int32
 } derive(Eq, @debug.Debug)
 
 pub(all) enum CliTestStatsMode {
@@ -585,4 +585,3 @@ pub(all) struct CliTreeSitterConfig {
 // Type aliases
 
 // Traits
-

@@ -4,7 +4,7 @@ fn generated_moonbit_sources(
   options : GenerateOptions,
 ) -> Array[GeneratedSource] {
   [
-    { path: "moon.pkg", content: generated_moon_pkg_source(options) },
+    { path: "moon.pkg", content: generated_moon_pkg_source(options), },
     {
       path: "language.mbt",
       content: generated_language_mbt_source(tables, options),
@@ -214,7 +214,7 @@ fn render_bool(value : Bool) -> String {
 }
 
 ///|
-fn render_int_option(value : Int?) -> String {
+fn render_int_option(value : Int32?) -> String {
   match value {
     Some(inner) => "Some(\{inner})"
     None => "None"
@@ -228,7 +228,7 @@ fn render_array(values : Array[String]) -> String {
 }
 
 ///|
-fn render_int_array(values : Array[Int]) -> String {
+fn render_int_array(values : Array[Int32]) -> String {
   let rendered : Array[String] = []
   for value in values {
     rendered.push(value.to_string())
@@ -550,7 +550,7 @@ fn render_external_scanner_states(
 fn render_external_scanner_symbol_map(
   value : @tables.ExternalScannerDescriptor,
 ) -> String {
-  let symbols : Array[Int] = []
+  let symbols : Array[Int32] = []
   for token_id in 0..<value.external_token_count() {
     match value.symbol_for_external_token(token_id) {
       Some(symbol) => symbols.push(symbol)

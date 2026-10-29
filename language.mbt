@@ -18,7 +18,7 @@ pub fn language_from_generated_tables(
 }
 
 ///|
-pub fn Language::abi_version(self : Language) -> Int {
+pub fn Language::abi_version(self : Language) -> Int32 {
   self.tables.abi_version()
 }
 
@@ -33,27 +33,27 @@ pub fn Language::metadata(self : Language) -> @tables.LanguageMetadata {
 }
 
 ///|
-pub fn Language::symbol_count(self : Language) -> Int {
+pub fn Language::symbol_count(self : Language) -> Int32 {
   self.tables.symbol_count() + self.tables.alias_count()
 }
 
 ///|
-pub fn Language::token_count(self : Language) -> Int {
+pub fn Language::token_count(self : Language) -> Int32 {
   self.tables.token_count()
 }
 
 ///|
-pub fn Language::external_token_count(self : Language) -> Int {
+pub fn Language::external_token_count(self : Language) -> Int32 {
   self.tables.external_token_count()
 }
 
 ///|
-pub fn Language::state_count(self : Language) -> Int {
+pub fn Language::state_count(self : Language) -> Int32 {
   self.tables.state_count()
 }
 
 ///|
-pub fn Language::field_count(self : Language) -> Int {
+pub fn Language::field_count(self : Language) -> Int32 {
   self.tables.field_count()
 }
 

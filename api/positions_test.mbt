@@ -33,7 +33,7 @@ test "point add and sub match tree-sitter newline extent rules" {
 test "tree-sitter point columns are byte columns not string or scanner columns" {
   let moonbit_scalar_count = "é".to_array().length()
   let point_after_e_acute = Point::new(row=0, column=2)
-  let external_scanner_code_point_column : UInt = 1
+  let external_scanner_code_point_column : UInt32 = 1
   assert_eq(moonbit_scalar_count, 1)
   assert_eq(point_after_e_acute.column, 2)
   assert_true(point_after_e_acute.column != external_scanner_code_point_column)

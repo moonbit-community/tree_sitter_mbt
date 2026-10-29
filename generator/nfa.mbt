@@ -1,21 +1,21 @@
 ///|
 priv enum NfaState {
-  NfaAdvance(CharacterSet, Int, Bool, Int)
-  NfaSplit(Array[Int])
-  NfaAccept(Int, Int)
+  NfaAdvance(CharacterSet, Int32, Bool, Int32)
+  NfaSplit(Array[Int32])
+  NfaAccept(Int32, Int32)
 }
 
 ///|
 priv struct Nfa {
   states : Array[NfaState]
-  start : Int
+  start : Int32
 }
 
 ///|
 priv struct NfaFragment {
   states : Array[NfaState]
-  start : Int
-  accepts : Array[Int]
+  start : Int32
+  accepts : Array[Int32]
 }
 
 ///|
@@ -29,7 +29,7 @@ fn parse_regex_to_nfa(pattern : String) -> Result[Nfa, String] {
 ///|
 fn regex_ast_to_nfa(ast : RegexAst) -> Nfa {
   let fragment = regex_ast_to_fragment(ast)
-  { states: fragment.states, start: fragment.start }
+  { states: fragment.states, start: fragment.start, }
 }
 
 ///|
@@ -46,7 +46,7 @@ fn regex_ast_to_fragment(ast : RegexAst) -> NfaFragment {
 
 ///|
 fn empty_fragment() -> NfaFragment {
-  { states: [NfaState::NfaAccept(-1, 0)], start: 0, accepts: [0] }
+  { states: [NfaState::NfaAccept(-1, 0)], start: 0, accepts: [0], }
 }
 
 ///|
@@ -76,8 +76,8 @@ fn choice_fragment(items : Array[RegexAst]) -> NfaFragment {
     return empty_fragment()
   }
   let states : Array[NfaState] = []
-  let starts : Array[Int] = []
-  let accepts : Array[Int] = []
+  let starts : Array[Int32] = []
+  let accepts : Array[Int32] = []
   states.push(NfaState::NfaSplit(starts))
   for item in items {
     let fragment = regex_ast_to_fragment(item)
@@ -88,11 +88,15 @@ fn choice_fragment(items : Array[RegexAst]) -> NfaFragment {
       accepts.push(accept + offset)
     }
   }
-  { states, start: 0, accepts }
+  { states, start: 0, accepts, }
 }
 
 ///|
-fn repeat_fragment(content : RegexAst, min : Int, max : Int?) -> NfaFragment {
+fn repeat_fragment(
+  content : RegexAst,
+  min : Int32,
+  max : Int32?,
+) -> NfaFragment {
   let mut result = exact_repeat_fragment(content, min)
   match max {
     None => concatenate_fragments(result, star_fragment(content))
@@ -107,7 +111,7 @@ fn repeat_fragment(content : RegexAst, min : Int, max : Int?) -> NfaFragment {
 }
 
 ///|
-fn exact_repeat_fragment(content : RegexAst, count : Int) -> NfaFragment {
+fn exact_repeat_fragment(content : RegexAst, count : Int32) -> NfaFragment {
   if count <= 0 {
     return empty_fragment()
   }
@@ -140,7 +144,7 @@ fn star_fragment(content : RegexAst) -> NfaFragment {
     body_offset,
   )
   states.push(NfaState::NfaAccept(-1, 0))
-  { states, start: 0, accepts: [accept_index] }
+  { states, start: 0, accepts: [accept_index], }
 }
 
 ///|
@@ -155,17 +159,17 @@ fn concatenate_fragments(
     NfaState::NfaSplit([right.start + right_offset]),
   )
   append_offset_states(states, right.states, right_offset)
-  let accepts : Array[Int] = []
+  let accepts : Array[Int32] = []
   for accept in right.accepts {
     accepts.push(accept + right_offset)
   }
-  { states, start: left.start, accepts }
+  { states, start: left.start, accepts, }
 }
 
 ///|
 fn replace_accepts(
   states : Array[NfaState],
-  accepts : Array[Int],
+  accepts : Array[Int32],
   replacement : NfaState,
 ) -> Array[NfaState] {
   let result : Array[NfaState] = []
@@ -183,7 +187,7 @@ fn replace_accepts(
 fn append_offset_states(
   target : Array[NfaState],
   states : Array[NfaState],
-  offset : Int,
+  offset : Int32,
 ) -> Unit {
   for state in states {
     target.push(offset_state(state, offset))
@@ -191,7 +195,7 @@ fn append_offset_states(
 }
 
 ///|
-fn offset_state(state : NfaState, offset : Int) -> NfaState {
+fn offset_state(state : NfaState, offset : Int32) -> NfaState {
   match state {
     NfaAdvance(set, target, is_separator, precedence) =>
       NfaState::NfaAdvance(set, target + offset, is_separator, precedence)
@@ -202,8 +206,8 @@ fn offset_state(state : NfaState, offset : Int) -> NfaState {
 }
 
 ///|
-fn offset_targets(targets : Array[Int], offset : Int) -> Array[Int] {
-  let result : Array[Int] = []
+fn offset_targets(targets : Array[Int32], offset : Int32) -> Array[Int32] {
+  let result : Array[Int32] = []
   for target in targets {
     result.push(target + offset)
   }
@@ -214,7 +218,7 @@ fn offset_targets(targets : Array[Int], offset : Int) -> Array[Int] {
 fn nfa_matches(nfa : Nfa, input : String) -> Bool {
   let mut states = nfa_epsilon_closure(nfa, [nfa.start])
   for char in input.to_array() {
-    let next : Array[Int] = []
+    let next : Array[Int32] = []
     for state_id in states {
       if state_id >= 0 && state_id < nfa.states.length() {
         match nfa.states[state_id] {
@@ -232,9 +236,9 @@ fn nfa_matches(nfa : Nfa, input : String) -> Bool {
 }
 
 ///|
-fn nfa_epsilon_closure(nfa : Nfa, starts : Array[Int]) -> Array[Int] {
-  let result : Array[Int] = []
-  let work : Array[Int] = []
+fn nfa_epsilon_closure(nfa : Nfa, starts : Array[Int32]) -> Array[Int32] {
+  let result : Array[Int32] = []
+  let work : Array[Int32] = []
   for start in starts {
     push_unique_int(work, start)
   }
@@ -259,7 +263,7 @@ fn nfa_epsilon_closure(nfa : Nfa, starts : Array[Int]) -> Array[Int] {
 }
 
 ///|
-fn nfa_states_include_accept(nfa : Nfa, states : Array[Int]) -> Bool {
+fn nfa_states_include_accept(nfa : Nfa, states : Array[Int32]) -> Bool {
   for state_id in states {
     if state_id >= 0 && state_id < nfa.states.length() {
       if nfa.states[state_id] is NfaState::NfaAccept(_, _) {
@@ -271,7 +275,7 @@ fn nfa_states_include_accept(nfa : Nfa, states : Array[Int]) -> Bool {
 }
 
 ///|
-fn nfa_smoke_weight() -> Int {
+fn nfa_smoke_weight() -> Int32 {
   match parse_regex_to_nfa("a{1,2}|\\d+") {
     Ok(nfa) => {
       let accepted = if nfa_matches(nfa, "42") { 1 } else { 0 }
@@ -284,10 +288,10 @@ fn nfa_smoke_weight() -> Int {
 ///|
 fn nfa_with_metadata(
   nfa : Nfa,
-  variable_index : Int,
-  accept_precedence : Int,
+  variable_index : Int32,
+  accept_precedence : Int32,
   is_separator : Bool,
-  transition_precedence : Int,
+  transition_precedence : Int32,
 ) -> Nfa {
   let states : Array[NfaState] = []
   for state in nfa.states {
@@ -297,16 +301,16 @@ fn nfa_with_metadata(
       ),
     )
   }
-  { states, start: nfa.start }
+  { states, start: nfa.start, }
 }
 
 ///|
 fn nfa_state_with_metadata(
   state : NfaState,
-  variable_index : Int,
-  accept_precedence : Int,
+  variable_index : Int32,
+  accept_precedence : Int32,
   is_separator : Bool,
-  transition_precedence : Int,
+  transition_precedence : Int32,
 ) -> NfaState {
   match state {
     NfaAdvance(set, target, _, _) =>
@@ -317,7 +321,7 @@ fn nfa_state_with_metadata(
 }
 
 ///|
-fn contains_int(values : Array[Int], value : Int) -> Bool {
+fn contains_int(values : Array[Int32], value : Int32) -> Bool {
   for existing in values {
     if existing == value {
       return true
@@ -327,7 +331,7 @@ fn contains_int(values : Array[Int], value : Int) -> Bool {
 }
 
 ///|
-fn push_unique_int(values : Array[Int], value : Int) -> Unit {
+fn push_unique_int(values : Array[Int32], value : Int32) -> Unit {
   if !contains_int(values, value) {
     values.push(value)
   }

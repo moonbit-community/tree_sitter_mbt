@@ -18,7 +18,7 @@ pub fn upstream_commit() -> String {
 }
 
 ///|
-pub fn native_abi_version() -> Int {
+pub fn native_abi_version() -> Int32 {
   15
 }
 

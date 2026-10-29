@@ -17,7 +17,7 @@ pub(all) enum TagsProgressPhase {
 ///|
 pub(all) struct TagsProgressState {
   phase : TagsProgressPhase
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
 } derive(Eq, Debug)
 
 ///|
@@ -34,8 +34,8 @@ pub(all) enum TagKind {
 
 ///|
 pub(all) struct Utf16ColumnRange {
-  start : UInt
-  end : UInt
+  start : UInt32
+  end : UInt32
 } derive(Eq, Debug)
 
 ///|
@@ -61,9 +61,9 @@ pub(all) struct TagsResult {
 struct TagsConfiguration {
   language : @tree_sitter_mbt.Language
   query : @query.Query
-  tags_pattern_start : Int
-  local_definition_capture_index : Int?
-  local_scope_capture_index : Int?
+  tags_pattern_start : Int32
+  local_definition_capture_index : Int32?
+  local_scope_capture_index : Int32?
   local_scope_inherits_patterns : Array[Bool]
   non_local_patterns : Array[Bool]
   general_predicates : Array[@query.QueryGeneralPredicate]
@@ -71,22 +71,22 @@ struct TagsConfiguration {
 
 ///|
 priv struct TagsLocalScope {
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   inherits : Bool
 }
 
 ///|
 priv struct TagsLocalDefinition {
-  start_byte : UInt
+  start_byte : UInt32
   name : Bytes
-  scope_index : Int
+  scope_index : Int32
 }
 
 ///|
 priv struct TagQueueEntry {
   tag : Tag
-  pattern_index : Int
+  pattern_index : Int32
   ignored : Bool
 }
 
@@ -94,7 +94,7 @@ priv struct TagQueueEntry {
 pub fn TagsConfiguration::new(
   language : @tree_sitter_mbt.Language,
   tags_query : String,
-  locals_query? : String = "",
+  locals_query~ : String = "",
 ) -> TagsConfiguration raise TagsError {
   let local_query = compile_tags_query(language, locals_query)
   let tags_pattern_start = local_query.pattern_count()
@@ -123,12 +123,12 @@ pub fn TagsConfiguration::new(
 }
 
 ///|
-pub fn TagsConfiguration::tags_pattern_start(self : TagsConfiguration) -> Int {
+pub fn TagsConfiguration::tags_pattern_start(self : TagsConfiguration) -> Int32 {
   self.tags_pattern_start
 }
 
 ///|
-pub fn TagsConfiguration::pattern_count(self : TagsConfiguration) -> Int {
+pub fn TagsConfiguration::pattern_count(self : TagsConfiguration) -> Int32 {
   self.query.pattern_count()
 }
 
@@ -147,33 +147,33 @@ pub fn TagsConfiguration::names(self : TagsConfiguration) -> Array[String] {
 ///|
 pub fn TagsProgressState::new(
   phase~ : TagsProgressPhase,
-  current_byte_offset~ : UInt,
+  current_byte_offset~ : UInt32,
 ) -> TagsProgressState {
-  { phase, current_byte_offset }
+  { phase, current_byte_offset, }
 }
 
 ///|
 pub fn TagsOptions::default() -> TagsOptions {
-  { cancellation_state: None, progress_callback: None }
+  { cancellation_state: None, progress_callback: None, }
 }
 
 ///|
 pub fn TagsOptions::cancelled(state : TagsProgressState) -> TagsOptions {
-  { cancellation_state: Some(state), progress_callback: None }
+  { cancellation_state: Some(state), progress_callback: None, }
 }
 
 ///|
 pub fn TagsOptions::progress(
   callback : (TagsProgressState) -> Bool,
 ) -> TagsOptions {
-  { cancellation_state: None, progress_callback: Some(callback) }
+  { cancellation_state: None, progress_callback: Some(callback), }
 }
 
 ///|
 pub fn generate_tags(
   config : TagsConfiguration,
   source : Bytes,
-  options? : TagsOptions = TagsOptions::default(),
+  options~ : TagsOptions = TagsOptions::default(),
 ) -> TagsResult raise TagsError {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(config.language) catch {
@@ -224,7 +224,7 @@ pub fn generate_tags(
       None => ()
     }
   }
-  { tags: drain_tag_queue(tag_queue), has_error: tree.root_node().has_error() }
+  { tags: drain_tag_queue(tag_queue), has_error: tree.root_node().has_error(), }
 }
 
 ///|
@@ -346,7 +346,7 @@ fn collect_tags_query_matches(
 }
 
 ///|
-fn tags_capture_id(query : @query.Query, capture_name : String) -> Int? {
+fn tags_capture_id(query : @query.Query, capture_name : String) -> Int32? {
   for capture_id in 0..<query.capture_count() {
     if query.capture_name_for_id(capture_id) == Some(capture_name) {
       return Some(capture_id)
@@ -387,7 +387,7 @@ fn tag_capture_name_has_nonempty_suffix(name : String, prefix : String) -> Bool 
 
 ///|
 fn tags_non_local_patterns(
-  pattern_count : Int,
+  pattern_count : Int32,
   assertions : Array[@query.QueryPropertyAssertion],
 ) -> Array[Bool] {
   let result : Array[Bool] = []
@@ -407,7 +407,7 @@ fn tags_non_local_patterns(
 
 ///|
 fn tags_local_scope_inherits_patterns(
-  pattern_count : Int,
+  pattern_count : Int32,
   settings : Array[@query.QueryPropertySetting],
 ) -> Array[Bool] {
   let result : Array[Bool] = []
@@ -432,11 +432,11 @@ fn tags_local_scope_inherits_patterns(
 ///|
 fn collect_tags_local_scopes(
   config : TagsConfiguration,
-  source_length : UInt,
+  source_length : UInt32,
   matches : Array[@query.QueryMatch],
 ) -> Array[TagsLocalScope] {
   let scopes : Array[TagsLocalScope] = [
-    { start_byte: 0U, end_byte: source_length, inherits: true },
+    { start_byte: 0U, end_byte: source_length, inherits: true, },
   ]
   for matched in matches {
     if matched.pattern_index >= config.tags_pattern_start {
@@ -491,7 +491,7 @@ fn collect_tags_local_definitions(
 ///|
 fn tags_local_scope_inherits(
   config : TagsConfiguration,
-  pattern_index : Int,
+  pattern_index : Int32,
 ) -> Bool {
   match config.local_scope_inherits_patterns.get(pattern_index) {
     Some(inherits) => inherits
@@ -607,7 +607,7 @@ fn tag_select_adjacent_docs(
 ///|
 fn tag_doc_capture_id_is_present(
   doc_captures : Array[@query.QueryCapture],
-  capture_id : Int,
+  capture_id : Int32,
 ) -> Bool {
   for doc in doc_captures {
     if doc.index == capture_id {
@@ -621,8 +621,8 @@ fn tag_doc_capture_id_is_present(
 fn tag_select_adjacent_docs_for_capture(
   matched : @query.QueryMatch,
   doc_captures : Array[@query.QueryCapture],
-  doc_capture_id : Int,
-  target_capture_id : Int,
+  doc_capture_id : Int32,
+  target_capture_id : Int32,
 ) -> Array[@query.QueryCapture] {
   guard tag_first_capture_for_id(matched, target_capture_id) is Some(target) else {
     return doc_captures
@@ -656,7 +656,7 @@ fn tag_select_adjacent_docs_for_capture(
 ///|
 fn tag_first_capture_for_id(
   matched : @query.QueryMatch,
-  capture_id : Int,
+  capture_id : Int32,
 ) -> @query.QueryCapture? {
   for capture in matched.captures {
     if capture.index == capture_id {
@@ -669,8 +669,8 @@ fn tag_first_capture_for_id(
 ///|
 fn tag_strip_doc_text(
   text : String,
-  pattern_index : Int,
-  doc_capture_id : Int,
+  pattern_index : Int32,
+  doc_capture_id : Int32,
   general_predicates : Array[@query.QueryGeneralPredicate],
 ) -> String {
   let mut result = text
@@ -703,7 +703,7 @@ fn tag_match_has_ignore(matched : @query.QueryMatch) -> Bool {
 ///|
 fn tags_pattern_is_non_local(
   config : TagsConfiguration,
-  pattern_index : Int,
+  pattern_index : Int32,
 ) -> Bool {
   match config.non_local_patterns.get(pattern_index) {
     Some(value) => value
@@ -740,9 +740,9 @@ fn tags_name_is_local(
 ///|
 fn tags_scope_for_range(
   scopes : Array[TagsLocalScope],
-  start_byte : UInt,
-  end_byte : UInt,
-) -> Int {
+  start_byte : UInt32,
+  end_byte : UInt32,
+) -> Int32 {
   let mut result = 0
   for index, scope in scopes {
     if tags_scope_contains(scope, start_byte, end_byte) &&
@@ -756,10 +756,10 @@ fn tags_scope_for_range(
 ///|
 fn tags_scope_chain_for_range(
   scopes : Array[TagsLocalScope],
-  start_byte : UInt,
-  end_byte : UInt,
-) -> Array[Int] {
-  let result : Array[Int] = []
+  start_byte : UInt32,
+  end_byte : UInt32,
+) -> Array[Int32] {
+  let result : Array[Int32] = []
   for index, scope in scopes {
     if tags_scope_contains(scope, start_byte, end_byte) {
       result.push(index)
@@ -772,8 +772,8 @@ fn tags_scope_chain_for_range(
 ///|
 fn tags_scope_contains(
   scope : TagsLocalScope,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bool {
   scope.start_byte <= start_byte && end_byte <= scope.end_byte
 }
@@ -781,9 +781,9 @@ fn tags_scope_contains(
 ///|
 fn tags_scope_index_compare(
   scopes : Array[TagsLocalScope],
-  left_index : Int,
-  right_index : Int,
-) -> Int {
+  left_index : Int32,
+  right_index : Int32,
+) -> Int32 {
   let left = scopes[left_index]
   let right = scopes[right_index]
   let left_size = left.end_byte - left.start_byte
@@ -859,7 +859,7 @@ fn tag_line_range(source : Bytes, name_range : @api.Range) -> @api.Range {
 }
 
 ///|
-fn tag_line_start(source : Bytes, offset : Int) -> Int {
+fn tag_line_start(source : Bytes, offset : Int32) -> Int32 {
   let mut line_start = offset
   while line_start > 0 && source[line_start - 1] != b'\n' {
     line_start -= 1
@@ -873,7 +873,11 @@ fn tag_byte_is_ascii_space(byte : Byte) -> Bool {
 }
 
 ///|
-fn tag_valid_utf8_prefix_end(source : Bytes, start : Int, end : Int) -> Int {
+fn tag_valid_utf8_prefix_end(
+  source : Bytes,
+  start : Int32,
+  end : Int32,
+) -> Int32 {
   let mut offset = start
   while offset < end {
     match tag_utf8_sequence_width(source, offset, end) {
@@ -885,7 +889,11 @@ fn tag_valid_utf8_prefix_end(source : Bytes, start : Int, end : Int) -> Int {
 }
 
 ///|
-fn tag_utf8_sequence_width(source : Bytes, offset : Int, end : Int) -> Int? {
+fn tag_utf8_sequence_width(
+  source : Bytes,
+  offset : Int32,
+  end : Int32,
+) -> Int32? {
   let first = source[offset].to_int()
   if first < 0x80 {
     return Some(1)
@@ -935,7 +943,11 @@ fn tag_utf8_sequence_width(source : Bytes, offset : Int, end : Int) -> Int? {
 }
 
 ///|
-fn tag_utf8_continuation_value(source : Bytes, offset : Int, end : Int) -> Int? {
+fn tag_utf8_continuation_value(
+  source : Bytes,
+  offset : Int32,
+  end : Int32,
+) -> Int32? {
   if offset < 0 || offset >= source.length() || offset >= end {
     return None
   }
@@ -973,9 +985,9 @@ fn tag_utf16_column_range(
 ///|
 fn tag_utf16_column_for_byte(
   source : Bytes,
-  line_start : Int,
-  end : Int,
-) -> UInt {
+  line_start : Int32,
+  end : Int32,
+) -> UInt32 {
   let text = if line_start <= end && end <= source.length() {
     @utf8.decode_lossy(source[line_start:end])
   } else {
@@ -991,8 +1003,8 @@ fn tag_utf16_column_for_byte(
 ///|
 fn tags_source_bytes(
   source : Bytes,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bytes {
   source[start_byte.reinterpret_as_int():end_byte.reinterpret_as_int()].to_owned()
 }
@@ -1036,7 +1048,10 @@ fn tag_queue_entries_same_name_range(
 }
 
 ///|
-fn tag_queue_entry_compare(left : TagQueueEntry, right : TagQueueEntry) -> Int {
+fn tag_queue_entry_compare(
+  left : TagQueueEntry,
+  right : TagQueueEntry,
+) -> Int32 {
   if left.tag.name_range.end_byte < right.tag.name_range.end_byte {
     -1
   } else if left.tag.name_range.end_byte > right.tag.name_range.end_byte {

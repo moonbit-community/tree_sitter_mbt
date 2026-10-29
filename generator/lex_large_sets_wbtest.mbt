@@ -142,8 +142,8 @@ test "large character set choice prefers fewer additions and removals" {
   let larger = character_set_union(base, character_set_char('q'))
   let exactish = character_set_union(larger, character_set_char('s'))
   let sets = [
-    { symbol: None, characters: base },
-    { symbol: Some(InternalSymbol::Terminal(1)), characters: exactish },
+    { symbol: None, characters: base, },
+    { symbol: Some(InternalSymbol::Terminal(1)), characters: exactish, },
   ]
   let transition = character_set_union(exactish, character_set_char('u'))
 
@@ -159,7 +159,7 @@ test "large character set choice prefers fewer additions and removals" {
 ///|
 test "large character set choice respects render threshold and improvement" {
   let small = set_from_singletons(['a', 'c', 'e', 'g', 'i', 'k', 'm'])
-  let sets = [{ symbol: None, characters: small }]
+  let sets = [{ symbol: None, characters: small, }]
   assert_true(
     choose_large_character_set(sets, small, character_set_empty()) is None,
   )
@@ -167,7 +167,7 @@ test "large character set choice respects render threshold and improvement" {
   let large = character_set_union(small, character_set_char('o'))
   assert_true(
     choose_large_character_set(
-      [{ symbol: None, characters: character_set_char('z') }],
+      [{ symbol: None, characters: character_set_char('z'), }],
       large,
       character_set_empty(),
     )

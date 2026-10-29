@@ -16,8 +16,8 @@ pub(all) struct CliQueryFile {
 ///|
 pub(all) struct CliQuerySourceRange {
   path : String
-  start_byte : Int
-  end_byte : Int
+  start_byte : Int32
+  end_byte : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -29,7 +29,7 @@ pub(all) struct CliCombinedQuery {
 ///|
 pub(all) struct CliQueryFileOffset {
   path : String
-  byte_offset : Int
+  byte_offset : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -96,17 +96,17 @@ pub fn combine_cli_query_files(files : Array[CliQueryFile]) -> CliCombinedQuery 
   for file in files {
     let content_length = @utf8.encode(file.content).length()
     let end_byte = start_byte + content_length
-    ranges.push({ path: file.path, start_byte, end_byte })
+    ranges.push({ path: file.path, start_byte, end_byte, })
     source.write_string(file.content)
     start_byte = end_byte
   }
-  { source: source.to_string(), ranges }
+  { source: source.to_string(), ranges, }
 }
 
 ///|
 pub fn cli_query_range_for_byte_offset(
   combined : CliCombinedQuery,
-  byte_offset : Int,
+  byte_offset : Int32,
 ) -> CliQuerySourceRange? {
   if byte_offset < 0 {
     None
@@ -140,17 +140,17 @@ pub fn cli_query_range_for_byte_offset(
 ///|
 pub fn cli_query_file_offset(
   combined : CliCombinedQuery,
-  byte_offset : Int,
+  byte_offset : Int32,
 ) -> CliQueryFileOffset? {
   match cli_query_range_for_byte_offset(combined, byte_offset) {
     Some(range) =>
-      Some({ path: range.path, byte_offset: byte_offset - range.start_byte })
+      Some({ path: range.path, byte_offset: byte_offset - range.start_byte, })
     None => None
   }
 }
 
 ///|
-pub fn cli_query_error_byte_offset(error : @query.QueryError) -> Int {
+pub fn cli_query_error_byte_offset(error : @query.QueryError) -> Int32 {
   match error {
     @query.QueryError::Syntax(byte_offset~, ..) => byte_offset
     @query.QueryError::NodeType(byte_offset~, ..) => byte_offset
@@ -170,7 +170,7 @@ pub fn cli_query_error_file_offset(
 
 ///|
 fn cli_query_empty_path_set() -> CliQueryFilePathSet {
-  { highlights: [], injections: [], locals: [], tags: [], others: [] }
+  { highlights: [], injections: [], locals: [], tags: [], others: [], }
 }
 
 ///|

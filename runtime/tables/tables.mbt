@@ -2,7 +2,7 @@
 let native_abi_version = 15
 
 ///|
-pub fn target_abi_version() -> Int {
+pub fn target_abi_version() -> Int32 {
   native_abi_version
 }
 
@@ -13,99 +13,99 @@ let lex_state_none_value = 65535
 let decode_error_codepoint_value = -1
 
 ///|
-pub fn lex_state_none() -> Int {
+pub fn lex_state_none() -> Int32 {
   lex_state_none_value
 }
 
 ///|
 pub(all) struct GeneratedLexMode {
-  lex_state : Int
-  external_lex_state : Int
-  reserved_word_set_id : Int
+  lex_state : Int32
+  external_lex_state : Int32
+  reserved_word_set_id : Int32
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedLexMode::new(
-  lex_state? : Int = lex_state_none_value,
-  external_lex_state? : Int = 0,
-  reserved_word_set_id? : Int = 0,
+  lex_state~ : Int32 = lex_state_none_value,
+  external_lex_state~ : Int32 = 0,
+  reserved_word_set_id~ : Int32 = 0,
 ) -> GeneratedLexMode {
-  { lex_state, external_lex_state, reserved_word_set_id }
+  { lex_state, external_lex_state, reserved_word_set_id, }
 }
 
 ///|
 pub(all) struct GeneratedCharacterRange {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedCharacterRange::new(
-  start~ : Int,
-  end~ : Int,
+  start~ : Int32,
+  end~ : Int32,
 ) -> GeneratedCharacterRange {
-  { start, end }
+  { start, end, }
 }
 
 ///|
 pub(all) struct GeneratedLexTransition {
   ranges : Array[GeneratedCharacterRange]
-  target_state : Int
+  target_state : Int32
   is_separator : Bool
-  precedence : Int
+  precedence : Int32
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedLexTransition::new(
-  ranges? : Array[GeneratedCharacterRange] = [],
-  target_state~ : Int,
-  is_separator? : Bool = false,
-  precedence? : Int = 0,
+  ranges~ : Array[GeneratedCharacterRange] = [],
+  target_state~ : Int32,
+  is_separator~ : Bool = false,
+  precedence~ : Int32 = 0,
 ) -> GeneratedLexTransition {
-  { ranges, target_state, is_separator, precedence }
+  { ranges, target_state, is_separator, precedence, }
 }
 
 ///|
 pub(all) struct GeneratedLexState {
-  accept_symbol_id : Int?
-  eof_action : Int?
+  accept_symbol_id : Int32?
+  eof_action : Int32?
   transitions : Array[GeneratedLexTransition]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedLexState::new(
-  accept_symbol_id? : Int? = None,
-  eof_action? : Int? = None,
-  transitions? : Array[GeneratedLexTransition] = [],
+  accept_symbol_id~ : Int32? = None,
+  eof_action~ : Int32? = None,
+  transitions~ : Array[GeneratedLexTransition] = [],
 ) -> GeneratedLexState {
-  { accept_symbol_id, eof_action, transitions }
+  { accept_symbol_id, eof_action, transitions, }
 }
 
 ///|
 pub(all) struct GeneratedLexTable {
   states : Array[GeneratedLexState]
-  start_state : Int
+  start_state : Int32
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedLexTable::new(
-  states? : Array[GeneratedLexState] = [],
-  start_state? : Int = 0,
+  states~ : Array[GeneratedLexState] = [],
+  start_state~ : Int32 = 0,
 ) -> GeneratedLexTable {
-  { states, start_state }
+  { states, start_state, }
 }
 
 ///|
 pub(all) enum GeneratedParseAction {
   Accept
   Recover
-  Shift(state_id~ : Int, is_repetition~ : Bool)
+  Shift(state_id~ : Int32, is_repetition~ : Bool)
   ShiftExtra
   Reduce(
-    symbol_id~ : Int,
-    child_count~ : Int,
-    dynamic_precedence~ : Int,
-    production_id~ : Int
+    symbol_id~ : Int32,
+    child_count~ : Int32,
+    dynamic_precedence~ : Int32,
+    production_id~ : Int32
   )
 } derive(Eq, Debug)
 
@@ -117,17 +117,17 @@ pub(all) struct GeneratedParseActionList {
 
 ///|
 pub fn GeneratedParseActionList::new(
-  actions? : Array[GeneratedParseAction] = [],
-  reusable? : Bool = false,
+  actions~ : Array[GeneratedParseAction] = [],
+  reusable~ : Bool = false,
 ) -> GeneratedParseActionList {
-  { actions, reusable }
+  { actions, reusable, }
 }
 
 ///|
 pub(all) enum GeneratedParseTableCell {
   EmptyCell
-  ActionCell(Int)
-  StateCell(Int)
+  ActionCell(Int32)
+  StateCell(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -139,69 +139,69 @@ pub(all) enum GeneratedSmallParseTableSectionKind {
 ///|
 pub(all) struct GeneratedSmallParseTableSection {
   kind : GeneratedSmallParseTableSectionKind
-  value : Int
-  symbols : Array[Int]
+  value : Int32
+  symbols : Array[Int32]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedSmallParseTableSection::new(
   kind~ : GeneratedSmallParseTableSectionKind,
-  value~ : Int,
-  symbols? : Array[Int] = [],
+  value~ : Int32,
+  symbols~ : Array[Int32] = [],
 ) -> GeneratedSmallParseTableSection {
-  { kind, value, symbols }
+  { kind, value, symbols, }
 }
 
 ///|
 pub(all) struct GeneratedSmallParseTableRow {
-  state_id : Int
-  offset : Int
+  state_id : Int32
+  offset : Int32
   sections : Array[GeneratedSmallParseTableSection]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedSmallParseTableRow::new(
-  state_id~ : Int,
-  offset~ : Int,
-  sections? : Array[GeneratedSmallParseTableSection] = [],
+  state_id~ : Int32,
+  offset~ : Int32,
+  sections~ : Array[GeneratedSmallParseTableSection] = [],
 ) -> GeneratedSmallParseTableRow {
-  { state_id, offset, sections }
+  { state_id, offset, sections, }
 }
 
 ///|
 pub(all) struct GeneratedTokenSet {
-  symbol_ids : Array[Int]
+  symbol_ids : Array[Int32]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedTokenSet::new(
-  symbol_ids? : Array[Int] = [],
+  symbol_ids~ : Array[Int32] = [],
 ) -> GeneratedTokenSet {
   { symbol_ids, }
 }
 
 ///|
 pub(all) struct GeneratedSupertypeEntry {
-  symbol_id : Int
-  subtype_symbol_ids : Array[Int]
+  symbol_id : Int32
+  subtype_symbol_ids : Array[Int32]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedSupertypeEntry::new(
-  symbol_id~ : Int,
-  subtype_symbol_ids? : Array[Int] = [],
+  symbol_id~ : Int32,
+  subtype_symbol_ids~ : Array[Int32] = [],
 ) -> GeneratedSupertypeEntry {
-  { symbol_id, subtype_symbol_ids }
+  { symbol_id, subtype_symbol_ids, }
 }
 
 ///|
 pub(all) struct GeneratedExternalLexState {
-  external_token_ids : Array[Int]
+  external_token_ids : Array[Int32]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedExternalLexState::new(
-  external_token_ids? : Array[Int] = [],
+  external_token_ids~ : Array[Int32] = [],
 ) -> GeneratedExternalLexState {
   { external_token_ids, }
 }
@@ -214,67 +214,67 @@ pub(all) struct GeneratedAlias {
 
 ///|
 pub fn GeneratedAlias::new(value~ : String, named~ : Bool) -> GeneratedAlias {
-  { value, named }
+  { value, named, }
 }
 
 ///|
 pub(all) struct GeneratedDefaultAlias {
-  symbol_id : Int
+  symbol_id : Int32
   value : String
   named : Bool
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedDefaultAlias::new(
-  symbol_id~ : Int,
+  symbol_id~ : Int32,
   value~ : String,
   named~ : Bool,
 ) -> GeneratedDefaultAlias {
-  { symbol_id, value, named }
+  { symbol_id, value, named, }
 }
 
 ///|
 pub(all) struct GeneratedNonTerminalAliasEntry {
-  symbol_id : Int
-  public_symbol_id : Int
-  alias_symbol_ids : Array[Int]
+  symbol_id : Int32
+  public_symbol_id : Int32
+  alias_symbol_ids : Array[Int32]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedNonTerminalAliasEntry::new(
-  symbol_id~ : Int,
-  public_symbol_id~ : Int,
-  alias_symbol_ids? : Array[Int] = [],
+  symbol_id~ : Int32,
+  public_symbol_id~ : Int32,
+  alias_symbol_ids~ : Array[Int32] = [],
 ) -> GeneratedNonTerminalAliasEntry {
-  { symbol_id, public_symbol_id, alias_symbol_ids }
+  { symbol_id, public_symbol_id, alias_symbol_ids, }
 }
 
 ///|
 pub(all) struct GeneratedFieldLocation {
-  index : Int
+  index : Int32
   inherited : Bool
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedFieldLocation::new(
-  index~ : Int,
+  index~ : Int32,
   inherited~ : Bool,
 ) -> GeneratedFieldLocation {
-  { index, inherited }
+  { index, inherited, }
 }
 
 ///|
 pub(all) struct GeneratedFieldMapEntry {
-  field_id : Int
+  field_id : Int32
   locations : Array[GeneratedFieldLocation]
 } derive(Eq, Debug)
 
 ///|
 pub fn GeneratedFieldMapEntry::new(
-  field_id~ : Int,
-  locations? : Array[GeneratedFieldLocation] = [],
+  field_id~ : Int32,
+  locations~ : Array[GeneratedFieldLocation] = [],
 ) -> GeneratedFieldMapEntry {
-  { field_id, locations }
+  { field_id, locations, }
 }
 
 ///|
@@ -285,46 +285,46 @@ pub(all) struct GeneratedProductionInfo {
 
 ///|
 pub fn GeneratedProductionInfo::new(
-  alias_sequence? : Array[GeneratedAlias?] = [],
-  field_map? : Array[GeneratedFieldMapEntry] = [],
+  alias_sequence~ : Array[GeneratedAlias?] = [],
+  field_map~ : Array[GeneratedFieldMapEntry] = [],
 ) -> GeneratedProductionInfo {
-  { alias_sequence, field_map }
+  { alias_sequence, field_map, }
 }
 
 ///|
 pub(all) struct GeneratedLanguageTables {
-  abi_version : Int
+  abi_version : Int32
   name : String
   metadata : LanguageMetadata
-  symbol_count : Int
-  alias_count : Int
-  token_count : Int
-  external_token_count : Int
-  state_count : Int
-  field_count : Int
-  production_id_count : Int
-  max_alias_sequence_length : Int
-  supertype_count : Int
-  main_lex_state_count : Int
-  external_lex_state_count : Int
-  reserved_word_set_count : Int
-  max_reserved_word_set_size : Int
-  large_state_count : Int
-  keyword_capture_token : Int?
+  symbol_count : Int32
+  alias_count : Int32
+  token_count : Int32
+  external_token_count : Int32
+  state_count : Int32
+  field_count : Int32
+  production_id_count : Int32
+  max_alias_sequence_length : Int32
+  supertype_count : Int32
+  main_lex_state_count : Int32
+  external_lex_state_count : Int32
+  reserved_word_set_count : Int32
+  max_reserved_word_set_size : Int32
+  large_state_count : Int32
+  keyword_capture_token : Int32?
   symbol_names : Array[String]
   symbol_types : Array[@api.SymbolType]
-  public_symbol_map : Array[Int]
+  public_symbol_map : Array[Int32]
   alias_symbols : Array[GeneratedAlias]
   non_terminal_aliases : Array[GeneratedNonTerminalAliasEntry]
   field_names : Array[String]
   lex_modes : Array[GeneratedLexMode]
-  primary_state_ids : Array[Int]
+  primary_state_ids : Array[Int32]
   parse_action_lists : Array[GeneratedParseActionList]
   large_parse_table : Array[Array[GeneratedParseTableCell]]
   small_parse_table : Array[GeneratedSmallParseTableRow]
-  small_parse_table_map : Array[Int]
-  extra_symbol_ids : Array[Int]
-  extra_state_ids : Array[Int]
+  small_parse_table_map : Array[Int32]
+  extra_symbol_ids : Array[Int32]
+  extra_state_ids : Array[Int32]
   default_aliases : Array[GeneratedDefaultAlias]
   supertype_entries : Array[GeneratedSupertypeEntry]
   reserved_word_sets : Array[GeneratedTokenSet]
@@ -338,47 +338,47 @@ pub(all) struct GeneratedLanguageTables {
 ///|
 pub fn GeneratedLanguageTables::new(
   name~ : String,
-  abi_version? : Int = native_abi_version,
-  metadata? : LanguageMetadata = LanguageMetadata::zero(),
-  symbol_count? : Int = 0,
-  alias_count? : Int = 0,
-  token_count? : Int = 0,
-  external_token_count? : Int = 0,
-  state_count? : Int = 0,
-  field_count? : Int = 0,
-  production_id_count? : Int = 0,
-  max_alias_sequence_length? : Int = 0,
-  supertype_count? : Int = 0,
-  main_lex_state_count? : Int = 0,
-  external_lex_state_count? : Int = 1,
-  reserved_word_set_count? : Int = 1,
-  max_reserved_word_set_size? : Int = 0,
-  large_state_count? : Int = 0,
-  keyword_capture_token? : Int? = None,
-  symbol_names? : Array[String] = [],
-  symbol_types? : Array[@api.SymbolType] = [],
-  public_symbol_map? : Array[Int] = [],
-  alias_symbols? : Array[GeneratedAlias] = [],
-  non_terminal_aliases? : Array[GeneratedNonTerminalAliasEntry] = [],
-  field_names? : Array[String] = [""],
-  lex_modes? : Array[GeneratedLexMode] = [],
-  primary_state_ids? : Array[Int] = [],
-  parse_action_lists? : Array[GeneratedParseActionList] = [],
-  large_parse_table? : Array[Array[GeneratedParseTableCell]] = [],
-  small_parse_table? : Array[GeneratedSmallParseTableRow] = [],
-  small_parse_table_map? : Array[Int] = [],
-  extra_symbol_ids? : Array[Int] = [],
-  extra_state_ids? : Array[Int] = [],
-  default_aliases? : Array[GeneratedDefaultAlias] = [],
-  supertype_entries? : Array[GeneratedSupertypeEntry] = [],
-  reserved_word_sets? : Array[GeneratedTokenSet] = [GeneratedTokenSet::new()],
-  external_lex_states? : Array[GeneratedExternalLexState] = [
+  abi_version~ : Int32 = native_abi_version,
+  metadata~ : LanguageMetadata = LanguageMetadata::zero(),
+  symbol_count~ : Int32 = 0,
+  alias_count~ : Int32 = 0,
+  token_count~ : Int32 = 0,
+  external_token_count~ : Int32 = 0,
+  state_count~ : Int32 = 0,
+  field_count~ : Int32 = 0,
+  production_id_count~ : Int32 = 0,
+  max_alias_sequence_length~ : Int32 = 0,
+  supertype_count~ : Int32 = 0,
+  main_lex_state_count~ : Int32 = 0,
+  external_lex_state_count~ : Int32 = 1,
+  reserved_word_set_count~ : Int32 = 1,
+  max_reserved_word_set_size~ : Int32 = 0,
+  large_state_count~ : Int32 = 0,
+  keyword_capture_token~ : Int32? = None,
+  symbol_names~ : Array[String] = [],
+  symbol_types~ : Array[@api.SymbolType] = [],
+  public_symbol_map~ : Array[Int32] = [],
+  alias_symbols~ : Array[GeneratedAlias] = [],
+  non_terminal_aliases~ : Array[GeneratedNonTerminalAliasEntry] = [],
+  field_names~ : Array[String] = [""],
+  lex_modes~ : Array[GeneratedLexMode] = [],
+  primary_state_ids~ : Array[Int32] = [],
+  parse_action_lists~ : Array[GeneratedParseActionList] = [],
+  large_parse_table~ : Array[Array[GeneratedParseTableCell]] = [],
+  small_parse_table~ : Array[GeneratedSmallParseTableRow] = [],
+  small_parse_table_map~ : Array[Int32] = [],
+  extra_symbol_ids~ : Array[Int32] = [],
+  extra_state_ids~ : Array[Int32] = [],
+  default_aliases~ : Array[GeneratedDefaultAlias] = [],
+  supertype_entries~ : Array[GeneratedSupertypeEntry] = [],
+  reserved_word_sets~ : Array[GeneratedTokenSet] = [GeneratedTokenSet::new()],
+  external_lex_states~ : Array[GeneratedExternalLexState] = [
     GeneratedExternalLexState::new(),
   ],
-  external_scanner? : ExternalScannerDescriptor = ExternalScannerDescriptor::none(),
-  production_infos? : Array[GeneratedProductionInfo] = [],
-  main_lex_tables? : Array[GeneratedLexTable] = [],
-  keyword_lex_table? : GeneratedLexTable? = None,
+  external_scanner~ : ExternalScannerDescriptor = ExternalScannerDescriptor::none(),
+  production_infos~ : Array[GeneratedProductionInfo] = [],
+  main_lex_tables~ : Array[GeneratedLexTable] = [],
+  keyword_lex_table~ : GeneratedLexTable? = None,
 ) -> GeneratedLanguageTables {
   let public_symbol_map = if public_symbol_map.length() == 0 && symbol_count > 0 {
     generated_identity_public_symbol_map(symbol_count)
@@ -430,8 +430,8 @@ pub fn GeneratedLanguageTables::new(
 }
 
 ///|
-fn generated_identity_public_symbol_map(symbol_count : Int) -> Array[Int] {
-  let ids : Array[Int] = []
+fn generated_identity_public_symbol_map(symbol_count : Int32) -> Array[Int32] {
+  let ids : Array[Int32] = []
   for i in 0..<symbol_count {
     ids.push(i)
   }
@@ -445,11 +445,11 @@ struct ValidatedLanguageTables {
 
 ///|
 pub(all) suberror TableValidationError {
-  UnsupportedAbi(Int)
+  UnsupportedAbi(Int32)
   EmptyLanguageName
-  NegativeCount(field~ : String, value~ : Int)
-  InvalidLength(field~ : String, expected~ : Int, actual~ : Int)
-  InvalidId(field~ : String, value~ : Int, min~ : Int, max~ : Int)
+  NegativeCount(field~ : String, value~ : Int32)
+  InvalidLength(field~ : String, expected~ : Int32, actual~ : Int32)
+  InvalidId(field~ : String, value~ : Int32, min~ : Int32, max~ : Int32)
   InvalidFieldZero(String)
 } derive(Eq, Debug)
 
@@ -548,13 +548,13 @@ pub fn validate(
   validate_production_infos(tables)
   validate_lex_tables(tables)
   validate_keyword_lex_table(tables)
-  { raw: tables }
+  { raw: tables, }
 }
 
 ///|
 fn validate_non_negative(
   field : String,
-  value : Int,
+  value : Int32,
 ) -> Unit raise TableValidationError {
   if value < 0 {
     raise TableValidationError::NegativeCount(field~, value~)
@@ -564,8 +564,8 @@ fn validate_non_negative(
 ///|
 fn validate_length(
   field : String,
-  expected : Int,
-  actual : Int,
+  expected : Int32,
+  actual : Int32,
 ) -> Unit raise TableValidationError {
   if expected != actual {
     raise TableValidationError::InvalidLength(field~, expected~, actual~)
@@ -575,9 +575,9 @@ fn validate_length(
 ///|
 fn validate_range(
   field : String,
-  value : Int,
-  min : Int,
-  max : Int,
+  value : Int32,
+  min : Int32,
+  max : Int32,
 ) -> Unit raise TableValidationError {
   if value < min || value > max {
     raise TableValidationError::InvalidId(field~, value~, min~, max~)
@@ -587,7 +587,7 @@ fn validate_range(
 ///|
 fn validate_lex_mode(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   mode : GeneratedLexMode,
 ) -> Unit raise TableValidationError {
   if mode.lex_state != lex_state_none_value {
@@ -656,7 +656,7 @@ fn validate_lex_state(
   tables : GeneratedLanguageTables,
   table_field : String,
   table : GeneratedLexTable,
-  state_index : Int,
+  state_index : Int32,
   state : GeneratedLexState,
 ) -> Unit raise TableValidationError {
   match state.accept_symbol_id {
@@ -759,7 +759,7 @@ fn validate_character_range(
 ///|
 fn validate_parse_action_list(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   action_list : GeneratedParseActionList,
 ) -> Unit raise TableValidationError {
   validate_range(
@@ -935,7 +935,7 @@ fn validate_public_symbol_metadata(
 ///|
 fn validate_non_terminal_alias_entry(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   entry : GeneratedNonTerminalAliasEntry,
 ) -> Unit raise TableValidationError {
   let public_symbol_count = tables.symbol_count + tables.alias_count
@@ -1032,7 +1032,7 @@ fn validate_extra_state_ids(
 ///|
 fn validate_generated_token_set(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   set : GeneratedTokenSet,
 ) -> Unit raise TableValidationError {
   validate_range(
@@ -1054,7 +1054,7 @@ fn validate_generated_token_set(
 ///|
 fn validate_generated_external_lex_state(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   state : GeneratedExternalLexState,
 ) -> Unit raise TableValidationError {
   validate_range(
@@ -1163,7 +1163,7 @@ fn validate_production_infos(
 ///|
 fn validate_default_alias(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   default_alias : GeneratedDefaultAlias,
 ) -> Unit raise TableValidationError {
   validate_range(
@@ -1177,7 +1177,7 @@ fn validate_default_alias(
 ///|
 fn validate_production_info(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   info : GeneratedProductionInfo,
 ) -> Unit raise TableValidationError {
   validate_range(
@@ -1241,7 +1241,7 @@ fn validate_parse_table_cell(
 ///|
 fn validate_small_parse_table_row(
   tables : GeneratedLanguageTables,
-  index : Int,
+  index : Int32,
   row : GeneratedSmallParseTableRow,
 ) -> Unit raise TableValidationError {
   validate_range(
@@ -1305,39 +1305,39 @@ fn validate_small_parse_table_section(
 }
 
 ///|
-fn u8_max() -> Int {
+fn u8_max() -> Int32 {
   255
 }
 
 ///|
-fn i16_min() -> Int {
+fn i16_min() -> Int32 {
   -32768
 }
 
 ///|
-fn i16_max() -> Int {
+fn i16_max() -> Int32 {
   32767
 }
 
 ///|
-fn u16_max() -> Int {
+fn u16_max() -> Int32 {
   65535
 }
 
 ///|
-fn int_index_max() -> Int {
+fn int_index_max() -> Int32 {
   2147483647
 }
 
 ///|
-fn unicode_scalar_max_int() -> Int {
+fn unicode_scalar_max_int() -> Int32 {
   1114111
 }
 
 ///|
 pub fn ValidatedLanguageTables::abi_version(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.abi_version
 }
 
@@ -1356,21 +1356,21 @@ pub fn ValidatedLanguageTables::metadata(
 ///|
 pub fn ValidatedLanguageTables::symbol_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.symbol_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::public_symbol_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.symbol_count + self.raw.alias_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::alias_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.alias_count
 }
 
@@ -1438,49 +1438,49 @@ fn symbol_type_matches_alias(
 ///|
 pub fn ValidatedLanguageTables::token_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.token_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::external_token_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.external_token_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::state_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.state_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::field_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.field_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::production_id_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.production_id_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::max_alias_sequence_length(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.max_alias_sequence_length
 }
 
 ///|
 pub fn ValidatedLanguageTables::supertype_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.supertype_count
 }
 
@@ -1531,35 +1531,35 @@ pub fn ValidatedLanguageTables::subtypes(
 ///|
 pub fn ValidatedLanguageTables::main_lex_state_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.main_lex_state_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::external_lex_state_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.external_lex_state_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::reserved_word_set_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.reserved_word_set_count
 }
 
 ///|
 pub fn ValidatedLanguageTables::max_reserved_word_set_size(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.max_reserved_word_set_size
 }
 
 ///|
 pub fn ValidatedLanguageTables::large_state_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.large_state_count
 }
 
@@ -1589,7 +1589,7 @@ pub fn ValidatedLanguageTables::lex_mode(
 ///|
 pub fn ValidatedLanguageTables::main_lex_table(
   self : ValidatedLanguageTables,
-  lex_state_id : Int,
+  lex_state_id : Int32,
 ) -> GeneratedLexTable? {
   if lex_state_id < 0 || lex_state_id >= self.raw.main_lex_tables.length() {
     None
@@ -1625,14 +1625,14 @@ pub fn ValidatedLanguageTables::primary_state_id(
 ///|
 pub fn ValidatedLanguageTables::parse_action_list_count(
   self : ValidatedLanguageTables,
-) -> Int {
+) -> Int32 {
   self.raw.parse_action_lists.length()
 }
 
 ///|
 pub fn ValidatedLanguageTables::parse_action_list(
   self : ValidatedLanguageTables,
-  index : Int,
+  index : Int32,
 ) -> GeneratedParseActionList? {
   if index < 0 || index >= self.raw.parse_action_lists.length() {
     None
@@ -1780,7 +1780,7 @@ pub fn ValidatedLanguageTables::is_extra_state(
 ///|
 fn small_parse_table_cell(
   row : GeneratedSmallParseTableRow,
-  symbol_id : Int,
+  symbol_id : Int32,
 ) -> GeneratedParseTableCell {
   for section in row.sections {
     for symbol in section.symbols {
@@ -1800,7 +1800,7 @@ fn small_parse_table_cell(
 ///|
 pub fn ValidatedLanguageTables::small_parse_table_row(
   self : ValidatedLanguageTables,
-  index : Int,
+  index : Int32,
 ) -> GeneratedSmallParseTableRow? {
   if index < 0 || index >= self.raw.small_parse_table.length() {
     None
@@ -1812,8 +1812,8 @@ pub fn ValidatedLanguageTables::small_parse_table_row(
 ///|
 pub fn ValidatedLanguageTables::small_parse_table_offset(
   self : ValidatedLanguageTables,
-  index : Int,
-) -> Int? {
+  index : Int32,
+) -> Int32? {
   if index < 0 || index >= self.raw.small_parse_table_map.length() {
     None
   } else {
@@ -1824,7 +1824,7 @@ pub fn ValidatedLanguageTables::small_parse_table_offset(
 ///|
 pub fn ValidatedLanguageTables::reserved_word_set(
   self : ValidatedLanguageTables,
-  index : Int,
+  index : Int32,
 ) -> GeneratedTokenSet? {
   if index < 0 || index >= self.raw.reserved_word_sets.length() {
     None
@@ -1836,7 +1836,7 @@ pub fn ValidatedLanguageTables::reserved_word_set(
 ///|
 pub fn ValidatedLanguageTables::external_lex_state(
   self : ValidatedLanguageTables,
-  index : Int,
+  index : Int32,
 ) -> GeneratedExternalLexState? {
   if index < 0 || index >= self.raw.external_lex_states.length() {
     None
@@ -1855,7 +1855,7 @@ pub fn ValidatedLanguageTables::external_scanner(
 ///|
 pub fn ValidatedLanguageTables::production_info(
   self : ValidatedLanguageTables,
-  production_id : Int,
+  production_id : Int32,
 ) -> GeneratedProductionInfo? {
   if production_id < 0 || production_id >= self.raw.production_infos.length() {
     None

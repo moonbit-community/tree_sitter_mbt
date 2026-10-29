@@ -1,28 +1,28 @@
 ///|
 priv struct NfaCursor {
   nfa : Nfa
-  state_ids : Array[Int]
+  state_ids : Array[Int32]
 }
 
 ///|
 priv struct NfaRawTransition {
   characters : CharacterSet
   is_separator : Bool
-  precedence : Int
-  state : Int
+  precedence : Int32
+  state : Int32
 }
 
 ///|
 priv struct NfaTransition {
   characters : CharacterSet
   is_separator : Bool
-  precedence : Int
-  states : Array[Int]
+  precedence : Int32
+  states : Array[Int32]
 }
 
 ///|
-fn nfa_cursor_new(nfa : Nfa, states : Array[Int]) -> NfaCursor {
-  { nfa, state_ids: nfa_canonical_state_ids(nfa, states) }
+fn nfa_cursor_new(nfa : Nfa, states : Array[Int32]) -> NfaCursor {
+  { nfa, state_ids: nfa_canonical_state_ids(nfa, states), }
 }
 
 ///|
@@ -65,9 +65,9 @@ fn nfa_cursor_raw_transitions(cursor : NfaCursor) -> Array[NfaRawTransition] {
 }
 
 ///|
-fn nfa_canonical_state_ids(nfa : Nfa, states : Array[Int]) -> Array[Int] {
+fn nfa_canonical_state_ids(nfa : Nfa, states : Array[Int32]) -> Array[Int32] {
   let closure = nfa_epsilon_closure(nfa, states)
-  let result : Array[Int] = []
+  let result : Array[Int32] = []
   for state_id in closure {
     if state_id >= 0 && state_id < nfa.states.length() {
       match nfa.states[state_id] {
@@ -113,7 +113,7 @@ fn nfa_add_raw_transition(
         intersection,
       )
       if !character_set_is_empty(existing_only) {
-        result.push({ ..transition, characters: existing_only })
+        result.push({ ..transition, characters: existing_only, })
       }
       result.push({
         characters: intersection,
@@ -177,13 +177,13 @@ fn nfa_transition_signature_matches(
 }
 
 ///|
-fn nfa_transition_compare(left : NfaTransition, right : NfaTransition) -> Int {
+fn nfa_transition_compare(left : NfaTransition, right : NfaTransition) -> Int32 {
   character_set_compare(left.characters, right.characters)
 }
 
 ///|
-fn sorted_unique_with_int(values : Array[Int], value : Int) -> Array[Int] {
-  let result : Array[Int] = []
+fn sorted_unique_with_int(values : Array[Int32], value : Int32) -> Array[Int32] {
+  let result : Array[Int32] = []
   for existing in values {
     result.push(existing)
   }
@@ -195,7 +195,7 @@ fn sorted_unique_with_int(values : Array[Int], value : Int) -> Array[Int] {
 }
 
 ///|
-fn max_int(left : Int, right : Int) -> Int {
+fn max_int(left : Int32, right : Int32) -> Int32 {
   if left > right {
     left
   } else {
@@ -204,7 +204,7 @@ fn max_int(left : Int, right : Int) -> Int {
 }
 
 ///|
-fn nfa_cursor_smoke_weight() -> Int {
+fn nfa_cursor_smoke_weight() -> Int32 {
   match parse_regex_to_nfa("a|b") {
     Ok(nfa) => {
       let cursor = nfa_cursor_new(nfa, [nfa.start])

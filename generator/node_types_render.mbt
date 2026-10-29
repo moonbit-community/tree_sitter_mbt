@@ -23,7 +23,7 @@ priv struct NodeTypeFieldDraft {
 priv struct NodeTypeFieldAccumulator {
   name : String
   types : Array[NodeTypeRef]
-  production_count : Int
+  production_count : Int32
   multiple : Bool
 }
 
@@ -31,7 +31,7 @@ priv struct NodeTypeFieldAccumulator {
 priv struct NodeTypeProductionField {
   name : String
   types : Array[NodeTypeRef]
-  count : Int
+  count : Int32
 }
 
 ///|
@@ -169,7 +169,7 @@ fn node_type_entry_for_alias_step(
 ///|
 fn node_type_entry_for_variable(
   grammar : PreparedGrammar,
-  index : Int,
+  index : Int32,
   node_ref : NodeTypeRef,
 ) -> NodeTypeEntryDraft {
   let symbol = InternalSymbol::NonTerminal(index)
@@ -262,7 +262,7 @@ fn node_type_children_for_variable(
     None
   } else {
     types.sort_by(node_type_ref_compare)
-    Some({ types, required, multiple })
+    Some({ types, required, multiple, })
   }
 }
 
@@ -335,7 +335,11 @@ fn node_type_record_production_field(
   name : String,
   node_ref : NodeTypeRef,
 ) -> Unit {
-  node_type_merge_production_field(fields, { name, types: [node_ref], count: 1 })
+  node_type_merge_production_field(fields, {
+    name,
+    types: [node_ref],
+    count: 1,
+  })
 }
 
 ///|
@@ -461,7 +465,7 @@ fn node_type_refs_for_hidden_symbol(
 ///|
 fn node_type_nonterminal_can_inherit(
   grammar : PreparedGrammar,
-  index : Int,
+  index : Int32,
 ) -> Bool {
   index >= 0 &&
   index < grammar.syntax.variables.length() &&
@@ -515,7 +519,7 @@ fn node_type_ref_for_step(
   step : ProductionStep,
 ) -> NodeTypeRef? {
   match step.alias_name {
-    Some(value) => Some({ type_name: value, named: step.alias_named })
+    Some(value) => Some({ type_name: value, named: step.alias_named, })
     None => node_type_ref_for_symbol(grammar, step.symbol)
   }
 }
@@ -524,7 +528,7 @@ fn node_type_ref_for_step(
 fn node_type_ref_for_symbol(
   grammar : PreparedGrammar,
   symbol : InternalSymbol,
-  apply_default_alias? : Bool = true,
+  apply_default_alias~ : Bool = true,
 ) -> NodeTypeRef? {
   if apply_default_alias {
     match node_type_default_alias_for_symbol(grammar.default_aliases, symbol) {
@@ -557,7 +561,7 @@ fn node_type_ref_for_symbol(
       }
     InternalSymbol::NonTerminal(index) =>
       if contains_internal_symbol(grammar.syntax.supertype_symbols, symbol) {
-        Some({ type_name: grammar.syntax.variables[index].name, named: true })
+        Some({ type_name: grammar.syntax.variables[index].name, named: true, })
       } else if index >= 0 && index < grammar.syntax.variables.length() {
         node_type_ref_for_kind(
           grammar.syntax.variables[index].name,
@@ -572,8 +576,8 @@ fn node_type_ref_for_symbol(
 ///|
 fn node_type_ref_for_kind(name : String, kind : VariableKind) -> NodeTypeRef? {
   match kind {
-    VariableKind::Named => Some({ type_name: name, named: true })
-    VariableKind::Anonymous => Some({ type_name: name, named: false })
+    VariableKind::Named => Some({ type_name: name, named: true, })
+    VariableKind::Anonymous => Some({ type_name: name, named: false, })
     VariableKind::Hidden | VariableKind::Auxiliary => None
   }
 }
@@ -653,13 +657,13 @@ fn node_type_merge_fields(
     match node_type_find_field(right, left_field.name) {
       Some(right_field) =>
         fields.push(node_type_merge_field(left_field, right_field))
-      None => fields.push({ ..left_field, required: false })
+      None => fields.push({ ..left_field, required: false, })
     }
   }
   for right_field in right {
     match node_type_find_field(left, right_field.name) {
       Some(_) => ()
-      None => fields.push({ ..right_field, required: false })
+      None => fields.push({ ..right_field, required: false, })
     }
   }
   fields.sort_by(node_type_field_compare)
@@ -697,7 +701,7 @@ fn node_type_find_field(
 fn node_type_field_compare(
   left : NodeTypeFieldDraft,
   right : NodeTypeFieldDraft,
-) -> Int {
+) -> Int32 {
   left.name.compare(right.name)
 }
 
@@ -711,11 +715,11 @@ fn node_type_merge_children(
       match right {
         Some(right_children) =>
           Some(node_type_merge_child_drafts(left_children, right_children))
-        None => Some({ ..left_children, required: false })
+        None => Some({ ..left_children, required: false, })
       }
     None =>
       match right {
-        Some(right_children) => Some({ ..right_children, required: false })
+        Some(right_children) => Some({ ..right_children, required: false, })
         None => None
       }
   }
@@ -765,7 +769,7 @@ fn node_type_process_supertypes(entries : Array[NodeTypeEntryDraft]) -> Unit {
         Some(node_type_process_children_supertypes(value, subtype_map))
       None => None
     }
-    entries[i] = { ..entry, fields, children }
+    entries[i] = { ..entry, fields, children, }
   }
 }
 
@@ -777,7 +781,7 @@ fn node_type_subtype_map(
   for entry in entries {
     if !entry.subtypes.is_empty() {
       result.push({
-        supertype: { type_name: entry.type_name, named: entry.named },
+        supertype: { type_name: entry.type_name, named: entry.named, },
         subtypes: entry.subtypes,
       })
     }
@@ -803,7 +807,7 @@ fn node_type_supertype_depth(
   supertype : NodeTypeRef,
   maps : Array[NodeTypeSupertypeMap],
   visited : Array[NodeTypeRef],
-) -> Int {
+) -> Int32 {
   if node_type_ref_array_contains(visited, supertype) {
     0
   } else {
@@ -919,7 +923,7 @@ fn push_node_type_ref(
 }
 
 ///|
-fn node_type_ref_compare(left : NodeTypeRef, right : NodeTypeRef) -> Int {
+fn node_type_ref_compare(left : NodeTypeRef, right : NodeTypeRef) -> Int32 {
   let type_comparison = left.type_name.compare(right.type_name)
   if type_comparison != 0 {
     type_comparison

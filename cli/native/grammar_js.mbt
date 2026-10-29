@@ -1,7 +1,7 @@
 ///|
 async fn read_cli_grammar_json_from_path(
   grammar_path : String,
-  js_runtime? : String? = None,
+  js_runtime~ : String? = None,
 ) -> String {
   if grammar_path.has_suffix(".json") {
     read_cli_file_string(grammar_path)
@@ -15,7 +15,7 @@ async fn read_cli_grammar_json_from_path(
 ///|
 async fn read_cli_grammar_js(
   grammar_path : String,
-  js_runtime? : String? = None,
+  js_runtime~ : String? = None,
 ) -> String {
   let runtime = cli_effective_js_runtime(js_runtime)
   let grammar_realpath = @fs.realpath(grammar_path) catch {

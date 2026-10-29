@@ -9,8 +9,8 @@ pub(all) struct CliParseProblem {
   kind : CliParseProblemKind
   node_type : String
   is_named : Bool
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   start_point : @api.Point
   end_point : @api.Point
 } derive(Eq, Debug)

@@ -1,6 +1,6 @@
 ///|
 fn production(steps : Array[ProductionStep]) -> FlattenedProduction {
-  { steps, dynamic_precedence: 0 }
+  { steps, dynamic_precedence: 0, }
 }
 
 ///|
@@ -22,7 +22,7 @@ fn alias_step(
   alias_name : String,
   alias_named : Bool,
 ) -> ProductionStep {
-  { ..step(symbol), alias_name: Some(alias_name), alias_named }
+  { ..step(symbol), alias_name: Some(alias_name), alias_named, }
 }
 
 ///|
@@ -46,7 +46,7 @@ fn prepared_syntax_fixture(
 }
 
 ///|
-fn expanded_lexical_fixture(count : Int) -> ExpandedLexicalGrammar {
+fn expanded_lexical_fixture(count : Int32) -> ExpandedLexicalGrammar {
   let variables : Array[ExpandedLexicalVariable] = []
   for i in 0..<count {
     variables.push({
@@ -61,7 +61,7 @@ fn expanded_lexical_fixture(count : Int) -> ExpandedLexicalGrammar {
       literal: None,
     })
   }
-  { variables, separators: [], external_tokens: [] }
+  { variables, separators: [], external_tokens: [], }
 }
 
 ///|
@@ -69,7 +69,7 @@ fn alias_extracted_fixture(
   syntax : FlattenedSyntaxGrammar,
   lexical : ExpandedLexicalGrammar,
 ) -> AliasExtractedGrammar {
-  { syntax, lexical, default_aliases: [] }
+  { syntax, lexical, default_aliases: [], }
 }
 
 ///|
@@ -89,7 +89,7 @@ fn find_default_alias(
 fn inlined_entry_for(
   map : InlinedProductionMap,
   source : InlinedProductionSource,
-  step_index : Int,
+  step_index : Int32,
 ) -> Array[FlattenedProduction]? {
   for entry in map.entries {
     if entry.source == source && entry.step_index == step_index {

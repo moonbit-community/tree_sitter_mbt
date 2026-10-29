@@ -1,7 +1,7 @@
 ///|
 priv struct ParseItem {
-  variable_index : Int
-  step_index : Int
+  variable_index : Int32
+  step_index : Int32
   production : FlattenedProduction
   source : InlinedProductionSource?
   has_preceding_inherited_fields : Bool
@@ -13,7 +13,7 @@ priv struct ParseItem {
 priv struct ParseItemSetEntry {
   item : ParseItem
   lookaheads : ParseTokenSet
-  mut following_reserved_word_set : Int
+  mut following_reserved_word_set : Int32
 }
 
 ///|
@@ -29,7 +29,7 @@ priv struct ParseItemSetCore {
 ///|
 priv struct ParseFollowSetInfo {
   lookaheads : ParseTokenSet
-  mut reserved_lookaheads : Int
+  mut reserved_lookaheads : Int32
   mut propagates_lookaheads : Bool
 }
 
@@ -48,15 +48,15 @@ priv struct ParseItemSetBuilder {
 
 ///|
 priv struct ParseFollowInfoEntry {
-  variable_index : Int
+  variable_index : Int32
   info : ParseFollowSetInfo
 }
 
 ///|
 priv struct ParseFollowStackEntry {
-  variable_index : Int
+  variable_index : Int32
   lookaheads : ParseTokenSet
-  reserved_word_set_id : Int
+  reserved_word_set_id : Int32
   propagates_lookaheads : Bool
 }
 
@@ -69,7 +69,7 @@ fn build_parse_item_set_builder(
   for _ in grammar.syntax.variables {
     transitive_closure_additions.push([])
   }
-  let builder = { grammar, symbol_sets, transitive_closure_additions }
+  let builder = { grammar, symbol_sets, transitive_closure_additions, }
   for variable_index in 0..<grammar.syntax.variables.length() {
     build_transitive_closure_additions(builder, variable_index)
   }
@@ -79,7 +79,7 @@ fn build_parse_item_set_builder(
 ///|
 fn build_transitive_closure_additions(
   builder : ParseItemSetBuilder,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> Unit {
   let follow_infos = parse_follow_infos_for_non_terminal(
     builder.grammar,
@@ -123,7 +123,7 @@ fn build_transitive_closure_additions(
       } else {
         push_unique_closure_addition(
           builder.transitive_closure_additions[variable_index],
-          { item, info: parse_follow_set_info_clone(entry.info) },
+          { item, info: parse_follow_set_info_clone(entry.info), },
         )
       }
     }
@@ -134,7 +134,7 @@ fn build_transitive_closure_additions(
 fn parse_follow_infos_for_non_terminal(
   grammar : PreparedGrammar,
   symbol_sets : ParseSymbolSets,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> Array[ParseFollowInfoEntry] {
   let infos : Array[ParseFollowInfoEntry] = []
   let stack : Array[ParseFollowStackEntry] = [
@@ -200,7 +200,7 @@ fn parse_follow_infos_for_non_terminal(
 ///|
 fn parse_follow_info_entry(
   infos : Array[ParseFollowInfoEntry],
-  variable_index : Int,
+  variable_index : Int32,
 ) -> ParseFollowSetInfo {
   for entry in infos {
     if entry.variable_index == variable_index {
@@ -208,7 +208,7 @@ fn parse_follow_info_entry(
     }
   }
   let info = parse_follow_set_info_empty()
-  infos.push({ variable_index, info })
+  infos.push({ variable_index, info, })
   info
 }
 
@@ -244,7 +244,7 @@ fn parse_follow_set_info_same(
 fn parse_follow_set_info_insert(
   info : ParseFollowSetInfo,
   lookaheads : ParseTokenSet,
-  reserved_word_set_id : Int,
+  reserved_word_set_id : Int32,
   propagates_lookaheads : Bool,
 ) -> Bool {
   let before = parse_token_set_clone(info.lookaheads)
@@ -294,7 +294,7 @@ fn parse_item_start_production() -> FlattenedProduction {
 
 ///|
 fn parse_item_for_production(
-  variable_index : Int,
+  variable_index : Int32,
   production : FlattenedProduction,
 ) -> ParseItem {
   {
@@ -310,8 +310,8 @@ fn parse_item_for_production(
 
 ///|
 fn parse_item_for_grammar_production(
-  variable_index : Int,
-  production_index : Int,
+  variable_index : Int32,
+  production_index : Int32,
   production : FlattenedProduction,
 ) -> ParseItem {
   {
@@ -332,8 +332,8 @@ fn parse_item_for_grammar_production(
 
 ///|
 fn parse_item_for_generated_production(
-  generated_index : Int,
-  variable_index : Int,
+  generated_index : Int32,
+  variable_index : Int32,
   production : FlattenedProduction,
 ) -> ParseItem {
   {
@@ -381,7 +381,7 @@ fn ParseItem::is_augmented(self : ParseItem) -> Bool {
 
 ///|
 fn ParseItem::successor(self : ParseItem) -> ParseItem {
-  { ..self, step_index: self.step_index + 1 }
+  { ..self, step_index: self.step_index + 1, }
 }
 
 ///|
@@ -395,7 +395,7 @@ fn ParseItem::substitute_production(
 ///|
 fn parse_item_substitute_generated(
   item : ParseItem,
-  generated_index : Int,
+  generated_index : Int32,
   production : FlattenedProduction,
 ) -> ParseItem {
   {
@@ -406,11 +406,11 @@ fn parse_item_substitute_generated(
 
 ///|
 fn parse_item_set_empty() -> ParseItemSet {
-  { entries: [] }
+  { entries: [], }
 }
 
 ///|
-fn ParseItemSet::insert(self : ParseItemSet, item : ParseItem) -> Int {
+fn ParseItemSet::insert(self : ParseItemSet, item : ParseItem) -> Int32 {
   for i in 0..<self.entries.length() {
     let comparison = parse_item_compare(self.entries[i].item, item)
     if comparison == 0 {
@@ -576,7 +576,7 @@ fn parse_item_inherit_leading_precedence(
 ///|
 fn parse_item_set_entry_max_reserved(
   entry : ParseItemSetEntry,
-  reserved_word_set_id : Int,
+  reserved_word_set_id : Int32,
 ) -> Unit {
   if reserved_word_set_id > entry.following_reserved_word_set {
     entry.following_reserved_word_set = reserved_word_set_id
@@ -587,7 +587,7 @@ fn parse_item_set_entry_max_reserved(
 fn inlined_productions_for_item(
   inlines : InlinedProductionMap,
   item : ParseItem,
-) -> Array[(Int, FlattenedProduction)] {
+) -> Array[(Int32, FlattenedProduction)] {
   match item.source {
     Some(source) =>
       inlined_productions_for_source(inlines, source, item.step_index)
@@ -599,9 +599,9 @@ fn inlined_productions_for_item(
 fn inlined_productions_for_source(
   inlines : InlinedProductionMap,
   source : InlinedProductionSource,
-  step_index : Int,
-) -> Array[(Int, FlattenedProduction)] {
-  let result : Array[(Int, FlattenedProduction)] = []
+  step_index : Int32,
+) -> Array[(Int32, FlattenedProduction)] {
+  let result : Array[(Int32, FlattenedProduction)] = []
   for entry in inlines.entries {
     if entry.source == source && entry.step_index == step_index {
       for index in entry.production_indices {
@@ -680,7 +680,7 @@ fn parse_item_same(left : ParseItem, right : ParseItem) -> Bool {
 }
 
 ///|
-fn parse_item_compare(left : ParseItem, right : ParseItem) -> Int {
+fn parse_item_compare(left : ParseItem, right : ParseItem) -> Int32 {
   let mut comparison = compare_int(left.step_index, right.step_index)
   if comparison != 0 {
     return comparison
@@ -794,7 +794,7 @@ fn parse_item_associativity(item : ParseItem) -> Associativity {
 fn compare_production_step_precedence(
   left : ProductionStep?,
   right : ProductionStep?,
-) -> Int {
+) -> Int32 {
   compare_precedence_value_option(
     match left {
       Some(step) => step.precedence
@@ -811,7 +811,7 @@ fn compare_production_step_precedence(
 fn compare_production_step(
   left : ProductionStep,
   right : ProductionStep,
-) -> Int {
+) -> Int32 {
   let mut comparison = compare_internal_symbol(left.symbol, right.symbol)
   if comparison != 0 {
     return comparison
@@ -846,7 +846,7 @@ fn compare_production_step(
 fn compare_internal_symbol(
   left : InternalSymbol,
   right : InternalSymbol,
-) -> Int {
+) -> Int32 {
   let comparison = compare_int(
     internal_symbol_kind_rank(left),
     internal_symbol_kind_rank(right),
@@ -858,7 +858,7 @@ fn compare_internal_symbol(
 }
 
 ///|
-fn internal_symbol_kind_rank(symbol : InternalSymbol) -> Int {
+fn internal_symbol_kind_rank(symbol : InternalSymbol) -> Int32 {
   match symbol {
     Terminal(_) => 0
     External(_) => 1
@@ -867,7 +867,7 @@ fn internal_symbol_kind_rank(symbol : InternalSymbol) -> Int {
 }
 
 ///|
-fn internal_symbol_index(symbol : InternalSymbol) -> Int {
+fn internal_symbol_index(symbol : InternalSymbol) -> Int32 {
   match symbol {
     Terminal(index) | External(index) | NonTerminal(index) => index
   }
@@ -877,7 +877,7 @@ fn internal_symbol_index(symbol : InternalSymbol) -> Int {
 fn compare_precedence_value_option(
   left : @grammar.PrecedenceValue?,
   right : @grammar.PrecedenceValue?,
-) -> Int {
+) -> Int32 {
   match (left, right) {
     (None, None) => 0
     (None, Some(_)) => -1
@@ -891,7 +891,7 @@ fn compare_precedence_value_option(
 fn compare_precedence_value(
   left : @grammar.PrecedenceValue,
   right : @grammar.PrecedenceValue,
-) -> Int {
+) -> Int32 {
   match (left, right) {
     (Number(left_number), Number(right_number)) =>
       compare_int(left_number, right_number)
@@ -902,12 +902,12 @@ fn compare_precedence_value(
 }
 
 ///|
-fn compare_associativity(left : Associativity, right : Associativity) -> Int {
+fn compare_associativity(left : Associativity, right : Associativity) -> Int32 {
   compare_int(associativity_rank(left), associativity_rank(right))
 }
 
 ///|
-fn associativity_rank(value : Associativity) -> Int {
+fn associativity_rank(value : Associativity) -> Int32 {
   match value {
     NoAssociativity => 0
     Left => 1
@@ -916,7 +916,7 @@ fn associativity_rank(value : Associativity) -> Int {
 }
 
 ///|
-fn compare_bool(left : Bool, right : Bool) -> Int {
+fn compare_bool(left : Bool, right : Bool) -> Int32 {
   match (left, right) {
     (false, false) | (true, true) => 0
     (false, true) => -1
@@ -925,7 +925,7 @@ fn compare_bool(left : Bool, right : Bool) -> Int {
 }
 
 ///|
-fn compare_string_option(left : String?, right : String?) -> Int {
+fn compare_string_option(left : String?, right : String?) -> Int32 {
   match (left, right) {
     (None, None) => 0
     (None, Some(_)) => -1
@@ -935,7 +935,7 @@ fn compare_string_option(left : String?, right : String?) -> Int {
 }
 
 ///|
-fn parse_items_smoke_weight() -> Int {
+fn parse_items_smoke_weight() -> Int32 {
   let production = {
     steps: [
       {
@@ -990,7 +990,7 @@ fn parse_items_smoke_weight() -> Int {
 fn parse_item_set_builder_smoke_weight(
   grammar : PreparedGrammar,
   symbol_sets : ParseSymbolSets,
-) -> Int {
+) -> Int32 {
   let builder = build_parse_item_set_builder(grammar, symbol_sets)
   let item_set = parse_item_set_empty()
   let start_index = item_set.insert(parse_item_start())
@@ -1011,7 +1011,7 @@ fn parse_item_set_builder_smoke_weight(
 }
 
 ///|
-fn parse_item_set_weight(set : ParseItemSet) -> Int {
+fn parse_item_set_weight(set : ParseItemSet) -> Int32 {
   let mut weight = 0
   for entry in set.entries {
     weight += parse_item_weight(entry.item)
@@ -1022,7 +1022,7 @@ fn parse_item_set_weight(set : ParseItemSet) -> Int {
 }
 
 ///|
-fn parse_item_weight(item : ParseItem) -> Int {
+fn parse_item_weight(item : ParseItem) -> Int32 {
   let mut weight = item.variable_index + item.step_index
   weight += flattened_production_weight(item.production)
   if item.has_preceding_inherited_fields {

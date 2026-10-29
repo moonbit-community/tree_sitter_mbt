@@ -1,10 +1,10 @@
 ///|
 pub(all) suberror QueryError {
-  Syntax(byte_offset~ : Int, reason~ : String)
-  NodeType(byte_offset~ : Int, name~ : String)
-  Field(byte_offset~ : Int, name~ : String)
-  Capture(byte_offset~ : Int, name~ : String)
-  Structure(byte_offset~ : Int, reason~ : String)
+  Syntax(byte_offset~ : Int32, reason~ : String)
+  NodeType(byte_offset~ : Int32, name~ : String)
+  Field(byte_offset~ : Int32, name~ : String)
+  Capture(byte_offset~ : Int32, name~ : String)
+  Structure(byte_offset~ : Int32, reason~ : String)
 }
 
 ///|
@@ -20,61 +20,61 @@ struct Query {
 ///|
 struct QueryCursor {
   mut matches : Array[QueryMatch]
-  mut match_index : Int
+  mut match_index : Int32
   mut captures : Array[QueryCapture]
-  mut capture_index : Int
-  mut removed_match_ids : Array[Int]
-  mut byte_range_start : UInt
-  mut byte_range_end : UInt
+  mut capture_index : Int32
+  mut removed_match_ids : Array[Int32]
+  mut byte_range_start : UInt32
+  mut byte_range_end : UInt32
   mut point_range_start : @api.Point
   mut point_range_end : @api.Point
-  mut containing_byte_range_start : UInt
-  mut containing_byte_range_end : UInt
+  mut containing_byte_range_start : UInt32
+  mut containing_byte_range_end : UInt32
   mut containing_point_range_start : @api.Point
   mut containing_point_range_end : @api.Point
-  mut max_start_depth : Int
-  mut match_limit : UInt
+  mut max_start_depth : Int32
+  mut match_limit : UInt32
   mut did_exceed_match_limit : Bool
   mut progress_callback : ((QueryCursorProgressState) -> Bool)?
 }
 
 ///|
 priv struct QueryMatchLimitTracker {
-  limit : UInt
+  limit : UInt32
   mut did_exceed : Bool
 }
 
 ///|
 pub(all) struct QueryCapture {
-  match_id : Int
-  pattern_index : Int
-  index : Int
+  match_id : Int32
+  pattern_index : Int32
+  index : Int32
   name : String
   node : @tree_sitter_mbt.Node
 }
 
 ///|
 pub(all) struct QueryMatch {
-  id : Int
-  pattern_index : Int
+  id : Int32
+  pattern_index : Int32
   captures : Array[QueryCapture]
 }
 
 ///|
 pub(all) struct QueryCursorProgressState {
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
 } derive(Eq, Debug)
 
 ///|
 pub fn QueryCursorProgressState::new(
-  current_byte_offset~ : UInt,
+  current_byte_offset~ : UInt32,
 ) -> QueryCursorProgressState {
   { current_byte_offset, }
 }
 
 ///|
-fn QueryMatchLimitTracker::new(limit : UInt) -> QueryMatchLimitTracker {
-  { limit, did_exceed: false }
+fn QueryMatchLimitTracker::new(limit : UInt32) -> QueryMatchLimitTracker {
+  { limit, did_exceed: false, }
 }
 
 ///|
@@ -148,8 +148,8 @@ fn QueryMatchLimitTracker::limit_node_matches(
 ///|
 pub(all) enum QueryPredicateStep {
   Done
-  Capture(Int)
-  String(Int)
+  Capture(Int32)
+  String(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -165,9 +165,9 @@ pub(all) enum QueryCaptureQuantifier {
 priv struct QueryPattern {
   root : QueryNodePattern
   predicate_steps : Array[QueryPredicateStep]
-  predicate_step_offsets : Array[Int]
-  start_byte : Int
-  end_byte : Int
+  predicate_step_offsets : Array[Int32]
+  start_byte : Int32
+  end_byte : Int32
 }
 
 ///|
@@ -184,13 +184,13 @@ priv struct QueryNodeMatch {
 
 ///|
 priv struct QueryChildMatch {
-  next_child_index : Int
+  next_child_index : Int32
   node_match : QueryNodeMatch
 }
 
 ///|
 priv struct QuerySequenceState {
-  next_child_index : Int
+  next_child_index : Int32
   captures : Array[QueryCapture]
   nodes : Array[@tree_sitter_mbt.Node]
 }
@@ -206,29 +206,29 @@ priv struct QuerySiblingSequenceState {
 priv struct QueryNodePattern {
   kind : QueryNodePatternKind
   field_name : String?
-  mut start_byte : Int
+  mut start_byte : Int32
   // Intentional divergence from upstream query bytecode: keep all parsed
   // capture ids and negated fields in the AST instead of capping each step.
   negated_field_names : Array[String]
   mut quantifier : QueryCaptureQuantifier
   mut anchor_before : Bool
   mut anchor_after : Bool
-  capture_ids : Array[Int]
+  capture_ids : Array[Int32]
   children : Array[QueryNodePattern]
 }
 
 ///|
 priv struct QueryGuaranteedStepSearch {
-  target : Int
-  mut current : Int
+  target : Int32
+  mut current : Int32
   mut found : Bool
   mut guaranteed : Bool
-  predicate_capture_ids : Array[Int]
+  predicate_capture_ids : Array[Int32]
 }
 
 ///|
 priv struct QueryGuaranteedStepInfo {
-  byte_offset : Int
+  byte_offset : Int32
   guaranteed : Bool
 }
 
@@ -257,7 +257,7 @@ pub fn Query::new(
 }
 
 ///|
-pub fn Query::pattern_count(self : Query) -> Int {
+pub fn Query::pattern_count(self : Query) -> Int32 {
   self.patterns.length()
 }
 
@@ -267,22 +267,22 @@ pub fn Query::language(self : Query) -> @tree_sitter_mbt.Language {
 }
 
 ///|
-pub fn Query::capture_count(self : Query) -> Int {
+pub fn Query::capture_count(self : Query) -> Int32 {
   self.capture_names.length()
 }
 
 ///|
-pub fn Query::string_count(self : Query) -> Int {
+pub fn Query::string_count(self : Query) -> Int32 {
   self.string_values.length()
 }
 
 ///|
-pub fn Query::capture_name_for_id(self : Query, id : Int) -> String? {
+pub fn Query::capture_name_for_id(self : Query, id : Int32) -> String? {
   self.capture_names.get(id)
 }
 
 ///|
-pub fn Query::string_value_for_id(self : Query, id : Int) -> String? {
+pub fn Query::string_value_for_id(self : Query, id : Int32) -> String? {
   self.string_values.get(id)
 }
 
@@ -299,7 +299,7 @@ pub fn Query::disable_capture(self : Query, name : String) -> Bool {
 }
 
 ///|
-pub fn Query::disable_pattern(self : Query, pattern_index : Int) -> Bool {
+pub fn Query::disable_pattern(self : Query, pattern_index : Int32) -> Bool {
   match self.disabled_pattern_indices.get(pattern_index) {
     Some(_) => {
       self.disabled_pattern_indices[pattern_index] = true
@@ -310,7 +310,10 @@ pub fn Query::disable_pattern(self : Query, pattern_index : Int) -> Bool {
 }
 
 ///|
-pub fn Query::start_byte_for_pattern(self : Query, pattern_index : Int) -> Int? {
+pub fn Query::start_byte_for_pattern(
+  self : Query,
+  pattern_index : Int32,
+) -> Int32? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => Some(pattern.start_byte)
     None => None
@@ -318,7 +321,10 @@ pub fn Query::start_byte_for_pattern(self : Query, pattern_index : Int) -> Int? 
 }
 
 ///|
-pub fn Query::end_byte_for_pattern(self : Query, pattern_index : Int) -> Int? {
+pub fn Query::end_byte_for_pattern(
+  self : Query,
+  pattern_index : Int32,
+) -> Int32? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => Some(pattern.end_byte)
     None => None
@@ -326,7 +332,7 @@ pub fn Query::end_byte_for_pattern(self : Query, pattern_index : Int) -> Int? {
 }
 
 ///|
-pub fn Query::is_pattern_rooted(self : Query, pattern_index : Int) -> Bool? {
+pub fn Query::is_pattern_rooted(self : Query, pattern_index : Int32) -> Bool? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => Some(pattern.is_rooted())
     None => None
@@ -334,7 +340,10 @@ pub fn Query::is_pattern_rooted(self : Query, pattern_index : Int) -> Bool? {
 }
 
 ///|
-pub fn Query::is_pattern_non_local(self : Query, pattern_index : Int) -> Bool? {
+pub fn Query::is_pattern_non_local(
+  self : Query,
+  pattern_index : Int32,
+) -> Bool? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => Some(pattern.is_non_local())
     None => None
@@ -344,8 +353,8 @@ pub fn Query::is_pattern_non_local(self : Query, pattern_index : Int) -> Bool? {
 ///|
 pub fn Query::is_pattern_guaranteed_at_step(
   self : Query,
-  pattern_index : Int,
-  step_index : Int,
+  pattern_index : Int32,
+  step_index : Int32,
 ) -> Bool? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => Some(pattern.is_guaranteed_at_step(step_index))
@@ -356,7 +365,7 @@ pub fn Query::is_pattern_guaranteed_at_step(
 ///|
 pub fn Query::is_pattern_guaranteed_at_byte_offset(
   self : Query,
-  byte_offset : Int,
+  byte_offset : Int32,
 ) -> Bool {
   let mut found : QueryGuaranteedStepInfo? = None
   for pattern in self.patterns {
@@ -380,8 +389,8 @@ pub fn Query::is_pattern_guaranteed_at_byte_offset(
 ///|
 pub fn Query::capture_quantifier_for_id(
   self : Query,
-  pattern_index : Int,
-  capture_id : Int,
+  pattern_index : Int32,
+  capture_id : Int32,
 ) -> QueryCaptureQuantifier? {
   match (self.patterns.get(pattern_index), self.capture_names.get(capture_id)) {
     (Some(pattern), Some(_)) =>
@@ -393,8 +402,8 @@ pub fn Query::capture_quantifier_for_id(
 ///|
 pub fn Query::predicate_step_count_for_pattern(
   self : Query,
-  pattern_index : Int,
-) -> Int? {
+  pattern_index : Int32,
+) -> Int32? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => Some(pattern.predicate_steps.length())
     None => None
@@ -404,8 +413,8 @@ pub fn Query::predicate_step_count_for_pattern(
 ///|
 pub fn Query::predicate_step_for_pattern(
   self : Query,
-  pattern_index : Int,
-  step_index : Int,
+  pattern_index : Int32,
+  step_index : Int32,
 ) -> QueryPredicateStep? {
   match self.patterns.get(pattern_index) {
     Some(pattern) => pattern.predicate_steps.get(step_index)
@@ -439,7 +448,7 @@ pub fn QueryCursor::new() -> QueryCursor {
 ///|
 fn QueryPattern::contains_capture(
   self : QueryPattern,
-  capture_id : Int,
+  capture_id : Int32,
 ) -> Bool {
   self.root.contains_capture(capture_id)
 }
@@ -447,7 +456,7 @@ fn QueryPattern::contains_capture(
 ///|
 fn QueryPattern::capture_quantifier(
   self : QueryPattern,
-  capture_id : Int,
+  capture_id : Int32,
 ) -> QueryCaptureQuantifier? {
   self.root.capture_quantifier(capture_id, inherited=One)
 }
@@ -465,7 +474,7 @@ fn QueryPattern::is_non_local(self : QueryPattern) -> Bool {
 ///|
 fn QueryPattern::is_guaranteed_at_step(
   self : QueryPattern,
-  step_index : Int,
+  step_index : Int32,
 ) -> Bool {
   if step_index < 0 {
     return false
@@ -497,7 +506,7 @@ fn QueryPattern::guaranteed_step_infos(
 ///|
 fn QueryNodePattern::contains_capture(
   self : QueryNodePattern,
-  capture_id : Int,
+  capture_id : Int32,
 ) -> Bool {
   for id in self.capture_ids {
     if id == capture_id {
@@ -524,7 +533,7 @@ fn QueryNodePattern::contains_capture(
 ///|
 fn QueryNodePattern::capture_quantifier(
   self : QueryNodePattern,
-  capture_id : Int,
+  capture_id : Int32,
   inherited~ : QueryCaptureQuantifier,
 ) -> QueryCaptureQuantifier? {
   let quantifier = query_combine_capture_quantifiers(inherited, self.quantifier)
@@ -628,7 +637,7 @@ fn QueryNodePattern::search_guaranteed_step(
 fn QueryNodePattern::collect_guaranteed_step_infos(
   self : QueryNodePattern,
   guaranteed_path~ : Bool,
-  predicate_capture_ids : Array[Int],
+  predicate_capture_ids : Array[Int32],
   result~ : Array[QueryGuaranteedStepInfo],
 ) -> Unit {
   match self.kind {
@@ -649,7 +658,7 @@ fn QueryNodePattern::collect_guaranteed_step_infos(
     self.quantifier == One &&
     self.kind_is_single_step() &&
     !self.captures_predicate_capture(predicate_capture_ids)
-  result.push({ byte_offset: self.start_byte, guaranteed: current_guaranteed })
+  result.push({ byte_offset: self.start_byte, guaranteed: current_guaranteed, })
   if !current_guaranteed {
     return
   }
@@ -673,7 +682,7 @@ fn QueryNodePattern::kind_is_single_step(self : QueryNodePattern) -> Bool {
 ///|
 fn QueryNodePattern::captures_predicate_capture(
   self : QueryNodePattern,
-  predicate_capture_ids : Array[Int],
+  predicate_capture_ids : Array[Int32],
 ) -> Bool {
   for capture_id in self.capture_ids {
     if query_int_array_contains(predicate_capture_ids, capture_id) {
@@ -811,7 +820,7 @@ fn QueryNodePattern::can_start_non_local_sibling(
 ///|
 fn query_alternation_capture_quantifier(
   alternatives : Array[QueryNodePattern],
-  capture_id : Int,
+  capture_id : Int32,
   inherited~ : QueryCaptureQuantifier,
 ) -> QueryCaptureQuantifier? {
   let mut found = false
@@ -869,7 +878,7 @@ fn query_join_capture_quantifiers(
 }
 
 ///|
-fn query_capture_quantifier_min(quantifier : QueryCaptureQuantifier) -> Int {
+fn query_capture_quantifier_min(quantifier : QueryCaptureQuantifier) -> Int32 {
   match quantifier {
     Zero | ZeroOrOne | ZeroOrMore => 0
     One | OneOrMore => 1
@@ -877,7 +886,7 @@ fn query_capture_quantifier_min(quantifier : QueryCaptureQuantifier) -> Int {
 }
 
 ///|
-fn query_capture_quantifier_max(quantifier : QueryCaptureQuantifier) -> Int {
+fn query_capture_quantifier_max(quantifier : QueryCaptureQuantifier) -> Int32 {
   match quantifier {
     Zero => 0
     One | ZeroOrOne => 1
@@ -897,8 +906,8 @@ fn query_capture_quantifier_is_repeating(
 
 ///|
 fn query_capture_quantifier_from_min_max(
-  min : Int,
-  max : Int,
+  min : Int32,
+  max : Int32,
 ) -> QueryCaptureQuantifier {
   if min == 0 {
     if max == 0 {
@@ -916,7 +925,7 @@ fn query_capture_quantifier_from_min_max(
 }
 
 ///|
-fn query_min_int(left : Int, right : Int) -> Int {
+fn query_min_int(left : Int32, right : Int32) -> Int32 {
   if left < right {
     left
   } else {
@@ -925,7 +934,7 @@ fn query_min_int(left : Int, right : Int) -> Int {
 }
 
 ///|
-fn query_max_int(left : Int, right : Int) -> Int {
+fn query_max_int(left : Int32, right : Int32) -> Int32 {
   if left > right {
     left
   } else {
@@ -950,8 +959,8 @@ fn query_combine_capture_quantifiers(
 }
 
 ///|
-fn QueryPattern::predicate_capture_ids(self : QueryPattern) -> Array[Int] {
-  let result : Array[Int] = []
+fn QueryPattern::predicate_capture_ids(self : QueryPattern) -> Array[Int32] {
+  let result : Array[Int32] = []
   for step in self.predicate_steps {
     match step {
       Capture(capture_id) =>
@@ -966,7 +975,7 @@ fn QueryPattern::predicate_capture_ids(self : QueryPattern) -> Array[Int] {
 }
 
 ///|
-fn query_int_array_contains(values : Array[Int], value : Int) -> Bool {
+fn query_int_array_contains(values : Array[Int32], value : Int32) -> Bool {
   for candidate in values {
     if candidate == value {
       return true
@@ -978,8 +987,8 @@ fn query_int_array_contains(values : Array[Int], value : Int) -> Bool {
 ///|
 pub fn QueryCursor::set_byte_range(
   self : QueryCursor,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bool {
   if end_byte != 0 && start_byte > end_byte {
     false
@@ -1008,8 +1017,8 @@ pub fn QueryCursor::set_point_range(
 ///|
 pub fn QueryCursor::set_containing_byte_range(
   self : QueryCursor,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bool {
   if end_byte != 0 && start_byte > end_byte {
     false
@@ -1038,7 +1047,7 @@ pub fn QueryCursor::set_containing_point_range(
 ///|
 pub fn QueryCursor::set_max_start_depth(
   self : QueryCursor,
-  max_start_depth : Int,
+  max_start_depth : Int32,
 ) -> Bool {
   if max_start_depth == -1 {
     self.max_start_depth = -1
@@ -1054,13 +1063,13 @@ pub fn QueryCursor::set_max_start_depth(
 ///|
 pub fn QueryCursor::set_match_limit(
   self : QueryCursor,
-  match_limit : UInt,
+  match_limit : UInt32,
 ) -> Unit {
   self.match_limit = match_limit
 }
 
 ///|
-pub fn QueryCursor::match_limit(self : QueryCursor) -> UInt {
+pub fn QueryCursor::match_limit(self : QueryCursor) -> UInt32 {
   self.match_limit
 }
 
@@ -1240,8 +1249,8 @@ fn QueryPattern::match_roots(
   self : QueryPattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
-  start_depth~ : Int,
+  pattern_index~ : Int32,
+  start_depth~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryRootMatch] {
   let result : Array[QueryRootMatch] = []
@@ -1255,12 +1264,12 @@ fn QueryPattern::match_roots(
           pattern_index~,
           match_limit_tracker~,
         ) {
-        result.push({ captures: node_match.captures, nodes: node_match.nodes })
+        result.push({ captures: node_match.captures, nodes: node_match.nodes, })
       }
       if result.is_empty() &&
         self.root.quantifier == ZeroOrOne &&
         query_can_match_empty_root_at(node, start_depth~) {
-        result.push({ captures: [], nodes: [node] })
+        result.push({ captures: [], nodes: [node], })
       }
     }
     OneOrMore =>
@@ -1282,7 +1291,7 @@ fn QueryPattern::match_roots(
       )
       if root_matches.is_empty() {
         if query_can_match_empty_root_at(node, start_depth~) {
-          result.push({ captures: [], nodes: [node] })
+          result.push({ captures: [], nodes: [node], })
         }
       } else {
         for root_match in root_matches {
@@ -1297,7 +1306,7 @@ fn QueryPattern::match_roots(
 ///|
 fn query_root_match_with_id(
   root_match : QueryRootMatch,
-  match_id : Int,
+  match_id : Int32,
 ) -> QueryRootMatch {
   let captures : Array[QueryCapture] = []
   for capture in root_match.captures {
@@ -1309,13 +1318,13 @@ fn query_root_match_with_id(
       node: capture.node,
     })
   }
-  { captures, nodes: query_copy_nodes(root_match.nodes) }
+  { captures, nodes: query_copy_nodes(root_match.nodes), }
 }
 
 ///|
 fn query_can_match_empty_root_at(
   node : @tree_sitter_mbt.Node,
-  start_depth~ : Int,
+  start_depth~ : Int32,
 ) -> Bool {
   start_depth == 0 && node.child_count() == 0
 }
@@ -1325,7 +1334,7 @@ fn QueryNodePattern::match_repeated_roots_all(
   self : QueryNodePattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryRootMatch] {
   let result : Array[QueryRootMatch] = []
@@ -1337,7 +1346,7 @@ fn QueryNodePattern::match_repeated_roots_all(
     return result
   }
   let mut states : Array[QuerySequenceState] = [
-    { next_child_index: 0, captures: [], nodes: [] },
+    { next_child_index: 0, captures: [], nodes: [], },
   ]
   let mut current = node
   let mut matched_count = 0
@@ -1375,7 +1384,7 @@ fn QueryNodePattern::match_repeated_roots_all(
     return result
   }
   for state in states {
-    result.push({ captures: state.captures, nodes: state.nodes })
+    result.push({ captures: state.captures, nodes: state.nodes, })
   }
   result
 }
@@ -1385,7 +1394,7 @@ fn QueryNodePattern::match_captures_all(
   self : QueryNodePattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryNodeMatch] {
   let result : Array[QueryNodeMatch] = []
@@ -1433,7 +1442,7 @@ fn QueryNodePattern::match_captures_all(
   let captures = self.local_captures(node, query, pattern_index~)
   let nodes = [node]
   let mut states : Array[QuerySequenceState] = [
-    { next_child_index: 0, captures, nodes },
+    { next_child_index: 0, captures, nodes, },
   ]
   for child_pattern in self.children {
     let next_states : Array[QuerySequenceState] = []
@@ -1456,7 +1465,7 @@ fn QueryNodePattern::match_captures_all(
   }
   states = match_limit_tracker.limit_sequence_states(states)
   for state in states {
-    result.push({ captures: state.captures, nodes: state.nodes })
+    result.push({ captures: state.captures, nodes: state.nodes, })
   }
   result
 }
@@ -1466,12 +1475,12 @@ fn query_match_sibling_sequence_all(
   elements : Array[QueryNodePattern],
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryNodeMatch] {
   let result : Array[QueryNodeMatch] = []
   let mut states : Array[QuerySiblingSequenceState] = [
-    { current: node, captures: [], nodes: [] },
+    { current: node, captures: [], nodes: [], },
   ]
   for element_index in 0..<elements.length() {
     let element = elements[element_index]
@@ -1499,7 +1508,7 @@ fn query_match_sibling_sequence_all(
   }
   states = match_limit_tracker.limit_sibling_sequence_states(states)
   for state in states {
-    result.push({ captures: state.captures, nodes: state.nodes })
+    result.push({ captures: state.captures, nodes: state.nodes, })
   }
   result
 }
@@ -1509,13 +1518,13 @@ fn QueryNodePattern::match_sibling_sequence_element_all(
   self : QueryNodePattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
   allow_skip~ : Bool,
 ) -> Array[QuerySiblingSequenceState] {
   let result : Array[QuerySiblingSequenceState] = []
   match self.quantifier {
-    Zero => result.push({ current: node, captures: [], nodes: [] })
+    Zero => result.push({ current: node, captures: [], nodes: [], })
     ZeroOrOne => {
       for
         state in self.match_one_sibling_sequence_element_all(
@@ -1527,7 +1536,7 @@ fn QueryNodePattern::match_sibling_sequence_element_all(
         ) {
         result.push(state)
       }
-      result.push({ current: node, captures: [], nodes: [] })
+      result.push({ current: node, captures: [], nodes: [], })
     }
     One =>
       for
@@ -1573,7 +1582,7 @@ fn QueryNodePattern::match_one_sibling_sequence_element_all(
   self : QueryNodePattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
   allow_skip~ : Bool,
 ) -> Array[QuerySiblingSequenceState] {
@@ -1618,14 +1627,14 @@ fn QueryNodePattern::match_repeated_sibling_sequence_element_all(
   self : QueryNodePattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   required~ : Bool,
   match_limit_tracker~ : QueryMatchLimitTracker,
   allow_skip~ : Bool,
 ) -> Array[QuerySiblingSequenceState] {
   let result : Array[QuerySiblingSequenceState] = []
   let mut states : Array[QuerySiblingSequenceState] = [
-    { current: node, captures: [], nodes: [] },
+    { current: node, captures: [], nodes: [], },
   ]
   let mut matched_count = 0
   while true {
@@ -1674,7 +1683,7 @@ fn query_sibling_sequence_state_append(
   for node in element_state.nodes {
     nodes.push(node)
   }
-  { current: element_state.current, captures, nodes }
+  { current: element_state.current, captures, nodes, }
 }
 
 ///|
@@ -1713,7 +1722,7 @@ fn QueryNodePattern::local_captures(
   self : QueryNodePattern,
   node : @tree_sitter_mbt.Node,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
 ) -> Array[QueryCapture] {
   let result : Array[QueryCapture] = []
   for capture_id in self.capture_ids {
@@ -1741,7 +1750,7 @@ fn query_merge_node_match(
   for capture in node_match.captures {
     captures.push(capture)
   }
-  { captures, nodes: query_copy_nodes(node_match.nodes) }
+  { captures, nodes: query_copy_nodes(node_match.nodes), }
 }
 
 ///|
@@ -1760,7 +1769,7 @@ fn query_sequence_state_append(
 fn query_sequence_state_append_node_match(
   state : QuerySequenceState,
   node_match : QueryNodeMatch,
-  next_child_index~ : Int,
+  next_child_index~ : Int32,
 ) -> QuerySequenceState {
   let captures = query_copy_captures(state.captures)
   for capture in node_match.captures {
@@ -1770,7 +1779,7 @@ fn query_sequence_state_append_node_match(
   for node in node_match.nodes {
     nodes.push(node)
   }
-  { next_child_index, captures, nodes }
+  { next_child_index, captures, nodes, }
 }
 
 ///|
@@ -1797,9 +1806,9 @@ fn query_copy_nodes(
 fn QueryNodePattern::match_child_captures_all(
   self : QueryNodePattern,
   parent : @tree_sitter_mbt.Node,
-  start_child_index : Int,
+  start_child_index : Int32,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryChildMatch] {
   let result : Array[QueryChildMatch] = []
@@ -1807,7 +1816,7 @@ fn QueryNodePattern::match_child_captures_all(
     Zero =>
       result.push({
         next_child_index: start_child_index,
-        node_match: { captures: [], nodes: [] },
+        node_match: { captures: [], nodes: [], },
       })
     ZeroOrOne => {
       for
@@ -1822,7 +1831,7 @@ fn QueryNodePattern::match_child_captures_all(
       }
       result.push({
         next_child_index: start_child_index,
-        node_match: { captures: [], nodes: [] },
+        node_match: { captures: [], nodes: [], },
       })
     }
     One =>
@@ -1868,15 +1877,15 @@ fn QueryNodePattern::match_child_captures_all(
 fn QueryNodePattern::match_repeated_children_all(
   self : QueryNodePattern,
   parent : @tree_sitter_mbt.Node,
-  start_child_index : Int,
+  start_child_index : Int32,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   required~ : Bool,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryChildMatch] {
   let result : Array[QueryChildMatch] = []
   let mut states : Array[QuerySequenceState] = [
-    { next_child_index: start_child_index, captures: [], nodes: [] },
+    { next_child_index: start_child_index, captures: [], nodes: [], },
   ]
   let mut matched_count = 0
   while true {
@@ -1907,7 +1916,7 @@ fn QueryNodePattern::match_repeated_children_all(
   for state in states {
     result.push({
       next_child_index: state.next_child_index,
-      node_match: { captures: state.captures, nodes: state.nodes },
+      node_match: { captures: state.captures, nodes: state.nodes, },
     })
   }
   result
@@ -1970,7 +1979,7 @@ fn query_prune_sibling_sequence_state_capture_subsets(
 ///|
 fn query_sequence_states_capture_list_count(
   states : Array[QuerySequenceState],
-) -> Int {
+) -> Int32 {
   let mut count = 0
   for state in states {
     if !state.captures.is_empty() {
@@ -1983,7 +1992,7 @@ fn query_sequence_states_capture_list_count(
 ///|
 fn query_sibling_sequence_states_capture_list_count(
   states : Array[QuerySiblingSequenceState],
-) -> Int {
+) -> Int32 {
   let mut count = 0
   for state in states {
     if !state.captures.is_empty() {
@@ -1996,7 +2005,7 @@ fn query_sibling_sequence_states_capture_list_count(
 ///|
 fn query_node_matches_capture_list_count(
   matches : Array[QueryNodeMatch],
-) -> Int {
+) -> Int32 {
   let mut count = 0
   for matched in matches {
     if !matched.captures.is_empty() {
@@ -2009,9 +2018,9 @@ fn query_node_matches_capture_list_count(
 ///|
 fn query_sequence_state_drop_indices(
   states : Array[QuerySequenceState],
-  drop_count : Int,
-) -> Array[Int] {
-  let result : Array[Int] = []
+  drop_count : Int32,
+) -> Array[Int32] {
+  let result : Array[Int32] = []
   for _ in 0..<drop_count {
     let mut best_index = -1
     for index, state in states {
@@ -2033,9 +2042,9 @@ fn query_sequence_state_drop_indices(
 ///|
 fn query_sibling_sequence_state_drop_indices(
   states : Array[QuerySiblingSequenceState],
-  drop_count : Int,
-) -> Array[Int] {
-  let result : Array[Int] = []
+  drop_count : Int32,
+) -> Array[Int32] {
+  let result : Array[Int32] = []
   for _ in 0..<drop_count {
     let mut best_index = -1
     for index, state in states {
@@ -2057,9 +2066,9 @@ fn query_sibling_sequence_state_drop_indices(
 ///|
 fn query_node_match_drop_indices(
   matches : Array[QueryNodeMatch],
-  drop_count : Int,
-) -> Array[Int] {
-  let result : Array[Int] = []
+  drop_count : Int32,
+) -> Array[Int32] {
+  let result : Array[Int32] = []
   for _ in 0..<drop_count {
     let mut best_index = -1
     for index, matched in matches {
@@ -2082,7 +2091,7 @@ fn query_node_match_drop_indices(
 fn query_sequence_state_drop_order(
   left : QuerySequenceState,
   right : QuerySequenceState,
-) -> Int {
+) -> Int32 {
   query_capture_arrays_drop_order(left.captures, right.captures)
 }
 
@@ -2090,7 +2099,7 @@ fn query_sequence_state_drop_order(
 fn query_sibling_sequence_state_drop_order(
   left : QuerySiblingSequenceState,
   right : QuerySiblingSequenceState,
-) -> Int {
+) -> Int32 {
   query_capture_arrays_drop_order(left.captures, right.captures)
 }
 
@@ -2098,7 +2107,7 @@ fn query_sibling_sequence_state_drop_order(
 fn query_node_match_drop_order(
   left : QueryNodeMatch,
   right : QueryNodeMatch,
-) -> Int {
+) -> Int32 {
   query_capture_arrays_drop_order(left.captures, right.captures)
 }
 
@@ -2106,7 +2115,7 @@ fn query_node_match_drop_order(
 fn query_capture_arrays_drop_order(
   left : Array[QueryCapture],
   right : Array[QueryCapture],
-) -> Int {
+) -> Int32 {
   let left_capture = query_earliest_capture(left)
   let right_capture = query_earliest_capture(right)
   match (left_capture, right_capture) {
@@ -2180,7 +2189,7 @@ fn query_sibling_sequence_state_equals(
 ///|
 fn query_sequence_state_is_capture_subset_of_later_state(
   states : Array[QuerySequenceState],
-  index : Int,
+  index : Int32,
 ) -> Bool {
   for other_index in (index + 1)..<states.length() {
     if query_capture_array_strictly_contains(
@@ -2196,7 +2205,7 @@ fn query_sequence_state_is_capture_subset_of_later_state(
 ///|
 fn query_sibling_sequence_state_is_capture_subset_of_later_state(
   states : Array[QuerySiblingSequenceState],
-  index : Int,
+  index : Int32,
 ) -> Bool {
   for other_index in (index + 1)..<states.length() {
     if query_capture_array_strictly_contains(
@@ -2300,9 +2309,9 @@ fn query_nodes_equal(
 fn QueryNodePattern::match_one_child_all(
   self : QueryNodePattern,
   parent : @tree_sitter_mbt.Node,
-  start_child_index : Int,
+  start_child_index : Int32,
   query : Query,
-  pattern_index~ : Int,
+  pattern_index~ : Int32,
   match_limit_tracker~ : QueryMatchLimitTracker,
 ) -> Array[QueryChildMatch] {
   let result : Array[QueryChildMatch] = []
@@ -2332,7 +2341,10 @@ fn QueryNodePattern::match_one_child_all(
         pattern_index~,
         match_limit_tracker~,
       ) {
-      result.push({ next_child_index: child_index + 1, node_match: child_match })
+      result.push({
+        next_child_index: child_index + 1,
+        node_match: child_match,
+      })
     }
   }
   result
@@ -2346,8 +2358,8 @@ fn QueryNodePattern::anchor_skips_anonymous(self : QueryNodePattern) -> Bool {
 ///|
 fn query_anchor_gap_clear(
   parent : @tree_sitter_mbt.Node,
-  start_child_index : Int,
-  child_index : Int,
+  start_child_index : Int32,
+  child_index : Int32,
   skips_anonymous~ : Bool,
 ) -> Bool {
   for sibling_index in start_child_index..<child_index {
@@ -2362,7 +2374,7 @@ fn query_anchor_gap_clear(
 ///|
 fn query_anchor_after_clear(
   parent : @tree_sitter_mbt.Node,
-  child_index : Int,
+  child_index : Int32,
   skips_anonymous~ : Bool,
 ) -> Bool {
   for sibling_index in (child_index + 1)..<parent.child_count() {
@@ -2392,7 +2404,7 @@ fn query_node_has_negated_field(
 ///|
 fn query_child_field_matches(
   parent : @tree_sitter_mbt.Node,
-  child_index : Int,
+  child_index : Int32,
   field_name : String?,
 ) -> Bool {
   match field_name {
@@ -2424,19 +2436,19 @@ fn query_node_parent_field_matches(
 }
 
 ///|
-fn Query::pattern_is_disabled(self : Query, pattern_index : Int) -> Bool {
+fn Query::pattern_is_disabled(self : Query, pattern_index : Int32) -> Bool {
   self.disabled_pattern_indices.get(pattern_index).unwrap_or(false)
 }
 
 ///|
-fn Query::capture_is_disabled(self : Query, capture_id : Int) -> Bool {
+fn Query::capture_is_disabled(self : Query, capture_id : Int32) -> Bool {
   self.disabled_capture_ids.get(capture_id).unwrap_or(false)
 }
 
 ///|
 fn QueryCursor::should_cancel_at(
   self : QueryCursor,
-  current_byte_offset : UInt,
+  current_byte_offset : UInt32,
 ) -> Bool {
   match self.progress_callback {
     Some(callback) =>
@@ -2470,14 +2482,14 @@ pub fn QueryCursor::next_capture(self : QueryCursor) -> QueryCapture? {
 }
 
 ///|
-pub fn QueryCursor::remove_match(self : QueryCursor, match_id : Int) -> Unit {
+pub fn QueryCursor::remove_match(self : QueryCursor, match_id : Int32) -> Unit {
   if !self.is_match_removed(match_id) {
     self.removed_match_ids.push(match_id)
   }
 }
 
 ///|
-fn QueryCursor::is_match_removed(self : QueryCursor, match_id : Int) -> Bool {
+fn QueryCursor::is_match_removed(self : QueryCursor, match_id : Int32) -> Bool {
   for id in self.removed_match_ids {
     if id == match_id {
       return true
@@ -2489,7 +2501,7 @@ fn QueryCursor::is_match_removed(self : QueryCursor, match_id : Int) -> Bool {
 ///|
 fn QueryCursor::node_is_within_max_start_depth(
   self : QueryCursor,
-  depth : Int,
+  depth : Int32,
 ) -> Bool {
   self.max_start_depth < 0 || depth <= self.max_start_depth
 }
@@ -2586,10 +2598,10 @@ fn QueryCursor::node_is_contained_in_point_range(
 
 ///|
 fn query_byte_ranges_intersect(
-  node_start : UInt,
-  node_end : UInt,
-  range_start : UInt,
-  range_end : UInt,
+  node_start : UInt32,
+  node_end : UInt32,
+  range_start : UInt32,
+  range_end : UInt32,
 ) -> Bool {
   if node_start == node_end || range_start == range_end {
     node_end >= range_start && node_start <= range_end
@@ -2600,10 +2612,10 @@ fn query_byte_ranges_intersect(
 
 ///|
 fn query_byte_range_contains_node(
-  node_start : UInt,
-  node_end : UInt,
-  range_start : UInt,
-  range_end : UInt,
+  node_start : UInt32,
+  node_end : UInt32,
+  range_start : UInt32,
+  range_end : UInt32,
 ) -> Bool {
   range_start <= node_start && node_end <= range_end
 }
@@ -2633,7 +2645,7 @@ fn query_point_ranges_intersect(
 }
 
 ///|
-fn query_capture_compare(left : QueryCapture, right : QueryCapture) -> Int {
+fn query_capture_compare(left : QueryCapture, right : QueryCapture) -> Int32 {
   let left_start = left.node.start_byte()
   let right_start = right.node.start_byte()
   if left_start < right_start {
@@ -2656,7 +2668,7 @@ fn query_capture_compare(left : QueryCapture, right : QueryCapture) -> Int {
 ///|
 priv struct QueryCandidate {
   node : @tree_sitter_mbt.Node
-  depth : Int
+  depth : Int32
 }
 
 ///|
@@ -2671,13 +2683,13 @@ fn query_collect_public_nodes(
 ///|
 fn query_push_public_nodes(
   node : @tree_sitter_mbt.Node,
-  depth~ : Int,
+  depth~ : Int32,
   result~ : Array[QueryCandidate],
 ) -> Unit {
   if node.is_null() {
     return
   }
-  result.push({ node, depth })
+  result.push({ node, depth, })
   // Query roots must not start inside ERROR nodes; (ERROR ...) still works
   // because the ERROR node itself remains a candidate.
   if node.is_error() {
@@ -2745,7 +2757,7 @@ fn query_symbol_array_contains(
 priv struct QueryParser {
   language : @tree_sitter_mbt.Language
   source : String
-  mut offset : Int
+  mut offset : Int32
   capture_names : Array[String]
   string_values : Array[String]
 }
@@ -2755,7 +2767,7 @@ fn QueryParser::new(
   language : @tree_sitter_mbt.Language,
   source : String,
 ) -> QueryParser {
-  { language, source, offset: 0, capture_names: [], string_values: [] }
+  { language, source, offset: 0, capture_names: [], string_values: [], }
 }
 
 ///|
@@ -2777,7 +2789,7 @@ fn QueryParser::parse(self : QueryParser) -> Query raise QueryError {
 }
 
 ///|
-fn query_false_flags(length : Int) -> Array[Bool] {
+fn query_false_flags(length : Int32) -> Array[Bool] {
   let result : Array[Bool] = []
   for _ in 0..<length {
     result.push(false)
@@ -2791,7 +2803,7 @@ fn QueryParser::parse_pattern(
 ) -> QueryPattern raise QueryError {
   let start = self.offset
   let predicate_steps : Array[QueryPredicateStep] = []
-  let predicate_step_offsets : Array[Int] = []
+  let predicate_step_offsets : Array[Int32] = []
   let root = match self.peek_char() {
     Some('(') if self.next_paren_starts_grouped_pattern() =>
       self.parse_grouped_pattern(predicate_steps~, predicate_step_offsets~)
@@ -2833,7 +2845,7 @@ fn QueryParser::parse_pattern(
 fn QueryParser::parse_grouped_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   let start = self.offset
   self.expect_char('(')
@@ -2890,7 +2902,7 @@ fn QueryParser::parse_grouped_pattern(
 fn QueryParser::parse_grouped_pattern_member(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   match self.peek_char() {
     Some('(') if self.next_paren_starts_grouped_pattern() =>
@@ -2937,7 +2949,7 @@ fn QueryParser::next_paren_starts_grouped_pattern(self : QueryParser) -> Bool {
 }
 
 ///|
-fn QueryParser::source_byte_offset(self : QueryParser, offset : Int) -> Int {
+fn QueryParser::source_byte_offset(self : QueryParser, offset : Int32) -> Int32 {
   let mut byte_offset = 0
   for index = 0; index < offset; {
     match self.source.get_char(index) {
@@ -2954,7 +2966,7 @@ fn QueryParser::source_byte_offset(self : QueryParser, offset : Int) -> Int {
 ///|
 fn QueryParser::syntax_error(
   self : QueryParser,
-  offset : Int,
+  offset : Int32,
   reason : String,
 ) -> QueryError {
   QueryError::Syntax(byte_offset=self.source_byte_offset(offset), reason~)
@@ -2963,7 +2975,7 @@ fn QueryParser::syntax_error(
 ///|
 fn QueryParser::node_type_error(
   self : QueryParser,
-  offset : Int,
+  offset : Int32,
   name : String,
 ) -> QueryError {
   QueryError::NodeType(byte_offset=self.source_byte_offset(offset), name~)
@@ -2972,7 +2984,7 @@ fn QueryParser::node_type_error(
 ///|
 fn QueryParser::field_error(
   self : QueryParser,
-  offset : Int,
+  offset : Int32,
   name : String,
 ) -> QueryError {
   QueryError::Field(byte_offset=self.source_byte_offset(offset), name~)
@@ -2981,7 +2993,7 @@ fn QueryParser::field_error(
 ///|
 fn QueryParser::capture_error(
   self : QueryParser,
-  offset : Int,
+  offset : Int32,
   name : String,
 ) -> QueryError {
   QueryError::Capture(byte_offset=self.source_byte_offset(offset), name~)
@@ -2990,7 +3002,7 @@ fn QueryParser::capture_error(
 ///|
 fn QueryParser::structure_error(
   self : QueryParser,
-  offset : Int,
+  offset : Int32,
   reason : String,
 ) -> QueryError {
   QueryError::Structure(byte_offset=self.source_byte_offset(offset), reason~)
@@ -3000,7 +3012,7 @@ fn QueryParser::structure_error(
 fn QueryParser::parse_parenthesized_node_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   let start = self.offset
   self.expect_char('(')
@@ -3081,7 +3093,7 @@ fn QueryParser::parse_bare_pattern(
 fn QueryParser::parse_node_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   let kind_start = self.offset
   let kind = match self.peek_char() {
@@ -3206,7 +3218,7 @@ fn query_symbol_cannot_have_children(
 ///|
 fn QueryParser::parse_supertype_pattern(
   self : QueryParser,
-  start : Int,
+  start : Int32,
   name : String,
 ) -> QueryNodePatternKind raise QueryError {
   guard self.language.symbol_for_name(name, is_named=true) is Some(supertype) else {
@@ -3229,7 +3241,7 @@ fn QueryParser::parse_supertype_pattern(
 ///|
 fn QueryParser::parse_supertype_subtype_symbol(
   self : QueryParser,
-  start : Int,
+  start : Int32,
 ) -> (String, @api.SymbolId) raise QueryError {
   match self.peek_char() {
     Some('"') => {
@@ -3284,10 +3296,10 @@ fn QueryParser::parse_negated_field(
 fn QueryParser::parse_child_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   let mut field_name : String? = None
-  let mut field_step_start_byte : Int? = None
+  let mut field_step_start_byte : Int32? = None
   if self.child_starts_with_field_constraint() {
     let field_start = self.offset
     field_step_start_byte = Some(self.source_byte_offset(field_start))
@@ -3321,7 +3333,7 @@ fn QueryParser::parse_child_pattern(
 fn QueryParser::parse_field_constrained_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   let field_start = self.offset
   let name = self.parse_identifier()
@@ -3367,7 +3379,10 @@ fn QueryParser::next_pattern_starts_field_constraint(
 }
 
 ///|
-fn QueryParser::identifier_end_after(self : QueryParser, offset : Int) -> Int? {
+fn QueryParser::identifier_end_after(
+  self : QueryParser,
+  offset : Int32,
+) -> Int32? {
   guard self.source.get_char(offset) is Some(first) &&
     query_identifier_start(first) else {
     return None
@@ -3383,7 +3398,7 @@ fn QueryParser::identifier_end_after(self : QueryParser, offset : Int) -> Int? {
 fn QueryParser::parse_child_body_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   match self.peek_char() {
     Some('[') =>
@@ -3416,7 +3431,7 @@ fn QueryParser::next_child_starts_bare_wildcard(self : QueryParser) -> Bool {
 fn QueryParser::parse_alternation_pattern(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   let start = self.offset
   self.expect_char('[')
@@ -3448,7 +3463,7 @@ fn QueryParser::parse_alternation_pattern(
 fn QueryParser::parse_alternation_alternative(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> QueryNodePattern raise QueryError {
   match self.peek_char() {
     Some('(') if self.next_paren_starts_grouped_pattern() =>
@@ -3480,12 +3495,12 @@ fn QueryParser::parse_bare_child_pattern(
 fn query_node_pattern(
   kind : QueryNodePatternKind,
   field_name? : String,
-  start_byte? : Int = 0,
-  negated_field_names? : Array[String] = [],
-  quantifier? : QueryCaptureQuantifier = One,
-  anchor_before? : Bool = false,
-  anchor_after? : Bool = false,
-  children? : Array[QueryNodePattern] = [],
+  start_byte~ : Int32 = 0,
+  negated_field_names~ : Array[String] = [],
+  quantifier~ : QueryCaptureQuantifier = One,
+  anchor_before~ : Bool = false,
+  anchor_after~ : Bool = false,
+  children~ : Array[QueryNodePattern] = [],
 ) -> QueryNodePattern {
   {
     kind,
@@ -3503,7 +3518,7 @@ fn query_node_pattern(
 ///|
 fn QueryParser::parse_missing_pattern(
   self : QueryParser,
-  _start : Int,
+  _start : Int32,
 ) -> QueryNodePatternKind raise QueryError {
   self.skip_ws_and_comments()
   match self.peek_char() {
@@ -3531,7 +3546,7 @@ fn QueryParser::parse_missing_pattern(
 }
 
 ///|
-fn QueryParser::parse_capture(self : QueryParser) -> Int raise QueryError {
+fn QueryParser::parse_capture(self : QueryParser) -> Int32 raise QueryError {
   self.expect_char('@')
   let start = self.offset
   let name = self.parse_identifier()
@@ -3544,7 +3559,7 @@ fn QueryParser::parse_capture(self : QueryParser) -> Int raise QueryError {
 ///|
 fn QueryParser::parse_predicate_capture(
   self : QueryParser,
-) -> Int raise QueryError {
+) -> Int32 raise QueryError {
   self.expect_char('@')
   let start = self.offset
   let name = self.parse_identifier()
@@ -3558,7 +3573,7 @@ fn QueryParser::parse_predicate_capture(
 fn QueryParser::parse_predicate_steps(
   self : QueryParser,
   predicate_steps~ : Array[QueryPredicateStep],
-  predicate_step_offsets~ : Array[Int],
+  predicate_step_offsets~ : Array[Int32],
 ) -> Unit raise QueryError {
   self.expect_char('(')
   self.skip_ws_and_comments()
@@ -3596,7 +3611,7 @@ fn QueryParser::parse_predicate_steps(
 ///|
 fn QueryParser::parse_predicate_operator(
   self : QueryParser,
-  start : Int,
+  start : Int32,
 ) -> String raise QueryError {
   let name = self.parse_identifier()
   match self.peek_char() {
@@ -3669,7 +3684,7 @@ fn QueryParser::parse_string_literal(
 }
 
 ///|
-fn QueryParser::intern_capture(self : QueryParser, name : String) -> Int {
+fn QueryParser::intern_capture(self : QueryParser, name : String) -> Int32 {
   for i in 0..<self.capture_names.length() {
     if self.capture_names[i] == name {
       return i
@@ -3680,7 +3695,10 @@ fn QueryParser::intern_capture(self : QueryParser, name : String) -> Int {
 }
 
 ///|
-fn QueryParser::capture_id_for_name(self : QueryParser, name : String) -> Int? {
+fn QueryParser::capture_id_for_name(
+  self : QueryParser,
+  name : String,
+) -> Int32? {
   for i in 0..<self.capture_names.length() {
     if self.capture_names[i] == name {
       return Some(i)
@@ -3690,7 +3708,7 @@ fn QueryParser::capture_id_for_name(self : QueryParser, name : String) -> Int? {
 }
 
 ///|
-fn QueryParser::intern_string(self : QueryParser, value : String) -> Int {
+fn QueryParser::intern_string(self : QueryParser, value : String) -> Int32 {
   for i in 0..<self.string_values.length() {
     if self.string_values[i] == value {
       return i
@@ -3741,7 +3759,7 @@ fn QueryParser::peek_char(self : QueryParser) -> Char? {
 ///|
 fn QueryParser::peek_non_ws_char_after(
   self : QueryParser,
-  offset : Int,
+  offset : Int32,
 ) -> Char? {
   for next = offset; next < self.source.length(); {
     match self.source.get_char(next) {
@@ -3819,7 +3837,7 @@ fn query_char_is_unicode_letter(ch : Char) -> Bool {
 }
 
 ///|
-fn query_code_in_range(code : UInt, start : UInt, end : UInt) -> Bool {
+fn query_code_in_range(code : UInt32, start : UInt32, end : UInt32) -> Bool {
   start <= code && code <= end
 }
 

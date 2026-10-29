@@ -274,7 +274,7 @@ fn append_ascii_space(input : Bytes) -> Bytes {
 fn count_upstream_status(
   fixtures : Array[UpstreamFixture],
   status : UpstreamFixtureStatus,
-) -> Int {
+) -> Int32 {
   let mut count = 0
   for fixture in fixtures {
     if fixture.status == status {

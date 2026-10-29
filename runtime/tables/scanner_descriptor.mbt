@@ -1,30 +1,30 @@
 ///|
 struct ExternalScannerDescriptor {
-  external_token_count : Int
-  external_state_count : Int
+  external_token_count : Int32
+  external_state_count : Int32
   states : Array[Array[Bool]]
-  symbol_map : Array[Int]
-  callback_id : Int
+  symbol_map : Array[Int32]
+  callback_id : Int32
 } derive(Eq, Debug)
 
 ///|
 pub(all) struct ExternalScannerContext {
   input : Bytes
-  byte_offset : UInt
+  byte_offset : UInt32
   point : @api.Point
   valid_symbols : Array[Bool]
   is_at_included_range_start : Bool
-  previous_included_range_end_byte : UInt?
+  previous_included_range_end_byte : UInt32?
   previous_included_range_end_point : @api.Point?
   eof : Bool
-  mut column : UInt
+  mut column : UInt32
   advance_steps : Array[ExternalScannerAdvanceStep]
-  mut current_byte : UInt
+  mut current_byte : UInt32
   mut current_point : @api.Point
-  mut current_step_index : Int
-  mut token_start_byte : UInt
+  mut current_step_index : Int32
+  mut token_start_byte : UInt32
   mut token_start_point : @api.Point
-  mut token_end_byte : UInt
+  mut token_end_byte : UInt32
   mut token_end_point : @api.Point
   mut has_marked_end : Bool
   mut did_get_column : Bool
@@ -33,30 +33,30 @@ pub(all) struct ExternalScannerContext {
 
 ///|
 pub(all) struct ExternalScannerAdvanceStep {
-  byte_width : Int
-  codepoint : Int
+  byte_width : Int32
+  codepoint : Int32
 } derive(Eq, Debug)
 
 ///|
 pub fn ExternalScannerAdvanceStep::new(
-  byte_width~ : Int,
-  codepoint~ : Int,
+  byte_width~ : Int32,
+  codepoint~ : Int32,
 ) -> ExternalScannerAdvanceStep {
-  { byte_width, codepoint }
+  { byte_width, codepoint, }
 }
 
 ///|
 pub fn ExternalScannerContext::new(
   input~ : Bytes,
-  byte_offset~ : UInt,
+  byte_offset~ : UInt32,
   point~ : @api.Point,
   valid_symbols~ : Array[Bool],
-  is_at_included_range_start? : Bool = false,
-  previous_included_range_end_byte? : UInt? = None,
-  previous_included_range_end_point? : @api.Point? = None,
-  eof? : Bool = false,
-  column? : UInt = point.column,
-  advance_steps? : Array[ExternalScannerAdvanceStep] = [],
+  is_at_included_range_start~ : Bool = false,
+  previous_included_range_end_byte~ : UInt32? = None,
+  previous_included_range_end_point~ : @api.Point? = None,
+  eof~ : Bool = false,
+  column~ : UInt32 = point.column,
+  advance_steps~ : Array[ExternalScannerAdvanceStep] = [],
 ) -> ExternalScannerContext {
   {
     input,
@@ -97,7 +97,7 @@ pub fn ExternalScannerContext::eof(self : ExternalScannerContext) -> Bool {
 ///|
 pub fn ExternalScannerContext::get_column(
   self : ExternalScannerContext,
-) -> UInt {
+) -> UInt32 {
   self.did_get_column = true
   self.column
 }
@@ -127,7 +127,7 @@ pub fn ExternalScannerContext::logged_messages(
 ///|
 pub fn ExternalScannerContext::current_byte(
   self : ExternalScannerContext,
-) -> UInt {
+) -> UInt32 {
   self.current_byte
 }
 
@@ -141,7 +141,7 @@ pub fn ExternalScannerContext::current_point(
 ///|
 pub fn ExternalScannerContext::advance(
   self : ExternalScannerContext,
-  skip? : Bool = false,
+  skip~ : Bool = false,
 ) -> Unit {
   if self.eof || self.current_step_index >= self.advance_steps.length() {
     return
@@ -200,8 +200,8 @@ pub fn ExternalScannerContext::mark_end(self : ExternalScannerContext) -> Unit {
 ///|
 pub fn ExternalScannerContext::token(
   self : ExternalScannerContext,
-  external_token_id~ : Int,
-  state_changed? : Bool = false,
+  external_token_id~ : Int32,
+  state_changed~ : Bool = false,
 ) -> ExternalScanResult {
   let end_byte = if self.has_marked_end {
     self.token_end_byte
@@ -236,11 +236,11 @@ pub fn ExternalScannerContext::token(
 ///|
 pub(all) enum ExternalScanResult {
   NoToken
-  Token(external_token_id~ : Int, bytes_read~ : Int)
+  Token(external_token_id~ : Int32, bytes_read~ : Int32)
   TokenRange(
-    external_token_id~ : Int,
-    start_byte~ : UInt,
-    end_byte~ : UInt,
+    external_token_id~ : Int32,
+    start_byte~ : UInt32,
+    end_byte~ : UInt32,
     start_point~ : @api.Point,
     end_point~ : @api.Point,
     state_changed~ : Bool
@@ -250,8 +250,8 @@ pub(all) enum ExternalScanResult {
 ///|
 fn external_scanner_advance_point(
   point : @api.Point,
-  byte_width : Int,
-  codepoint : Int,
+  byte_width : Int32,
+  codepoint : Int32,
 ) -> @api.Point {
   if codepoint == 10 {
     @api.Point::new(row=point.row + 1, column=0)
@@ -276,7 +276,7 @@ priv struct ExternalScannerCallbacks {
 let external_scanner_callbacks : Array[ExternalScannerCallbacks] = []
 
 ///|
-pub fn external_scanner_serialization_buffer_size() -> Int {
+pub fn external_scanner_serialization_buffer_size() -> Int32 {
   1024
 }
 
@@ -293,10 +293,10 @@ pub fn ExternalScannerDescriptor::none() -> ExternalScannerDescriptor {
 
 ///|
 pub fn ExternalScannerDescriptor::new(
-  external_token_count~ : Int,
-  external_state_count~ : Int,
-  states? : Array[Array[Bool]] = [],
-  symbol_map? : Array[Int] = [],
+  external_token_count~ : Int32,
+  external_state_count~ : Int32,
+  states~ : Array[Array[Bool]] = [],
+  symbol_map~ : Array[Int32] = [],
 ) -> ExternalScannerDescriptor {
   {
     external_token_count,
@@ -309,10 +309,10 @@ pub fn ExternalScannerDescriptor::new(
 
 ///|
 pub fn ExternalScannerDescriptor::with_scan(
-  external_token_count~ : Int,
-  external_state_count~ : Int,
-  states? : Array[Array[Bool]] = [],
-  symbol_map? : Array[Int] = [],
+  external_token_count~ : Int32,
+  external_state_count~ : Int32,
+  states~ : Array[Array[Bool]] = [],
+  symbol_map~ : Array[Int32] = [],
   scan~ : (ExternalScannerContext) -> ExternalScanResult raise @api.ScannerError,
 ) -> ExternalScannerDescriptor {
   ExternalScannerDescriptor::with_callbacks(
@@ -330,10 +330,10 @@ pub fn ExternalScannerDescriptor::with_scan(
 
 ///|
 pub fn ExternalScannerDescriptor::with_callbacks(
-  external_token_count~ : Int,
-  external_state_count~ : Int,
-  states? : Array[Array[Bool]] = [],
-  symbol_map? : Array[Int] = [],
+  external_token_count~ : Int32,
+  external_state_count~ : Int32,
+  states~ : Array[Array[Bool]] = [],
+  symbol_map~ : Array[Int32] = [],
   create~ : () -> Unit raise @api.ScannerError,
   destroy~ : () -> Unit raise @api.ScannerError,
   deserialize~ : (Bytes) -> Unit raise @api.ScannerError,
@@ -354,22 +354,22 @@ pub fn ExternalScannerDescriptor::with_callbacks(
 ///|
 pub fn ExternalScannerDescriptor::external_token_count(
   self : ExternalScannerDescriptor,
-) -> Int {
+) -> Int32 {
   self.external_token_count
 }
 
 ///|
 pub fn ExternalScannerDescriptor::external_state_count(
   self : ExternalScannerDescriptor,
-) -> Int {
+) -> Int32 {
   self.external_state_count
 }
 
 ///|
 pub fn ExternalScannerDescriptor::state_enabled(
   self : ExternalScannerDescriptor,
-  state_id : Int,
-  external_token_id : Int,
+  state_id : Int32,
+  external_token_id : Int32,
 ) -> Bool? {
   if state_id < 0 || state_id >= self.states.length() {
     None
@@ -384,8 +384,8 @@ pub fn ExternalScannerDescriptor::state_enabled(
 ///|
 pub fn ExternalScannerDescriptor::symbol_for_external_token(
   self : ExternalScannerDescriptor,
-  external_token_id : Int,
-) -> Int? {
+  external_token_id : Int32,
+) -> Int32? {
   if external_token_id < 0 || external_token_id >= self.symbol_map.length() {
     None
   } else {
@@ -460,7 +460,7 @@ fn register_external_scanner_callbacks(
   deserialize : (Bytes) -> Unit raise @api.ScannerError,
   serialize : () -> Bytes raise @api.ScannerError,
   scan : (ExternalScannerContext) -> ExternalScanResult raise @api.ScannerError,
-) -> Int {
+) -> Int32 {
   let callback_id = external_scanner_callbacks.length()
   external_scanner_callbacks.push({
     create,

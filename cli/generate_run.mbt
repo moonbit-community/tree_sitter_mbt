@@ -15,7 +15,7 @@ pub(all) struct CliOutputFile {
 pub(all) struct CliGenerateRunResult {
   files : Array[CliOutputFile]
   language_name : String
-  abi_version : Int
+  abi_version : Int32
   warnings : Array[@generator.GenerateWarning]
   json_summary : String?
 } derive(Eq, Debug)
@@ -24,8 +24,8 @@ pub(all) struct CliGenerateRunResult {
 pub fn run_cli_generate_command(
   command : CliGenerateCommand,
   grammar_json : String,
-  semantic_version? : @tables.LanguageMetadata = @tables.LanguageMetadata::zero(),
-  emit_grammar_json? : Bool = false,
+  semantic_version~ : @tables.LanguageMetadata = @tables.LanguageMetadata::zero(),
+  emit_grammar_json~ : Bool = false,
 ) -> CliGenerateRunResult raise CliGenerateRunError {
   match command.report_states_for_rule {
     Some(_) =>
@@ -59,7 +59,9 @@ pub fn run_cli_generate_command(
 }
 
 ///|
-fn cli_generate_abi_version(version : String?) -> Int raise CliGenerateRunError {
+fn cli_generate_abi_version(
+  version : String?,
+) -> Int32 raise CliGenerateRunError {
   match version {
     Some("latest") | None => @generator.GenerateOptions::default().abi_version
     Some(value) => cli_generate_parse_abi_version(value)
@@ -69,7 +71,7 @@ fn cli_generate_abi_version(version : String?) -> Int raise CliGenerateRunError 
 ///|
 fn cli_generate_parse_abi_version(
   value : String,
-) -> Int raise CliGenerateRunError {
+) -> Int32 raise CliGenerateRunError {
   if value.is_empty() {
     raise CliGenerateRunError::InvalidAbiVersion(value)
   }

@@ -3,47 +3,47 @@ struct Input {
   encoding : @api.InputEncoding
   source : String
   bytes : Bytes
-  read_callback : ((UInt, @api.Point) -> InputChunk)?
-  decode_callback : ((Bytes, Int) -> InputDecodeResult)?
+  read_callback : ((UInt32, @api.Point) -> InputChunk)?
+  decode_callback : ((Bytes, Int32) -> InputDecodeResult)?
 }
 
 ///|
 priv struct InputMaterialized {
   bytes : Bytes
-  chunk_end_offsets : Array[Int]
+  chunk_end_offsets : Array[Int32]
 }
 
 ///|
 pub(all) struct InputChunk {
   chunk : Bytes?
-  bytes_read : Int
+  bytes_read : Int32
 } derive(Eq, Debug)
 
 ///|
-pub fn InputChunk::new(chunk~ : Bytes?, bytes_read~ : Int) -> InputChunk {
-  { chunk, bytes_read }
+pub fn InputChunk::new(chunk~ : Bytes?, bytes_read~ : Int32) -> InputChunk {
+  { chunk, bytes_read, }
 }
 
 ///|
 pub fn InputChunk::from_bytes(chunk : Bytes) -> InputChunk {
-  { chunk: Some(chunk), bytes_read: chunk.length() }
+  { chunk: Some(chunk), bytes_read: chunk.length(), }
 }
 
 ///|
 pub fn InputChunk::eof() -> InputChunk {
-  { chunk: Some(Bytes::new(0)), bytes_read: 0 }
+  { chunk: Some(Bytes::new(0)), bytes_read: 0, }
 }
 
 ///|
 pub(all) enum InputDecodeResult {
-  CodePoint(Int, bytes~ : Int)
+  CodePoint(Int32, bytes~ : Int32)
   DecodeError
 } derive(Eq, Debug)
 
 ///|
 pub fn Input::from_string(
   source : String,
-  encoding? : @api.InputEncoding = Utf8,
+  encoding~ : @api.InputEncoding = Utf8,
 ) -> Input {
   {
     encoding,
@@ -57,7 +57,7 @@ pub fn Input::from_string(
 ///|
 pub fn Input::from_bytes(
   source : Bytes,
-  encoding? : @api.InputEncoding = Utf8,
+  encoding~ : @api.InputEncoding = Utf8,
 ) -> Input {
   {
     encoding,
@@ -70,8 +70,8 @@ pub fn Input::from_bytes(
 
 ///|
 pub fn Input::from_callback(
-  read : (UInt, @api.Point) -> InputChunk,
-  encoding? : @api.InputEncoding = Utf8,
+  read : (UInt32, @api.Point) -> InputChunk,
+  encoding~ : @api.InputEncoding = Utf8,
 ) -> Input {
   {
     encoding,
@@ -85,7 +85,7 @@ pub fn Input::from_callback(
 ///|
 pub fn Input::from_custom_bytes(
   source : Bytes,
-  decode : (Bytes, Int) -> InputDecodeResult,
+  decode : (Bytes, Int32) -> InputDecodeResult,
 ) -> Input {
   {
     encoding: Custom,
@@ -98,8 +98,8 @@ pub fn Input::from_custom_bytes(
 
 ///|
 pub fn Input::from_custom_callback(
-  read : (UInt, @api.Point) -> InputChunk,
-  decode : (Bytes, Int) -> InputDecodeResult,
+  read : (UInt32, @api.Point) -> InputChunk,
+  decode : (Bytes, Int32) -> InputDecodeResult,
 ) -> Input {
   {
     encoding: Custom,
@@ -128,7 +128,7 @@ pub fn Input::bytes(self : Input) -> Bytes {
 ///|
 fn Input::materialize(self : Input) -> InputMaterialized raise ParseError {
   match self.read_callback {
-    None => { bytes: self.bytes, chunk_end_offsets: [] }
+    None => { bytes: self.bytes, chunk_end_offsets: [], }
     Some(read) =>
       materialize_input_callback(
         read,
@@ -140,19 +140,19 @@ fn Input::materialize(self : Input) -> InputMaterialized raise ParseError {
 
 ///|
 fn materialize_input_callback(
-  read : (UInt, @api.Point) -> InputChunk,
+  read : (UInt32, @api.Point) -> InputChunk,
   encoding : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
 ) -> InputMaterialized raise ParseError {
   let bytes : Array[Byte] = []
-  let chunk_end_offsets : Array[Int] = []
-  let mut offset : UInt = 0
+  let chunk_end_offsets : Array[Int32] = []
+  let mut offset : UInt32 = 0
   let mut point = @api.Point::zero()
   while true {
     let result = read(offset, point)
     validate_input_chunk(result, byte_offset=offset, point~)
     if result.bytes_read == 0 {
-      return { bytes: Bytes::from_array(bytes), chunk_end_offsets }
+      return { bytes: Bytes::from_array(bytes), chunk_end_offsets, }
     }
     guard result.chunk is Some(chunk) else {
       raise ParseError::InvalidInputCallback(
@@ -176,13 +176,13 @@ fn materialize_input_callback(
     )
     offset += result.bytes_read.reinterpret_as_uint()
   }
-  { bytes: Bytes::from_array(bytes), chunk_end_offsets }
+  { bytes: Bytes::from_array(bytes), chunk_end_offsets, }
 }
 
 ///|
 fn validate_input_chunk(
   result : InputChunk,
-  byte_offset~ : UInt,
+  byte_offset~ : UInt32,
   point~ : @api.Point,
 ) -> Unit raise ParseError {
   if result.bytes_read < 0 {
@@ -223,10 +223,10 @@ fn validate_input_chunk(
 ///|
 fn advance_point_for_input_chunk(
   bytes : Bytes,
-  start : Int,
-  bytes_read : Int,
+  start : Int32,
+  bytes_read : Int32,
   encoding : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
   point : @api.Point,
 ) -> @api.Point raise ParseError {
   let mut byte_index = start
@@ -273,7 +273,7 @@ fn encode_utf16_string(source : String, little_endian~ : Bool) -> Bytes {
 ///|
 fn push_utf16_code_unit(
   bytes : Array[Byte],
-  value : Int,
+  value : Int32,
   little_endian~ : Bool,
 ) -> Unit {
   let low = (value % 0x100).to_byte()

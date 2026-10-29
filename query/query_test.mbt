@@ -159,52 +159,60 @@ fn query_test_many_fields_language() -> @tree_sitter_mbt.Language raise {
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f1",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other1" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f2",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other2" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f3",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other3" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f4",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other4" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f5",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other5" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f6",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other6" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f7",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other7" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f8",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other8" }
       #|        },
       #|        {
       #|          "type": "FIELD",
       #|          "name": "f9",
-      #|          "content": { "type": "SYMBOL", "name": "other" }
+      #|          "content": { "type": "SYMBOL", "name": "other9" }
       #|        }
       #|      ]
       #|    },
       #|    "item": { "type": "STRING", "value": "a" },
-      #|    "other": { "type": "STRING", "value": "b" }
+      #|    "other1": { "type": "STRING", "value": "b" },
+      #|    "other2": { "type": "STRING", "value": "c" },
+      #|    "other3": { "type": "STRING", "value": "d" },
+      #|    "other4": { "type": "STRING", "value": "e" },
+      #|    "other5": { "type": "STRING", "value": "f" },
+      #|    "other6": { "type": "STRING", "value": "g" },
+      #|    "other7": { "type": "STRING", "value": "h" },
+      #|    "other8": { "type": "STRING", "value": "i" },
+      #|    "other9": { "type": "STRING", "value": "j" }
       #|  }
       #|}
     ),
@@ -2904,7 +2912,7 @@ test "query cursor progress callback can cancel scanning" {
   let tree = parser.parse_bytes(Bytes::make(150, b'a'))
   let query = Query::new(language, "(item) @node")
   let cursor = QueryCursor::new()
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   cursor.set_progress_callback(
     Some(state => {
       offsets.push(state.current_byte_offset)
@@ -3258,4 +3266,8 @@ test "query intentionally allows more than upstream step storage limits" {
   let field_cursor = QueryCursor::new()
   field_cursor.exec(many_negated_fields, field_tree.root_node())
   assert_true(query_capture_names(field_cursor) == ["root"])
+  let with_field = field_parser.parse_bytes(b"j")
+  assert_true(!with_field.root_node().has_error())
+  field_cursor.exec(many_negated_fields, with_field.root_node())
+  assert_true(query_capture_names(field_cursor).is_empty())
 }

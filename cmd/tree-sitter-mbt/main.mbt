@@ -1,10 +1,10 @@
 ///|
 #cfg(target="native")
-extern "c" fn native_exit(code : Int) = "exit"
+extern "c" fn native_exit(code : Int32) = "exit"
 
 ///|
 #cfg(not(target="native"))
-fn native_exit(_code : Int) -> Unit {
+fn native_exit(_code : Int32) -> Unit {
   panic()
 }
 
@@ -21,7 +21,7 @@ async fn main {
 
 ///|
 priv struct CliMainResult {
-  exit_code : Int
+  exit_code : Int32
   stdout : String
 }
 
@@ -33,7 +33,7 @@ async fn run_tree_sitter_mbt_cli(argv : Array[String]) -> CliMainResult {
 ///|
 async fn run_tree_sitter_mbt_cli_args(args : Array[String]) -> CliMainResult {
   try @cli.parse_cli_command_args(args) catch {
-    err => { exit_code: 2, stdout: "error: \{render_cli_args_error(err)}" }
+    err => { exit_code: 2, stdout: "error: \{render_cli_args_error(err)}", }
   } noraise {
     command => dispatch_cli_command(command)
   }
@@ -55,45 +55,45 @@ async fn run_generate_command(
   command : @cli.CliGenerateCommand,
 ) -> CliMainResult {
   try @cli_native.run_cli_generate_command_files(command) catch {
-    err => { exit_code: 1, stdout: "error: \{@debug.to_string(err)}" }
+    err => { exit_code: 1, stdout: "error: \{@debug.to_string(err)}", }
   } noraise {
-    result => { exit_code: 0, stdout: result.json_summary.unwrap_or("") }
+    result => { exit_code: 0, stdout: result.json_summary.unwrap_or(""), }
   }
 }
 
 ///|
 async fn run_parse_command(command : @cli.CliParseCommand) -> CliMainResult {
   try @cli_native.run_cli_parse_command_loaded_files(command) catch {
-    err => { exit_code: 1, stdout: "error: \{err}" }
+    err => { exit_code: 1, stdout: "error: \{err}", }
   } noraise {
-    result => { exit_code: result.exit_code, stdout: result.stdout }
+    result => { exit_code: result.exit_code, stdout: result.stdout, }
   }
 }
 
 ///|
 async fn run_test_command(command : @cli.CliTestCommand) -> CliMainResult {
   try @cli_native.run_cli_test_command_loaded_files(command) catch {
-    err => { exit_code: 1, stdout: "error: \{err}" }
+    err => { exit_code: 1, stdout: "error: \{err}", }
   } noraise {
-    result => { exit_code: result.exit_code, stdout: result.stdout }
+    result => { exit_code: result.exit_code, stdout: result.stdout, }
   }
 }
 
 ///|
 async fn run_query_command(command : @cli.CliQueryCommand) -> CliMainResult {
   try @cli_native.run_cli_query_command_loaded_files(command) catch {
-    err => { exit_code: 1, stdout: "error: \{err}" }
+    err => { exit_code: 1, stdout: "error: \{err}", }
   } noraise {
-    result => { exit_code: result.exit_code, stdout: result.stdout }
+    result => { exit_code: result.exit_code, stdout: result.stdout, }
   }
 }
 
 ///|
 async fn run_tags_command(command : @cli.CliTagsCommand) -> CliMainResult {
   try @cli_native.run_cli_tags_command_loaded_files(command) catch {
-    err => { exit_code: 1, stdout: "error: \{err}" }
+    err => { exit_code: 1, stdout: "error: \{err}", }
   } noraise {
-    result => { exit_code: result.exit_code, stdout: result.stdout }
+    result => { exit_code: result.exit_code, stdout: result.stdout, }
   }
 }
 

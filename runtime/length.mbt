@@ -1,27 +1,27 @@
 ///|
 struct Length {
-  bytes : UInt
+  bytes : UInt32
   extent : @api.Point
 } derive(Eq, Debug)
 
 ///|
-pub fn Length::new(bytes~ : UInt, extent~ : @api.Point) -> Length {
-  { bytes, extent }
+pub fn Length::new(bytes~ : UInt32, extent~ : @api.Point) -> Length {
+  { bytes, extent, }
 }
 
 ///|
 pub fn Length::zero() -> Length {
-  { bytes: 0, extent: @api.Point::zero() }
+  { bytes: 0, extent: @api.Point::zero(), }
 }
 
 ///|
 pub fn Length::undefined() -> Length {
-  { bytes: 0, extent: @api.Point::new(row=0, column=1) }
+  { bytes: 0, extent: @api.Point::new(row=0, column=1), }
 }
 
 ///|
 pub fn Length::max() -> Length {
-  { bytes: @api.uint32_max(), extent: @api.Point::max() }
+  { bytes: @api.uint32_max(), extent: @api.Point::max(), }
 }
 
 ///|
@@ -64,7 +64,7 @@ pub fn Length::saturating_sub(self : Length, other : Length) -> Length {
 }
 
 ///|
-fn add_u32_saturating(left : UInt, right : UInt) -> UInt {
+fn add_u32_saturating(left : UInt32, right : UInt32) -> UInt32 {
   if right > @api.uint32_max() - left {
     @api.uint32_max()
   } else {
@@ -73,7 +73,7 @@ fn add_u32_saturating(left : UInt, right : UInt) -> UInt {
 }
 
 ///|
-fn sub_u32_saturating(left : UInt, right : UInt) -> UInt {
+fn sub_u32_saturating(left : UInt32, right : UInt32) -> UInt32 {
   if left >= right {
     left - right
   } else {

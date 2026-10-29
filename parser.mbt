@@ -18,13 +18,13 @@ struct Parser {
 
 ///|
 pub(all) suberror LanguageError {
-  UnsupportedAbi(Int)
+  UnsupportedAbi(Int32)
 } derive(Eq, Debug)
 
 ///|
 pub(all) suberror IncludedRangesError {
-  InvalidRange(index~ : Int, range~ : @api.Range)
-  Overlap(index~ : Int, previous~ : @api.Range, current~ : @api.Range)
+  InvalidRange(index~ : Int32, range~ : @api.Range)
+  Overlap(index~ : Int32, previous~ : @api.Range, current~ : @api.Range)
 } derive(Eq, Debug)
 
 ///|
@@ -33,21 +33,21 @@ pub(all) suberror ParseError {
   LanguageMismatch
   Cancelled(ParseState)
   InvalidInputCallback(
-    byte_offset~ : UInt,
+    byte_offset~ : UInt32,
     point~ : @api.Point,
     reason~ : String
   )
-  InvalidInputDecode(byte_offset~ : UInt, reason~ : String)
+  InvalidInputDecode(byte_offset~ : UInt32, reason~ : String)
   ScannerError(@api.ScannerError)
-  LexError(byte_offset~ : UInt, state_id~ : @api.StateId)
+  LexError(byte_offset~ : UInt32, state_id~ : @api.StateId)
   ParseTableError(state_id~ : @api.StateId, symbol_id~ : @api.SymbolId)
   ParseStackUnderflow
 } derive(Eq, Debug)
 
 ///|
 priv struct ParseStackEntry {
-  state_id : Int
-  node_index : Int
+  state_id : Int32
+  node_index : Int32
 }
 
 ///|
@@ -58,43 +58,43 @@ priv struct SelectedParseAction {
 
 ///|
 priv struct PotentialReduceAction {
-  symbol_id : Int
-  child_count : Int
-  dynamic_precedence : Int
-  production_id : Int
+  symbol_id : Int32
+  child_count : Int32
+  dynamic_precedence : Int32
+  production_id : Int32
 }
 
 ///|
 priv struct ParseBranchState {
   stack : Array[ParseStackEntry]
   nodes : Array[NodeData]
-  leading_extras : Array[Array[Int]]
-  mut pending_extras : Array[Int]
-  mut current_byte : UInt
+  leading_extras : Array[Array[Int32]]
+  mut pending_extras : Array[Int32]
+  mut current_byte : UInt32
   mut current_point : @api.Point
   mut lookahead : LexedToken?
   mut last_external_scanner_state : Bytes
   mut did_insert_missing_token : Bool
   mut parse_has_error : Bool
-  order : Int
+  order : Int32
 }
 
 ///|
 priv struct AcceptedParseBranch {
   tree : Tree
-  error_cost : Int
-  dynamic_precedence : Int
-  order : Int
+  error_cost : Int32
+  dynamic_precedence : Int32
+  order : Int32
 }
 
 ///|
 priv struct LexedToken {
-  symbol_id : Int
-  start_byte : UInt
-  end_byte : UInt
+  symbol_id : Int32
+  start_byte : UInt32
+  end_byte : UInt32
   start_point : @api.Point
   end_point : @api.Point
-  lookahead_byte_count : Int
+  lookahead_byte_count : Int32
   external_scanner_state : Bytes?
   external_scanner_state_changed : Bool
   external_scanner_depends_on_column : Bool
@@ -104,9 +104,9 @@ priv struct LexedToken {
 priv struct OutstandingParseState {
   stack : Array[ParseStackEntry]
   nodes : Array[NodeData]
-  leading_extras : Array[Array[Int]]
-  pending_extras : Array[Int]
-  current_byte : UInt
+  leading_extras : Array[Array[Int32]]
+  pending_extras : Array[Int32]
+  current_byte : UInt32
   current_point : @api.Point
   lookahead : LexedToken?
   last_external_scanner_state : Bytes
@@ -117,7 +117,7 @@ priv struct OutstandingParseState {
 ///|
 fn OutstandingParseState::initial() -> OutstandingParseState {
   {
-    stack: [{ state_id: 1, node_index: -1 }],
+    stack: [{ state_id: 1, node_index: -1, }],
     nodes: [],
     leading_extras: [],
     pending_extras: [],
@@ -132,8 +132,8 @@ fn OutstandingParseState::initial() -> OutstandingParseState {
 
 ///|
 priv struct DecodedScalar {
-  codepoint : Int
-  byte_width : Int
+  codepoint : Int32
+  byte_width : Int32
 }
 
 ///|
@@ -219,8 +219,8 @@ pub fn Parser::reset(self : Parser) -> Unit {
 pub fn Parser::parse_bytes(
   self : Parser,
   input : Bytes,
-  old_tree? : Tree? = None,
-  options? : ParseOptions = ParseOptions::default(),
+  old_tree~ : Tree? = None,
+  options~ : ParseOptions = ParseOptions::default(),
 ) -> Tree raise ParseError {
   self.parse_encoded_bytes(input, encoding=Utf8, old_tree~, options~)
 }
@@ -230,10 +230,10 @@ fn Parser::parse_encoded_bytes(
   self : Parser,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback? : ((Bytes, Int) -> InputDecodeResult)? = None,
-  chunk_end_offsets? : Array[Int] = [],
-  old_tree? : Tree? = None,
-  options? : ParseOptions = ParseOptions::default(),
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)? = None,
+  chunk_end_offsets~ : Array[Int32] = [],
+  old_tree~ : Tree? = None,
+  options~ : ParseOptions = ParseOptions::default(),
 ) -> Tree raise ParseError {
   match self.language {
     Some(language) => {
@@ -279,8 +279,8 @@ fn Parser::parse_encoded_bytes(
 pub fn Parser::parse_string(
   self : Parser,
   input : String,
-  old_tree? : Tree? = None,
-  options? : ParseOptions = ParseOptions::default(),
+  old_tree~ : Tree? = None,
+  options~ : ParseOptions = ParseOptions::default(),
 ) -> Tree raise ParseError {
   self.parse_bytes(@utf8.encode(input), old_tree~, options~)
 }
@@ -289,8 +289,8 @@ pub fn Parser::parse_string(
 pub fn Parser::parse(
   self : Parser,
   input : Input,
-  old_tree? : Tree? = None,
-  options? : ParseOptions = ParseOptions::default(),
+  old_tree~ : Tree? = None,
+  options~ : ParseOptions = ParseOptions::default(),
 ) -> Tree raise ParseError {
   match self.language {
     Some(language) => {
@@ -361,8 +361,8 @@ fn copy_reusable_old_tree_for_input(
   old_tree : Tree?,
   input : Bytes,
   encoding : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   included_ranges~ : Array[@api.Range],
 ) -> Tree? {
   if decode_callback is Some(_) {
@@ -380,7 +380,7 @@ fn copy_reusable_old_tree_for_input(
 ///|
 fn ensure_custom_decode_callback(
   encoding : @api.InputEncoding,
-  decode_callback : ((Bytes, Int) -> InputDecodeResult)?,
+  decode_callback : ((Bytes, Int32) -> InputDecodeResult)?,
 ) -> Unit raise ParseError {
   if encoding == Custom && decode_callback is None {
     raise ParseError::InvalidInputDecode(
@@ -392,21 +392,21 @@ fn ensure_custom_decode_callback(
 
 ///|
 pub(all) struct ParseState {
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
   has_error : Bool
 } derive(Eq, Debug)
 
 ///|
 pub fn ParseState::new(
-  current_byte_offset~ : UInt,
+  current_byte_offset~ : UInt32,
   has_error~ : Bool,
 ) -> ParseState {
-  { current_byte_offset, has_error }
+  { current_byte_offset, has_error, }
 }
 
 ///|
 pub fn ParseState::initial() -> ParseState {
-  { current_byte_offset: 0, has_error: false }
+  { current_byte_offset: 0, has_error: false, }
 }
 
 ///|
@@ -417,17 +417,17 @@ pub(all) struct ParseOptions {
 
 ///|
 pub fn ParseOptions::default() -> ParseOptions {
-  { cancellation_state: None, progress_callback: None }
+  { cancellation_state: None, progress_callback: None, }
 }
 
 ///|
 pub fn ParseOptions::cancelled(state : ParseState) -> ParseOptions {
-  { cancellation_state: Some(state), progress_callback: None }
+  { cancellation_state: Some(state), progress_callback: None, }
 }
 
 ///|
 pub fn ParseOptions::progress(callback : (ParseState) -> Bool) -> ParseOptions {
-  { cancellation_state: None, progress_callback: Some(callback) }
+  { cancellation_state: None, progress_callback: Some(callback), }
 }
 
 ///|
@@ -435,7 +435,7 @@ pub fn ParseOptions::with_progress(
   self : ParseOptions,
   callback : (ParseState) -> Bool,
 ) -> ParseOptions {
-  { ..self, progress_callback: Some(callback) }
+  { ..self, progress_callback: Some(callback), }
 }
 
 ///|
@@ -480,8 +480,8 @@ fn Parser::parse_full_input(
   language : Language,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   options~ : ParseOptions,
   initial_progress_checked~ : Bool,
   included_ranges~ : Array[@api.Range],
@@ -545,8 +545,8 @@ fn Parser::parse_full_input_loop(
   language : Language,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   options~ : ParseOptions,
   initial_progress_checked~ : Bool,
   included_ranges~ : Array[@api.Range],
@@ -897,7 +897,7 @@ fn Parser::parse_full_input_loop(
           leading=pending_extras,
         )
         pending_extras = []
-        stack.push({ state_id, node_index })
+        stack.push({ state_id, node_index, })
         match token.external_scanner_state {
           Some(state) => last_external_scanner_state = state
           None => ()
@@ -1003,8 +1003,10 @@ fn Parser::parse_full_input_loop(
 }
 
 ///|
-fn copy_leading_extras(leading_extras : Array[Array[Int]]) -> Array[Array[Int]] {
-  let result : Array[Array[Int]] = []
+fn copy_leading_extras(
+  leading_extras : Array[Array[Int32]],
+) -> Array[Array[Int32]] {
+  let result : Array[Array[Int32]] = []
   for extras in leading_extras {
     result.push(extras.copy())
   }
@@ -1017,8 +1019,8 @@ fn Parser::parse_full_input_branch_loop(
   language : Language,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   options~ : ParseOptions,
   included_ranges~ : Array[@api.Range],
   logger~ : Logger?,
@@ -1089,13 +1091,13 @@ fn parse_branch_step(
   tables : @tables.ValidatedLanguageTables,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   included_ranges~ : Array[@api.Range],
   logger~ : Logger?,
   branch : ParseBranchState,
   branches : Array[ParseBranchState],
-  next_order~ : Int,
+  next_order~ : Int32,
 ) -> Array[AcceptedParseBranch] raise ParseError {
   guard branch.stack.last() is Some(top) else {
     raise ParseError::ParseStackUnderflow
@@ -1370,8 +1372,8 @@ fn apply_parse_branch_action(
   tables : @tables.ValidatedLanguageTables,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   included_ranges~ : Array[@api.Range],
   branch : ParseBranchState,
   token : LexedToken,
@@ -1422,7 +1424,7 @@ fn apply_parse_branch_action(
         leading=branch.pending_extras,
       )
       branch.pending_extras = []
-      branch.stack.push({ state_id, node_index })
+      branch.stack.push({ state_id, node_index, })
       match token.external_scanner_state {
         Some(state) => branch.last_external_scanner_state = state
         None => ()
@@ -1542,8 +1544,8 @@ fn parse_branch_accept(
   included_ranges~ : Array[@api.Range],
   input~ : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
 ) -> AcceptedParseBranch raise ParseError {
   let tree = parser_tree_from_stack(
     language,
@@ -1569,13 +1571,13 @@ fn parse_branch_accept(
   } else {
     (0, 0)
   }
-  { tree, error_cost, dynamic_precedence, order: branch.order }
+  { tree, error_cost, dynamic_precedence, order: branch.order, }
 }
 
 ///|
 fn parse_branch_clone(
   branch : ParseBranchState,
-  order~ : Int,
+  order~ : Int32,
 ) -> ParseBranchState {
   {
     stack: branch.stack.copy(),
@@ -1646,7 +1648,7 @@ fn selected_parse_action(
     }
   }
   match action {
-    Some(action) => Some({ action, force_fragile: actions.length() > 1 })
+    Some(action) => Some({ action, force_fragile: actions.length() > 1, })
     None => None
   }
 }
@@ -1686,11 +1688,11 @@ fn try_insert_missing_token(
   language : Language,
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  state_id : Int,
+  state_id : Int32,
   token : LexedToken,
-  pending_extras : Array[Int],
+  pending_extras : Array[Int32],
   logger~ : Logger?,
 ) -> Bool {
   for candidate_id in 1..<tables.token_count() {
@@ -1719,7 +1721,7 @@ fn try_insert_missing_token(
             },
             leading=pending_extras,
           )
-          stack.push({ state_id: next_state, node_index })
+          stack.push({ state_id: next_state, node_index, })
           parser_log(logger, Parse, "insert missing token")
           return true
         }
@@ -1735,17 +1737,17 @@ fn try_insert_missing_token_for_lex_error(
   tables : @tables.ValidatedLanguageTables,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   included_ranges~ : Array[@api.Range],
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  state_id : Int,
-  current_byte : UInt,
+  state_id : Int32,
+  current_byte : UInt32,
   current_point : @api.Point,
   external_scanner_state~ : Bytes,
-  pending_extras : Array[Int],
+  pending_extras : Array[Int32],
   logger~ : Logger?,
 ) -> Bool raise ParseError {
   match tables.lex_mode(state_id_from_int(state_id)) {
@@ -1789,7 +1791,7 @@ fn try_insert_missing_token_for_lex_error(
             },
             leading=pending_extras,
           )
-          stack.push({ state_id: next_state, node_index })
+          stack.push({ state_id: next_state, node_index, })
           parser_log(logger, Parse, "insert missing token")
           return true
         }
@@ -1802,12 +1804,12 @@ fn try_insert_missing_token_for_lex_error(
 ///|
 fn parse_state_can_lex_current_input(
   tables : @tables.ValidatedLanguageTables,
-  state_id : Int,
+  state_id : Int32,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  current_byte : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  current_byte : UInt32,
   current_point : @api.Point,
   included_ranges~ : Array[@api.Range],
   external_scanner_state~ : Bytes,
@@ -1837,9 +1839,9 @@ fn parse_state_can_lex_current_input(
 ///|
 fn recovery_shift_state_for_symbol(
   tables : @tables.ValidatedLanguageTables,
-  state_id : Int,
-  symbol_id : Int,
-) -> Int? {
+  state_id : Int32,
+  symbol_id : Int32,
+) -> Int32? {
   match
     tables.parse_action_list_for_symbol(
       state_id_from_int(state_id),
@@ -1866,11 +1868,11 @@ fn try_reduce_all_potential(
   language : Language,
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  state_id : Int,
+  state_id : Int32,
   token : LexedToken,
-  _trailing_extras : Array[Int],
+  _trailing_extras : Array[Int32],
   logger~ : Logger?,
 ) -> Bool raise ParseError {
   try_reduce_all_potential_at(
@@ -1891,10 +1893,10 @@ fn try_reduce_all_potential_at(
   language : Language,
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  state_id : Int,
-  fallback_byte~ : UInt,
+  state_id : Int32,
+  fallback_byte~ : UInt32,
   fallback_point~ : @api.Point,
   logger~ : Logger?,
 ) -> Bool raise ParseError {
@@ -1979,7 +1981,7 @@ fn potential_reduce_prefer(
 ///|
 fn synthetic_extra_reduce_action(
   tables : @tables.ValidatedLanguageTables,
-  state_id : Int,
+  state_id : Int32,
 ) -> PotentialReduceAction? {
   let is_extra_state = tables.is_extra_state(state_id_from_int(state_id))
   let mut selected : PotentialReduceAction? = None
@@ -2022,11 +2024,11 @@ fn reduce_extra_stack(
   language : Language,
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  pending_extras : Array[Int],
+  pending_extras : Array[Int32],
   action~ : PotentialReduceAction,
-  fallback_byte~ : UInt,
+  fallback_byte~ : UInt32,
   fallback_point~ : @api.Point,
   force_fragile~ : Bool,
 ) -> Unit raise ParseError {
@@ -2067,7 +2069,7 @@ fn reduce_extra_stack(
     pending_extras.push(extra)
   }
   if extra_index >= 0 && extra_index < nodes.length() {
-    nodes[extra_index] = { ..nodes[extra_index], extra: true }
+    nodes[extra_index] = { ..nodes[extra_index], extra: true, }
   }
   pending_extras.push(extra_index)
 }
@@ -2075,7 +2077,7 @@ fn reduce_extra_stack(
 ///|
 fn lookahead_symbols_contains(
   symbols : Array[@api.SymbolId],
-  symbol_id : Int,
+  symbol_id : Int32,
 ) -> Bool {
   for symbol in symbols {
     if symbol.value().reinterpret_as_int() == symbol_id {
@@ -2090,14 +2092,14 @@ fn try_skip_unexpected_token(
   language : Language,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
-  pending_extras : Array[Int],
+  leading_extras : Array[Array[Int32]],
+  pending_extras : Array[Int32],
   token : LexedToken,
   logger~ : Logger?,
-) -> (UInt, @api.Point)? raise ParseError {
+) -> (UInt32, @api.Point)? raise ParseError {
   if token.end_byte <= token.start_byte {
     return None
   }
@@ -2131,9 +2133,9 @@ fn try_synchronize_stack_to_root(
   language : Language,
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  pending_extras : Array[Int],
+  pending_extras : Array[Int32],
   token : LexedToken,
   logger~ : Logger?,
 ) -> Bool {
@@ -2148,7 +2150,7 @@ fn try_synchronize_stack_to_root(
     is None {
     return false
   }
-  let children : Array[Int] = []
+  let children : Array[Int32] = []
   for i in 1..<stack.length() {
     let node_index = stack[i].node_index
     if node_index >= 0 {
@@ -2183,7 +2185,7 @@ fn try_synchronize_stack_to_root(
   )
   for child in children {
     if child >= 0 && child < nodes.length() {
-      nodes[child] = { ..nodes[child], parent: error_index }
+      nodes[child] = { ..nodes[child], parent: error_index, }
     }
   }
   while stack.length() > 1 {
@@ -2200,8 +2202,8 @@ fn try_synchronize_stack_to_root(
 ///|
 fn state_has_reduce_for_symbol(
   tables : @tables.ValidatedLanguageTables,
-  state_id : Int,
-  symbol_id : Int,
+  state_id : Int32,
+  symbol_id : Int32,
 ) -> Bool {
   match
     tables.parse_action_list_for_symbol(
@@ -2230,17 +2232,17 @@ fn recover_lex_error(
   tables : @tables.ValidatedLanguageTables,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  current_byte : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  current_byte : UInt32,
   current_point : @api.Point,
   included_ranges~ : Array[@api.Range],
   external_scanner_state~ : Bytes,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
-  pending_extras : Array[Int],
+  leading_extras : Array[Array[Int32]],
+  pending_extras : Array[Int32],
   logger~ : Logger?,
-) -> (UInt, @api.Point)? raise ParseError {
+) -> (UInt32, @api.Point)? raise ParseError {
   let (start_byte, start_point) = snap_to_included_range(
     current_byte, current_point, included_ranges,
   )
@@ -2345,9 +2347,9 @@ fn lex_error_state_token(
   tables : @tables.ValidatedLanguageTables,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte : UInt32,
   start_point : @api.Point,
   included_ranges~ : Array[@api.Range],
   external_scanner_state~ : Bytes,
@@ -2384,11 +2386,11 @@ fn lex_error_state_token(
 fn recovered_error_lookahead(
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte : UInt,
-  end_byte : UInt,
-) -> (Int, Bytes) raise ParseError {
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte : UInt32,
+  end_byte : UInt32,
+) -> (Int32, Bytes) raise ParseError {
   let start_index = start_byte.reinterpret_as_int()
   let end_index = end_byte.reinterpret_as_int()
   let span_width = end_index - start_index
@@ -2419,13 +2421,13 @@ fn recovered_error_lookahead(
 fn push_recovered_error_node(
   language : Language,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
-  pending_extras : Array[Int],
-  start_byte : UInt,
-  end_byte : UInt,
+  leading_extras : Array[Array[Int32]],
+  pending_extras : Array[Int32],
+  start_byte : UInt32,
+  end_byte : UInt32,
   start_point : @api.Point,
   end_point : @api.Point,
-  lookahead_char~ : Int,
+  lookahead_char~ : Int32,
   lookahead_bytes~ : Bytes,
   log_message~ : String,
   logger~ : Logger?,
@@ -2451,9 +2453,9 @@ fn push_recovered_error_node(
 fn push_empty_recovered_error_node(
   language : Language,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  byte : UInt,
+  byte : UInt32,
   point : @api.Point,
   logger~ : Logger?,
 ) -> Unit {
@@ -2469,15 +2471,15 @@ fn push_empty_recovered_error_node(
       error_cost=error_cost_per_recovery,
     ),
   )
-  stack.push({ state_id: 1, node_index })
+  stack.push({ state_id: 1, node_index, })
   parser_log(logger, Parse, "recover eof")
 }
 
 ///|
 fn consumed_input_bytes(
   input : Bytes,
-  start_index : Int,
-  byte_width : Int,
+  start_index : Int32,
+  byte_width : Int32,
 ) -> Bytes {
   let values : Array[Byte] = []
   for index in start_index..<(start_index + byte_width) {
@@ -2489,13 +2491,13 @@ fn consumed_input_bytes(
 ///|
 fn error_node_data(
   language : Language,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
   start_point : @api.Point,
   end_point : @api.Point,
-  lookahead_char? : Int? = None,
-  lookahead_bytes? : Bytes? = None,
-  error_cost? : Int = recovered_error_cost(
+  lookahead_char~ : Int32? = None,
+  lookahead_bytes~ : Bytes? = None,
+  error_cost~ : Int32 = recovered_error_cost(
     start_byte, end_byte, start_point, end_point,
   ),
 ) -> NodeData {
@@ -2524,11 +2526,11 @@ fn error_node_data(
 
 ///|
 fn recovered_error_cost(
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
   start_point : @api.Point,
   end_point : @api.Point,
-) -> Int {
+) -> Int32 {
   let skipped_bytes = if end_byte > start_byte {
     (end_byte - start_byte).reinterpret_as_int()
   } else {
@@ -2628,13 +2630,13 @@ fn validate_included_ranges(
 fn parser_tree_from_stack(
   language : Language,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  pending_extras? : Array[Int] = [],
+  pending_extras~ : Array[Int32] = [],
   included_ranges~ : Array[@api.Range],
-  source_bytes? : Bytes? = None,
-  source_encoding? : @api.InputEncoding = Utf8,
-  source_chunk_end_offsets? : Array[Int] = [],
+  source_bytes~ : Bytes? = None,
+  source_encoding~ : @api.InputEncoding = Utf8,
+  source_chunk_end_offsets~ : Array[Int32] = [],
 ) -> Tree raise ParseError {
   guard stack.last() is Some(top) && top.node_index >= 0 else {
     raise ParseError::ParseStackUnderflow
@@ -2668,9 +2670,9 @@ fn parser_tree_from_stack(
 ///|
 fn attach_extras_to_root(
   nodes : Array[NodeData],
-  root_index : Int,
-  leading_extras~ : Array[Int],
-  trailing_extras~ : Array[Int],
+  root_index : Int32,
+  leading_extras~ : Array[Int32],
+  trailing_extras~ : Array[Int32],
 ) -> Unit {
   if (leading_extras.is_empty() && trailing_extras.is_empty()) ||
     root_index < 0 ||
@@ -2678,7 +2680,7 @@ fn attach_extras_to_root(
     return
   }
   let root = nodes[root_index]
-  let children : Array[Int] = []
+  let children : Array[Int32] = []
   let mut start_byte = root.start_byte
   let mut start_point = root.start_point
   let mut end_byte = root.end_byte
@@ -2746,6 +2748,13 @@ fn attach_extras_to_root(
     node_children_have_external_scanner_state_change(nodes, children)
   depends_on_column = depends_on_column ||
     node_children_depend_on_column(nodes, children)
+  // Tree-sitter subtree.c:432-435 clears the parent state and marks both
+  // edges fragile when an ERROR child is attached, including root extras.
+  let has_error_child = children.any(child => nodes[child].is_error)
+  if has_error_child {
+    fragile_left = true
+    fragile_right = true
+  }
   nodes[root_index] = {
     ..root,
     children,
@@ -2756,6 +2765,16 @@ fn attach_extras_to_root(
     fragile_left,
     fragile_right,
     has_error,
+    parse_state: if has_error_child {
+      None
+    } else {
+      root.parse_state
+    },
+    next_parse_state: if has_error_child {
+      None
+    } else {
+      root.next_parse_state
+    },
     has_external_tokens,
     has_external_scanner_state_change,
     depends_on_column,
@@ -2770,18 +2789,18 @@ fn reduce_stack(
   language : Language,
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   stack : Array[ParseStackEntry],
-  symbol_id~ : Int,
-  child_count~ : Int,
-  dynamic_precedence~ : Int,
-  production_id~ : Int,
-  force_fragile? : Bool = false,
-  fallback_byte~ : UInt,
+  symbol_id~ : Int32,
+  child_count~ : Int32,
+  dynamic_precedence~ : Int32,
+  production_id~ : Int32,
+  force_fragile~ : Bool = false,
+  fallback_byte~ : UInt32,
   fallback_point~ : @api.Point,
-  trailing_extras~ : Array[Int],
+  trailing_extras~ : Array[Int32],
 ) -> Unit raise ParseError {
-  let structural_children : Array[Int] = []
+  let structural_children : Array[Int32] = []
   for _ in 0..<child_count {
     match stack.pop() {
       Some(entry) =>
@@ -2794,9 +2813,9 @@ fn reduce_stack(
   guard stack.last() is Some(parent_stack_entry) else {
     raise ParseError::ParseStackUnderflow
   }
-  let children : Array[Int] = []
-  let extra_children : Array[Int] = []
-  let parent_leading_extras : Array[Int] = []
+  let children : Array[Int32] = []
+  let extra_children : Array[Int32] = []
+  let parent_leading_extras : Array[Int32] = []
   let mut saw_leading_anchor = false
   for child in structural_children {
     match leading_extras.get(child) {
@@ -2914,7 +2933,7 @@ fn reduce_stack(
 ///|
 fn node_blocks_parent_leading_extras(
   nodes : Array[NodeData],
-  child : Int,
+  child : Int32,
 ) -> Bool {
   if child < 0 || child >= nodes.length() {
     return false
@@ -2925,7 +2944,7 @@ fn node_blocks_parent_leading_extras(
 ///|
 fn node_children_have_error(
   nodes : Array[NodeData],
-  children : Array[Int],
+  children : Array[Int32],
 ) -> Bool {
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -2941,7 +2960,7 @@ fn node_children_have_error(
 ///|
 fn node_children_have_external_tokens(
   nodes : Array[NodeData],
-  children : Array[Int],
+  children : Array[Int32],
 ) -> Bool {
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -2956,7 +2975,7 @@ fn node_children_have_external_tokens(
 ///|
 fn node_children_have_external_scanner_state_change(
   nodes : Array[NodeData],
-  children : Array[Int],
+  children : Array[Int32],
 ) -> Bool {
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -2971,7 +2990,7 @@ fn node_children_have_external_scanner_state_change(
 ///|
 fn node_children_depend_on_column(
   nodes : Array[NodeData],
-  children : Array[Int],
+  children : Array[Int32],
 ) -> Bool {
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -2986,8 +3005,8 @@ fn node_children_depend_on_column(
 ///|
 fn node_children_error_cost(
   nodes : Array[NodeData],
-  children : Array[Int],
-) -> Int {
+  children : Array[Int32],
+) -> Int32 {
   let mut cost = 0
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -3000,8 +3019,8 @@ fn node_children_error_cost(
 ///|
 fn node_children_dynamic_precedence(
   nodes : Array[NodeData],
-  children : Array[Int],
-) -> Int {
+  children : Array[Int32],
+) -> Int32 {
   let mut total = 0
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -3014,9 +3033,9 @@ fn node_children_dynamic_precedence(
 ///|
 fn node_children_lookahead_byte_count(
   nodes : Array[NodeData],
-  children : Array[Int],
-  parent_end_byte : UInt,
-) -> Int {
+  children : Array[Int32],
+  parent_end_byte : UInt32,
+) -> Int32 {
   let mut lookahead_byte_count = 0
   for child in children {
     if child >= 0 && child < nodes.length() {
@@ -3035,8 +3054,8 @@ fn node_children_lookahead_byte_count(
 ///|
 fn node_lookahead_byte_count_after_parent_end(
   node : NodeData,
-  parent_end_byte : UInt,
-) -> Int {
+  parent_end_byte : UInt32,
+) -> Int32 {
   let lookahead_end = node.end_byte +
     node.lookahead_byte_count.reinterpret_as_uint()
   if lookahead_end > parent_end_byte {
@@ -3049,7 +3068,7 @@ fn node_lookahead_byte_count_after_parent_end(
 ///|
 fn node_children_fragility(
   nodes : Array[NodeData],
-  children : Array[Int],
+  children : Array[Int32],
 ) -> (Bool, Bool) {
   if node_children_have_error(nodes, children) {
     return (true, true)
@@ -3080,10 +3099,10 @@ fn node_children_fragility(
 ///|
 fn push_parser_node(
   nodes : Array[NodeData],
-  leading_extras : Array[Array[Int]],
+  leading_extras : Array[Array[Int32]],
   node : NodeData,
-  leading? : Array[Int] = [],
-) -> Int {
+  leading~ : Array[Int32] = [],
+) -> Int32 {
   let index = nodes.length()
   nodes.push(node)
   leading_extras.push(leading.copy())
@@ -3093,10 +3112,10 @@ fn push_parser_node(
 ///|
 fn reduced_range(
   nodes : Array[NodeData],
-  children : Array[Int],
-  fallback_byte~ : UInt,
+  children : Array[Int32],
+  fallback_byte~ : UInt32,
   fallback_point~ : @api.Point,
-) -> (UInt, UInt, @api.Point, @api.Point) {
+) -> (UInt32, UInt32, @api.Point, @api.Point) {
   if children.length() == 0 {
     (fallback_byte, fallback_byte, fallback_point, fallback_point)
   } else {
@@ -3110,10 +3129,10 @@ fn reduced_range(
 fn set_reduced_child_metadata(
   tables : @tables.ValidatedLanguageTables,
   nodes : Array[NodeData],
-  child_index : Int,
-  parent_index : Int,
-  production_id~ : Int,
-  child_position~ : Int,
+  child_index : Int32,
+  parent_index : Int32,
+  production_id~ : Int32,
+  child_position~ : Int32,
 ) -> Unit {
   if child_index < 0 || child_index >= nodes.length() {
     return
@@ -3126,14 +3145,14 @@ fn set_reduced_child_metadata(
     nodes[child_index],
     production_alias_for_child(tables, production_id, child_position),
   )
-  nodes[child_index] = { ..child, parent: parent_index, field_id }
+  nodes[child_index] = { ..child, parent: parent_index, field_id, }
 }
 
 ///|
 fn set_extra_child_metadata(
   nodes : Array[NodeData],
-  child_index : Int,
-  parent_index : Int,
+  child_index : Int32,
+  parent_index : Int32,
 ) -> Unit {
   if child_index < 0 || child_index >= nodes.length() {
     return
@@ -3173,8 +3192,8 @@ fn apply_production_alias_to_child(
 ///|
 fn production_alias_for_child(
   tables : @tables.ValidatedLanguageTables,
-  production_id : Int,
-  child_position : Int,
+  production_id : Int32,
+  child_position : Int32,
 ) -> @tables.GeneratedAlias? {
   match tables.production_info(production_id) {
     Some(info) =>
@@ -3189,8 +3208,8 @@ fn production_alias_for_child(
 ///|
 fn production_field_id_for_child(
   tables : @tables.ValidatedLanguageTables,
-  production_id : Int,
-  child_position : Int,
+  production_id : Int32,
+  child_position : Int32,
 ) -> @api.FieldId {
   match tables.production_info(production_id) {
     Some(info) => {
@@ -3210,22 +3229,22 @@ fn production_field_id_for_child(
 ///|
 fn node_data_for_symbol(
   language : Language,
-  symbol_id : Int,
-  start_byte : UInt,
-  end_byte : UInt,
+  symbol_id : Int32,
+  start_byte : UInt32,
+  end_byte : UInt32,
   start_point : @api.Point,
   end_point : @api.Point,
-  children? : Array[Int] = [],
-  external_scanner_state? : Bytes? = None,
-  has_external_tokens? : Bool = external_scanner_state is Some(_),
-  external_scanner_state_changed? : Bool = false,
-  external_scanner_depends_on_column? : Bool = false,
-  lookahead_byte_count? : Int = 0,
-  parse_state? : @api.StateId? = None,
-  next_parse_state? : @api.StateId? = None,
-  dynamic_precedence? : Int = 0,
-  fragile_left? : Bool = false,
-  fragile_right? : Bool = false,
+  children~ : Array[Int32] = [],
+  external_scanner_state~ : Bytes? = None,
+  has_external_tokens~ : Bool = external_scanner_state is Some(_),
+  external_scanner_state_changed~ : Bool = false,
+  external_scanner_depends_on_column~ : Bool = false,
+  lookahead_byte_count~ : Int32 = 0,
+  parse_state~ : @api.StateId? = None,
+  next_parse_state~ : @api.StateId? = None,
+  dynamic_precedence~ : Int32 = 0,
+  fragile_left~ : Bool = false,
+  fragile_right~ : Bool = false,
 ) -> NodeData {
   let grammar_symbol_id = symbol_id_from_int(symbol_id)
   let public_symbol_id = match
@@ -3321,12 +3340,12 @@ fn symbol_type_is_named(symbol_type : @api.SymbolType?) -> Bool {
 ///|
 fn lex_main_token(
   tables : @tables.ValidatedLanguageTables,
-  parse_state_id : Int,
+  parse_state_id : Int32,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte : UInt32,
   start_point : @api.Point,
   included_ranges~ : Array[@api.Range],
   external_scanner_state~ : Bytes,
@@ -3396,12 +3415,12 @@ fn lex_main_token(
 fn scan_external_token(
   tables : @tables.ValidatedLanguageTables,
   mode : @tables.GeneratedLexMode,
-  parse_state_id : Int,
+  parse_state_id : Int32,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte : UInt32,
   start_point : @api.Point,
   included_ranges~ : Array[@api.Range],
   external_scanner_state~ : Bytes,
@@ -3643,7 +3662,7 @@ fn serialize_external_scanner_state(
 
 ///|
 fn external_context_is_at_included_range_start(
-  byte : UInt,
+  byte : UInt32,
   input : Bytes,
   included_ranges : Array[@api.Range],
 ) -> Bool {
@@ -3663,13 +3682,13 @@ fn external_context_is_at_included_range_start(
 
 ///|
 fn external_context_previous_included_range_end(
-  byte : UInt,
+  byte : UInt32,
   included_ranges : Array[@api.Range],
-) -> (UInt, @api.Point)? {
+) -> (UInt32, @api.Point)? {
   if included_ranges.is_empty() {
     return None
   }
-  let mut previous_end : (UInt, @api.Point)? = None
+  let mut previous_end : (UInt32, @api.Point)? = None
   for range in included_ranges {
     if range.is_empty() {
       continue
@@ -3688,7 +3707,7 @@ fn external_context_previous_included_range_end(
 ///|
 fn external_context_eof(
   input : Bytes,
-  byte : UInt,
+  byte : UInt32,
   included_ranges : Array[@api.Range],
 ) -> Bool {
   let input_end = input.length().reinterpret_as_uint()
@@ -3705,17 +3724,17 @@ fn external_context_eof(
 fn external_context_column(
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte~ : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte~ : UInt32,
   start_point~ : @api.Point,
-) -> UInt raise ParseError {
+) -> UInt32 raise ParseError {
   if start_point.column > start_byte {
     return start_point.column
   }
   let mut byte_index = (start_byte - start_point.column).reinterpret_as_int()
   let end_byte = start_byte.reinterpret_as_int()
-  let mut column : UInt = 0
+  let mut column : UInt32 = 0
   while byte_index < end_byte {
     guard decode_input_scalar(
         input,
@@ -3754,9 +3773,9 @@ fn external_context_column(
 fn external_context_advance_steps(
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte~ : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte~ : UInt32,
   included_ranges~ : Array[@api.Range],
 ) -> Array[@tables.ExternalScannerAdvanceStep] raise ParseError {
   let input_end = input.length().reinterpret_as_uint()
@@ -3798,8 +3817,8 @@ fn external_context_advance_steps(
 ///|
 fn external_scanner_valid_symbols(
   scanner : @tables.ExternalScannerDescriptor,
-  external_lex_state : Int,
-  external_token_count : Int,
+  external_lex_state : Int32,
+  external_token_count : Int32,
 ) -> Array[Bool] {
   let valid_symbols : Array[Bool] = []
   for token_id in 0..<external_token_count {
@@ -3814,11 +3833,11 @@ fn external_scanner_valid_symbols(
 ///|
 fn validate_external_scan_token(
   scanner : @tables.ExternalScannerDescriptor,
-  external_token_id~ : Int,
-  bytes_read~ : Int,
+  external_token_id~ : Int32,
+  bytes_read~ : Int32,
   valid_symbols~ : Array[Bool],
   input~ : Bytes,
-  start_byte~ : UInt,
+  start_byte~ : UInt32,
   included_ranges~ : Array[@api.Range],
 ) -> Unit raise ParseError {
   if external_token_id < 0 ||
@@ -3865,11 +3884,11 @@ fn validate_external_scan_token(
 
 ///|
 fn external_scan_range_matches_previous_included_range_end(
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
   start_point : @api.Point,
   end_point : @api.Point,
-  scan_start_byte : UInt,
+  scan_start_byte : UInt32,
   included_ranges : Array[@api.Range],
 ) -> Bool {
   if start_byte != end_byte || start_point != end_point {
@@ -3888,9 +3907,9 @@ fn external_scan_range_matches_previous_included_range_end(
 ///|
 fn external_scan_should_ignore_no_progress_token(
   tables : @tables.ValidatedLanguageTables,
-  parse_state_id : Int,
-  symbol_id : Int,
-  bytes_read : Int,
+  parse_state_id : Int32,
+  symbol_id : Int32,
+  bytes_read : Int32,
   state_changed : Bool,
 ) -> Bool {
   if bytes_read != 0 || state_changed {
@@ -3908,9 +3927,9 @@ fn external_scan_should_ignore_no_progress_token(
 ///|
 fn external_token_next_parse_state(
   tables : @tables.ValidatedLanguageTables,
-  parse_state_id : Int,
-  symbol_id : Int,
-) -> Int? {
+  parse_state_id : Int32,
+  symbol_id : Int32,
+) -> Int32? {
   match
     tables.parse_action_list_for_symbol(
       state_id_from_int(parse_state_id),
@@ -3918,7 +3937,7 @@ fn external_token_next_parse_state(
     ) {
     Some(action_list) => {
       let mut found_shift_extra = false
-      let mut next_state : Int? = None
+      let mut next_state : Int32? = None
       for action in action_list.actions {
         match action {
           @tables.GeneratedParseAction::Shift(state_id~, ..) =>
@@ -3940,11 +3959,11 @@ fn external_token_next_parse_state(
 fn external_scan_end_point(
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte~ : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte~ : UInt32,
   start_point~ : @api.Point,
-  bytes_read~ : Int,
+  bytes_read~ : Int32,
 ) -> @api.Point raise ParseError {
   let mut byte_index = start_byte.reinterpret_as_int()
   let end_byte = byte_index + bytes_read
@@ -3979,10 +3998,10 @@ fn external_scan_end_point(
 
 ///|
 fn snap_to_included_range(
-  start_byte : UInt,
+  start_byte : UInt32,
   start_point : @api.Point,
   ranges : Array[@api.Range],
-) -> (UInt, @api.Point) {
+) -> (UInt32, @api.Point) {
   if ranges.is_empty() {
     return (start_byte, start_point)
   }
@@ -4017,9 +4036,9 @@ fn snap_to_included_range(
 ///|
 fn included_range_end_for_byte(
   ranges : Array[@api.Range],
-  byte : UInt,
-  default_end : UInt,
-) -> UInt {
+  byte : UInt32,
+  default_end : UInt32,
+) -> UInt32 {
   if ranges.is_empty() {
     return default_end
   }
@@ -4052,8 +4071,8 @@ fn keyword_fallback_token(
   token : LexedToken,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
   included_ranges~ : Array[@api.Range],
   state_id~ : @api.StateId,
 ) -> LexedToken {
@@ -4100,8 +4119,8 @@ fn keyword_fallback_token(
 ///|
 fn reserved_word_set_contains_symbol(
   tables : @tables.ValidatedLanguageTables,
-  set_id : Int,
-  symbol_id : Int,
+  set_id : Int32,
+  symbol_id : Int32,
 ) -> Bool {
   match tables.reserved_word_set(set_id) {
     Some(set) => {
@@ -4118,9 +4137,9 @@ fn reserved_word_set_contains_symbol(
 
 ///|
 fn external_token_lookahead_byte_count(
-  _end_byte : UInt,
-  _input_end : UInt,
-) -> Int {
+  _end_byte : UInt32,
+  _input_end : UInt32,
+) -> Int32 {
   1
 }
 
@@ -4129,9 +4148,9 @@ fn scan_lex_table(
   table : @tables.GeneratedLexTable,
   input : Bytes,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets~ : Array[Int],
-  start_byte : UInt,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32],
+  start_byte : UInt32,
   start_point : @api.Point,
   included_ranges~ : Array[@api.Range],
   state_id~ : @api.StateId,
@@ -4143,7 +4162,7 @@ fn scan_lex_table(
   let mut token_start_point = start_point
   let mut best : LexedToken? = None
   let mut best_ended_on_decode_error = false
-  let mut last_consumed_codepoint : Int? = None
+  let mut last_consumed_codepoint : Int32? = None
   let mut eof_steps = 0
   let input_end = input.length().reinterpret_as_uint()
   if byte_index == 0 && point.row == 0 && point.column == 0 {
@@ -4270,9 +4289,9 @@ fn scan_lex_table(
 ///|
 fn token_lookahead_byte_count(
   token : LexedToken,
-  scan_byte : UInt,
+  scan_byte : UInt32,
   ended_on_decode_error~ : Bool,
-) -> Int {
+) -> Int32 {
   let lookahead_end = scan_byte + 1
   let base_count = if lookahead_end > token.end_byte {
     (lookahead_end - token.end_byte).reinterpret_as_int()
@@ -4287,7 +4306,7 @@ fn token_lookahead_byte_count(
 }
 
 ///|
-fn eof_lexed_token(byte : UInt, point : @api.Point) -> LexedToken {
+fn eof_lexed_token(byte : UInt32, point : @api.Point) -> LexedToken {
   {
     symbol_id: 0,
     start_byte: byte,
@@ -4304,7 +4323,7 @@ fn eof_lexed_token(byte : UInt, point : @api.Point) -> LexedToken {
 ///|
 fn lex_transition_for_codepoint(
   state : @tables.GeneratedLexState,
-  codepoint : Int,
+  codepoint : Int32,
 ) -> @tables.GeneratedLexTransition? {
   for transition in state.transitions {
     for range in transition.ranges {
@@ -4319,10 +4338,10 @@ fn lex_transition_for_codepoint(
 ///|
 fn decode_input_scalar(
   input : Bytes,
-  offset : Int,
+  offset : Int32,
   encoding~ : @api.InputEncoding,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end_offsets? : Array[Int] = [],
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end_offsets~ : Array[Int32] = [],
 ) -> DecodedScalar? raise ParseError {
   let chunk_end = chunk_end_for_offset(input, offset, chunk_end_offsets)
   match encoding {
@@ -4338,9 +4357,9 @@ fn decode_input_scalar(
 ///|
 fn chunk_end_for_offset(
   input : Bytes,
-  offset : Int,
-  chunk_end_offsets : Array[Int],
-) -> Int {
+  offset : Int32,
+  chunk_end_offsets : Array[Int32],
+) -> Int32 {
   if chunk_end_offsets.is_empty() {
     return input.length()
   }
@@ -4355,9 +4374,9 @@ fn chunk_end_for_offset(
 ///|
 fn decode_custom_scalar(
   input : Bytes,
-  offset : Int,
-  decode_callback~ : ((Bytes, Int) -> InputDecodeResult)?,
-  chunk_end~ : Int,
+  offset : Int32,
+  decode_callback~ : ((Bytes, Int32) -> InputDecodeResult)?,
+  chunk_end~ : Int32,
 ) -> DecodedScalar? raise ParseError {
   if offset < 0 || offset >= input.length() {
     return None
@@ -4398,7 +4417,7 @@ fn decode_custom_scalar(
           reason="custom decode code point out of range",
         )
       }
-      Some({ codepoint, byte_width: bytes })
+      Some({ codepoint, byte_width: bytes, })
     }
   }
 }
@@ -4406,8 +4425,8 @@ fn decode_custom_scalar(
 ///|
 fn decode_utf8_scalar(
   input : Bytes,
-  offset : Int,
-  chunk_end~ : Int,
+  offset : Int32,
+  chunk_end~ : Int32,
 ) -> DecodedScalar? {
   if offset < 0 || offset >= input.length() {
     return None
@@ -4415,12 +4434,15 @@ fn decode_utf8_scalar(
   let end = if chunk_end < input.length() { chunk_end } else { input.length() }
   let first = input[offset].to_int()
   if first < 0x80 {
-    return Some({ codepoint: first, byte_width: 1 })
+    return Some({ codepoint: first, byte_width: 1, })
   }
   if first >= 0xC2 && first <= 0xDF {
     match utf8_continuation_value(input, offset + 1, end~) {
       Some(second) =>
-        return Some({ codepoint: (first - 0xC0) * 0x40 + second, byte_width: 2 })
+        return Some({
+          codepoint: (first - 0xC0) * 0x40 + second,
+          byte_width: 2,
+        })
       None => return Some(utf8_decode_error_scalar())
     }
   }
@@ -4433,7 +4455,7 @@ fn decode_utf8_scalar(
       (Some(second), Some(third)) => {
         let codepoint = (first - 0xE0) * 0x1000 + second * 0x40 + third
         if codepoint >= 0x800 && (codepoint < 0xD800 || codepoint > 0xDFFF) {
-          return Some({ codepoint, byte_width: 3 })
+          return Some({ codepoint, byte_width: 3, })
         }
         ()
       }
@@ -4453,7 +4475,7 @@ fn decode_utf8_scalar(
           third * 0x40 +
           fourth
         if codepoint >= 0x10000 && codepoint <= 0x10FFFF {
-          return Some({ codepoint, byte_width: 4 })
+          return Some({ codepoint, byte_width: 4, })
         }
         ()
       }
@@ -4468,9 +4490,9 @@ fn decode_utf8_scalar(
 ///|
 fn decode_utf16_scalar(
   input : Bytes,
-  offset : Int,
+  offset : Int32,
   little_endian~ : Bool,
-  chunk_end~ : Int,
+  chunk_end~ : Int32,
 ) -> DecodedScalar? {
   if offset < 0 || offset >= input.length() {
     return None
@@ -4485,20 +4507,20 @@ fn decode_utf16_scalar(
       let second = read_utf16_code_unit(input, offset + 2, little_endian~)
       if is_trailing_surrogate(second) {
         let codepoint = 0x10000 + (first - 0xD800) * 0x400 + (second - 0xDC00)
-        return Some({ codepoint, byte_width: 4 })
+        return Some({ codepoint, byte_width: 4, })
       }
     }
-    return Some({ codepoint: first, byte_width: 2 })
+    return Some({ codepoint: first, byte_width: 2, })
   }
-  Some({ codepoint: first, byte_width: 2 })
+  Some({ codepoint: first, byte_width: 2, })
 }
 
 ///|
 fn read_utf16_code_unit(
   input : Bytes,
-  offset : Int,
+  offset : Int32,
   little_endian~ : Bool,
-) -> Int {
+) -> Int32 {
   let first = input[offset].to_int()
   let second = input[offset + 1].to_int()
   if little_endian {
@@ -4509,12 +4531,12 @@ fn read_utf16_code_unit(
 }
 
 ///|
-fn is_leading_surrogate(value : Int) -> Bool {
+fn is_leading_surrogate(value : Int32) -> Bool {
   value >= 0xD800 && value <= 0xDBFF
 }
 
 ///|
-fn is_trailing_surrogate(value : Int) -> Bool {
+fn is_trailing_surrogate(value : Int32) -> Bool {
   value >= 0xDC00 && value <= 0xDFFF
 }
 
@@ -4525,11 +4547,15 @@ fn utf8_decode_error_scalar() -> DecodedScalar {
 
 ///|
 fn decode_error_scalar() -> DecodedScalar {
-  { codepoint: decode_error_codepoint, byte_width: 1 }
+  { codepoint: decode_error_codepoint, byte_width: 1, }
 }
 
 ///|
-fn utf8_continuation_value(input : Bytes, offset : Int, end~ : Int) -> Int? {
+fn utf8_continuation_value(
+  input : Bytes,
+  offset : Int32,
+  end~ : Int32,
+) -> Int32? {
   if offset < 0 || offset >= input.length() || offset >= end {
     return None
   }
@@ -4544,8 +4570,8 @@ fn utf8_continuation_value(input : Bytes, offset : Int, end~ : Int) -> Int? {
 ///|
 fn advance_point(
   point : @api.Point,
-  byte_width : Int,
-  codepoint : Int,
+  byte_width : Int32,
+  codepoint : Int32,
 ) -> @api.Point {
   if codepoint == 0x0A {
     @api.Point::new(row=point.row + 1, column=0)
@@ -4558,11 +4584,11 @@ fn advance_point(
 }
 
 ///|
-fn symbol_id_from_int(value : Int) -> @api.SymbolId {
+fn symbol_id_from_int(value : Int32) -> @api.SymbolId {
   @api.SymbolId::new(value.reinterpret_as_uint())
 }
 
 ///|
-fn state_id_from_int(value : Int) -> @api.StateId {
+fn state_id_from_int(value : Int32) -> @api.StateId {
   @api.StateId::new(value.reinterpret_as_uint())
 }

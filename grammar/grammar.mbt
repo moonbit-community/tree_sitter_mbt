@@ -1,6 +1,6 @@
 ///|
 pub(all) enum PrecedenceValue {
-  Number(Int)
+  Number(Int32)
   Name(String)
 } derive(Eq, Debug)
 
@@ -19,7 +19,7 @@ pub(all) enum Rule {
   Prec(value~ : PrecedenceValue, content~ : Rule)
   PrecLeft(value~ : PrecedenceValue, content~ : Rule)
   PrecRight(value~ : PrecedenceValue, content~ : Rule)
-  PrecDynamic(value~ : Int, content~ : Rule)
+  PrecDynamic(value~ : Int32, content~ : Rule)
   Token(Rule)
   ImmediateToken(Rule)
   Reserved(context_name~ : String, content~ : Rule)
@@ -354,7 +354,7 @@ fn normalize_input_grammar(grammar : InputGrammar) -> InputGrammar {
 fn collect_symbols(
   rule : Rule,
   symbols~ : Array[String],
-  include_top_symbol? : Bool = true,
+  include_top_symbol~ : Bool = true,
 ) -> Unit {
   match rule {
     Rule::Symbol(name) =>
@@ -427,7 +427,7 @@ fn filter_reserved_sets(
         rules.push(rule)
       }
     }
-    result.push({ name: set.name, rules })
+    result.push({ name: set.name, rules, })
   }
   result
 }
@@ -517,7 +517,7 @@ fn expect_bool(json : Json, path : String) -> Bool raise GrammarError {
 }
 
 ///|
-fn expect_int(json : Json, path : String) -> Int raise GrammarError {
+fn expect_int(json : Json, path : String) -> Int32 raise GrammarError {
   match json {
     Json::Number(value, ..) => {
       let integer = value.to_int()
@@ -605,7 +605,7 @@ fn parse_required_int_field(
   fields : Map[String, Json],
   name : String,
   path : String,
-) -> Int raise GrammarError {
+) -> Int32 raise GrammarError {
   expect_int(required_field(fields, name, path), path_key(path, name))
 }
 
@@ -641,7 +641,7 @@ fn optional_rule_array_field(
   fields : Map[String, Json],
   name : String,
   path : String,
-  in_extra? : Bool = false,
+  in_extra~ : Bool = false,
 ) -> Array[Rule] raise GrammarError {
   match fields.get(name) {
     Some(value) => parse_rule_array(value, path_key(path, name), in_extra~)
@@ -653,7 +653,7 @@ fn optional_rule_array_field(
 fn parse_rule_array(
   json : Json,
   path : String,
-  in_extra? : Bool = false,
+  in_extra~ : Bool = false,
 ) -> Array[Rule] raise GrammarError {
   let items = expect_array(json, path)
   let result = []
@@ -797,7 +797,7 @@ fn optional_reserved_sets_field(
 ///|
 fn reserved_sets_or_default(sets : Array[ReservedSet]) -> Array[ReservedSet] {
   if sets.is_empty() {
-    [{ name: "", rules: [] }]
+    [{ name: "", rules: [], }]
   } else {
     sets
   }
@@ -817,6 +817,6 @@ fn path_key(path : String, key : String) -> String {
 }
 
 ///|
-fn path_index(path : String, index : Int) -> String {
+fn path_index(path : String, index : Int32) -> String {
   "\{path}[\{index}]"
 }

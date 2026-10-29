@@ -469,7 +469,7 @@ test "flatten grammar cross-products choices and dedupes productions" {
       reserved_sets: [],
       supertype_symbols: [],
     },
-    lexical: { variables: [], separators: [] },
+    lexical: { variables: [], separators: [], },
   }
   let flattened = flatten_grammar(extracted)
 
@@ -522,10 +522,10 @@ test "flatten grammar propagates metadata and rolls back non-final precedence" {
       conflict_symbols: [],
       precedence_orderings: [],
       word_symbol: None,
-      reserved_sets: [{ name: "", rules: [] }, { name: "global", rules: [] }],
+      reserved_sets: [{ name: "", rules: [], }, { name: "global", rules: [], }],
       supertype_symbols: [],
     },
-    lexical: { variables: [], separators: [] },
+    lexical: { variables: [], separators: [], },
   }
   let flattened = flatten_grammar(extracted)
 
@@ -565,12 +565,12 @@ test "flatten grammar uses global reserved context by name" {
       precedence_orderings: [],
       word_symbol: Some(InternalSymbol::Terminal(0)),
       reserved_sets: [
-        { name: "property", rules: [] },
-        { name: "global", rules: [] },
+        { name: "property", rules: [], },
+        { name: "global", rules: [], },
       ],
       supertype_symbols: [],
     },
-    lexical: { variables: [], separators: [] },
+    lexical: { variables: [], separators: [], },
   }
 
   let flattened = flatten_grammar(extracted)
@@ -615,7 +615,7 @@ test "generated tables include reserved word set rows from parse draft" {
     terminal_count=3,
     word_symbol=InternalSymbol::Terminal(2),
     reserved_sets=[
-      { name: "", rules: [] },
+      { name: "", rules: [], },
       {
         name: "keyword",
         rules: [InternedRule::IRSymbol(InternalSymbol::Terminal(1))],

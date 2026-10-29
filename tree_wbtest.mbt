@@ -1,7 +1,7 @@
 ///|
 fn empty_parse_table_rows(
-  row_count : Int,
-  symbol_count : Int,
+  row_count : Int32,
+  symbol_count : Int32,
 ) -> Array[Array[@tables.GeneratedParseTableCell]] {
   let rows : Array[Array[@tables.GeneratedParseTableCell]] = []
   for _ in 0..<row_count {
@@ -46,7 +46,7 @@ fn fixture_language() -> Language raise @tables.TableValidationError {
 }
 
 ///|
-fn wb_parser_smoke_language(dynamic_precedence? : Int = 0) -> Language raise {
+fn wb_parser_smoke_language(dynamic_precedence~ : Int32 = 0) -> Language raise {
   language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="minimal_wb",
@@ -957,10 +957,10 @@ test "reduce propagates external scanner metadata to parent" {
       depends_on_column=true,
     ),
   ]
-  let leading_extras : Array[Array[Int]] = []
+  let leading_extras : Array[Array[Int32]] = []
   let stack : Array[ParseStackEntry] = [
-    { state_id: 1, node_index: -1 },
-    { state_id: 2, node_index: 0 },
+    { state_id: 1, node_index: -1, },
+    { state_id: 2, node_index: 0, },
   ]
   reduce_stack(
     language,
@@ -1725,4 +1725,43 @@ test "parsed zero-width external token at eof records eof lookahead dependency" 
   assert_eq(token_data.lookahead_byte_count, 1)
   assert_eq(token_data.start_byte, 0)
   assert_eq(token_data.end_byte, 0)
+}
+
+///|
+test "attached root error extras clear state at either boundary" {
+  for leading in [true, false] {
+    let root = NodeData::new(
+      kind="document",
+      symbol=@api.SymbolId::new(1),
+      start_byte=0,
+      end_byte=0,
+      start_point=@api.Point::zero(),
+      end_point=@api.Point::zero(),
+      parse_state=Some(@api.StateId::new(1)),
+      next_parse_state=Some(@api.StateId::new(2)),
+    )
+    let error = NodeData::new(
+      kind="ERROR",
+      symbol=@api.SymbolId::new(0),
+      start_byte=0,
+      end_byte=0,
+      start_point=@api.Point::zero(),
+      end_point=@api.Point::zero(),
+      is_error=true,
+      error_cost=error_cost_per_recovery,
+    )
+    let nodes = [root, error]
+    attach_extras_to_root(
+      nodes,
+      0,
+      leading_extras=if leading { [1] } else { [] },
+      trailing_extras=if leading { [] } else { [1] },
+    )
+    let data = nodes[0]
+    assert_true(data.has_error)
+    assert_true(data.parse_state is None)
+    assert_true(data.next_parse_state is None)
+    assert_true(data.fragile_left && data.fragile_right)
+    assert_eq(data.error_cost, error_cost_per_recovery)
+  }
 }

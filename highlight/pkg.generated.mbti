@@ -26,17 +26,17 @@ pub(all) suberror HighlightError {
 type HighlightConfiguration
 pub fn HighlightConfiguration::configure(Self, Array[String]) -> Unit
 pub fn HighlightConfiguration::has_combined_injections_query(Self) -> Bool
-pub fn HighlightConfiguration::highlight_pattern_start(Self) -> Int
-pub fn HighlightConfiguration::injection_pattern_start(Self) -> Int
+pub fn HighlightConfiguration::highlight_pattern_start(Self) -> Int32
+pub fn HighlightConfiguration::injection_pattern_start(Self) -> Int32
 pub fn HighlightConfiguration::language_name(Self) -> String
-pub fn HighlightConfiguration::local_pattern_start(Self) -> Int
+pub fn HighlightConfiguration::local_pattern_start(Self) -> Int32
 pub fn HighlightConfiguration::names(Self) -> Array[String]
 pub fn HighlightConfiguration::new(@tree_sitter_mbt.Language, String, String, injections_query? : String, locals_query? : String, highlight_names? : Array[String]) -> Self raise HighlightError
 pub fn HighlightConfiguration::nonconformant_capture_names(Self, capture_names? : Array[String]) -> Array[String]
-pub fn HighlightConfiguration::pattern_count(Self) -> Int
+pub fn HighlightConfiguration::pattern_count(Self) -> Int32
 
 pub(all) enum HighlightEvent {
-  Source(start_byte~ : UInt, end_byte~ : UInt)
+  Source(start_byte~ : UInt32, end_byte~ : UInt32)
   HighlightStart(String)
   HighlightEnd(String)
 } derive(Eq, @debug.Debug)
@@ -58,9 +58,9 @@ pub(all) enum HighlightProgressPhase {
 
 pub(all) struct HighlightProgressState {
   phase : HighlightProgressPhase
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
 } derive(Eq, @debug.Debug)
-pub fn HighlightProgressState::new(phase~ : HighlightProgressPhase, current_byte_offset~ : UInt) -> Self
+pub fn HighlightProgressState::new(phase~ : HighlightProgressPhase, current_byte_offset~ : UInt32) -> Self
 
 type Highlighter
 pub fn Highlighter::highlight(Self, HighlightConfiguration, Bytes, options? : HighlightOptions) -> Array[HighlightEvent] raise HighlightError
@@ -71,4 +71,3 @@ pub fn Highlighter::new() -> Self
 // Type aliases
 
 // Traits
-

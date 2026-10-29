@@ -42,8 +42,8 @@ pub(all) enum TagKind {
 type TagsConfiguration
 pub fn TagsConfiguration::names(Self) -> Array[String]
 pub fn TagsConfiguration::new(@tree_sitter_mbt.Language, String, locals_query? : String) -> Self raise TagsError
-pub fn TagsConfiguration::pattern_count(Self) -> Int
-pub fn TagsConfiguration::tags_pattern_start(Self) -> Int
+pub fn TagsConfiguration::pattern_count(Self) -> Int32
+pub fn TagsConfiguration::tags_pattern_start(Self) -> Int32
 
 pub(all) struct TagsOptions {
   cancellation_state : TagsProgressState?
@@ -60,9 +60,9 @@ pub(all) enum TagsProgressPhase {
 
 pub(all) struct TagsProgressState {
   phase : TagsProgressPhase
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
 } derive(Eq, @debug.Debug)
-pub fn TagsProgressState::new(phase~ : TagsProgressPhase, current_byte_offset~ : UInt) -> Self
+pub fn TagsProgressState::new(phase~ : TagsProgressPhase, current_byte_offset~ : UInt32) -> Self
 
 pub(all) struct TagsResult {
   tags : Array[Tag]
@@ -70,11 +70,10 @@ pub(all) struct TagsResult {
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Utf16ColumnRange {
-  start : UInt
-  end : UInt
+  start : UInt32
+  end : UInt32
 } derive(Eq, @debug.Debug)
 
 // Type aliases
 
 // Traits
-

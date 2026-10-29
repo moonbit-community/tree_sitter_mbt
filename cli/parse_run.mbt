@@ -17,8 +17,8 @@ pub(all) struct CliParseResult {
 pub fn render_cli_parse_output(
   source : Bytes,
   tree : @tree_sitter_mbt.Tree,
-  output? : CliParseOutputMode = CliParseNormal,
-  no_ranges? : Bool = false,
+  output~ : CliParseOutputMode = CliParseNormal,
+  no_ranges~ : Bool = false,
 ) -> String {
   match output {
     CliParseNormal => render_parse_normal_tree(tree, no_ranges~)
@@ -31,8 +31,8 @@ pub fn render_cli_parse_output(
 pub fn run_cli_parse_source(
   parser : @tree_sitter_mbt.Parser,
   source : Bytes,
-  output? : CliParseOutputMode = CliParseNormal,
-  no_ranges? : Bool = false,
+  output~ : CliParseOutputMode = CliParseNormal,
+  no_ranges~ : Bool = false,
   encoding? : @api.InputEncoding,
 ) -> CliParseResult raise {
   let input = match encoding {
@@ -61,7 +61,7 @@ pub fn cli_parse_results_have_error(results : Array[CliParseResult]) -> Bool {
 }
 
 ///|
-pub fn cli_parse_exit_code(results : Array[CliParseResult]) -> Int {
+pub fn cli_parse_exit_code(results : Array[CliParseResult]) -> Int32 {
   if cli_parse_results_have_error(results) {
     1
   } else {

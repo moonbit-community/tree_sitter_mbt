@@ -1,5 +1,5 @@
 ///|
-fn lex_dfa_step(dfa : LexDfa, state_id : Int, char : Char) -> Int? {
+fn lex_dfa_step(dfa : LexDfa, state_id : Int32, char : Char) -> Int32? {
   if state_id < 0 || state_id >= dfa.states.length() {
     return None
   }
@@ -12,7 +12,7 @@ fn lex_dfa_step(dfa : LexDfa, state_id : Int, char : Char) -> Int? {
 }
 
 ///|
-fn lex_dfa_accept_variable(dfa : LexDfa, state_id : Int) -> Int? {
+fn lex_dfa_accept_variable(dfa : LexDfa, state_id : Int32) -> Int32? {
   if state_id < 0 || state_id >= dfa.states.length() {
     return None
   }

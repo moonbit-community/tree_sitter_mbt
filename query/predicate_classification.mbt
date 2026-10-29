@@ -1,8 +1,8 @@
 ///|
 pub(all) suberror QueryPredicateError {
   Predicate(
-    pattern_index~ : Int,
-    byte_offset~ : Int,
+    pattern_index~ : Int32,
+    byte_offset~ : Int32,
     operator~ : String,
     reason~ : String
   )
@@ -10,7 +10,7 @@ pub(all) suberror QueryPredicateError {
 
 ///|
 pub(all) enum QueryPredicateArg {
-  ArgCapture(Int)
+  ArgCapture(Int32)
   ArgString(String)
 } derive(Eq, Debug)
 
@@ -30,36 +30,36 @@ pub(all) enum QueryTextPredicateKind {
 
 ///|
 pub(all) struct QueryTextPredicate {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   kind : QueryTextPredicateKind
-  capture_id : Int
+  capture_id : Int32
   args : Array[QueryPredicateArg]
 } derive(Eq, Debug)
 
 ///|
 pub(all) struct QueryPropertySetting {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   key : String
   value : String?
-  capture_id : Int?
+  capture_id : Int32?
 } derive(Eq, Debug)
 
 ///|
 pub(all) struct QueryPropertyAssertion {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   is_positive : Bool
   key : String
   value : String?
-  capture_id : Int?
+  capture_id : Int32?
 } derive(Eq, Debug)
 
 ///|
 pub(all) struct QueryGeneralPredicate {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   operator : String
   args : Array[QueryPredicateArg]
 } derive(Eq, Debug)
@@ -74,8 +74,8 @@ pub(all) struct QueryPredicateClasses {
 
 ///|
 priv struct QueryRawPredicate {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   operator : String
   args : Array[QueryPredicateArg]
 }
@@ -140,7 +140,7 @@ fn query_classify_raw_predicate(
 ///|
 fn Query::raw_predicates_for_pattern(
   self : Query,
-  pattern_index : Int,
+  pattern_index : Int32,
   pattern : QueryPattern,
 ) -> Array[QueryRawPredicate] raise QueryPredicateError {
   let result : Array[QueryRawPredicate] = []
@@ -206,16 +206,16 @@ fn Query::raw_predicates_for_pattern(
 }
 
 ///|
-fn query_predicate_step_offset(pattern : QueryPattern, index : Int) -> Int {
+fn query_predicate_step_offset(pattern : QueryPattern, index : Int32) -> Int32 {
   pattern.predicate_step_offsets.get(index).unwrap_or(pattern.start_byte)
 }
 
 ///|
 fn Query::predicate_string(
   self : Query,
-  id : Int,
-  pattern_index~ : Int,
-  byte_offset~ : Int,
+  id : Int32,
+  pattern_index~ : Int32,
+  byte_offset~ : Int32,
   operator~ : String,
 ) -> String raise QueryPredicateError {
   match self.string_values.get(id) {
@@ -321,7 +321,7 @@ fn query_classify_property_assertion(
 ///|
 fn query_classify_property_args(
   predicate : QueryRawPredicate,
-) -> (String, String?, Int?) raise QueryPredicateError {
+) -> (String, String?, Int32?) raise QueryPredicateError {
   if predicate.args.length() < 1 || predicate.args.length() > 3 {
     query_raise_predicate_error(
       predicate, "property predicate expects one to three arguments",
@@ -329,7 +329,7 @@ fn query_classify_property_args(
   }
   let mut key : String? = None
   let mut value : String? = None
-  let mut capture_id : Int? = None
+  let mut capture_id : Int32? = None
   for arg in predicate.args {
     match arg {
       ArgCapture(id) =>
@@ -364,7 +364,7 @@ fn query_classify_property_args(
 ///|
 fn query_expect_exact_arg_count(
   predicate : QueryRawPredicate,
-  expected : Int,
+  expected : Int32,
 ) -> Unit raise QueryPredicateError {
   if predicate.args.length() != expected {
     query_raise_predicate_error(predicate, "expected \{expected} arguments")
@@ -374,8 +374,8 @@ fn query_expect_exact_arg_count(
 ///|
 fn query_expect_capture_arg(
   predicate : QueryRawPredicate,
-  index : Int,
-) -> Int raise QueryPredicateError {
+  index : Int32,
+) -> Int32 raise QueryPredicateError {
   match predicate.args.get(index) {
     Some(ArgCapture(id)) => id
     _ => query_raise_predicate_error(predicate, "expected capture argument")
@@ -385,7 +385,7 @@ fn query_expect_capture_arg(
 ///|
 fn query_expect_string_arg(
   predicate : QueryRawPredicate,
-  index : Int,
+  index : Int32,
 ) -> String raise QueryPredicateError {
   match predicate.args.get(index) {
     Some(ArgString(value)) => value
@@ -440,7 +440,10 @@ fn query_normalize_text_regex(regex : String) -> String {
 }
 
 ///|
-fn query_normalize_regex_class(regex : String, start : Int) -> (String, Int) {
+fn query_normalize_regex_class(
+  regex : String,
+  start : Int32,
+) -> (String, Int32) {
   let class_builder = StringBuilder::new()
   let complements : Array[String] = []
   let mut has_positive_atom = false

@@ -16,7 +16,7 @@ pub fn Length::add(Self, Self) -> Self
 pub fn Length::is_undefined(Self) -> Bool
 pub fn Length::max() -> Self
 pub fn Length::min(Self, Self) -> Self
-pub fn Length::new(bytes~ : UInt, extent~ : @api.Point) -> Self
+pub fn Length::new(bytes~ : UInt32, extent~ : @api.Point) -> Self
 pub fn Length::saturating_sub(Self, Self) -> Self
 pub fn Length::sub(Self, Self) -> Self
 pub fn Length::undefined() -> Self
@@ -25,4 +25,3 @@ pub fn Length::zero() -> Self
 // Type aliases
 
 // Traits
-

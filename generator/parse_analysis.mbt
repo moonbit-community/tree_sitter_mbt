@@ -1,7 +1,7 @@
 ///|
 priv struct ParseTokenSet {
-  terminals : Array[Int]
-  externals : Array[Int]
+  terminals : Array[Int32]
+  externals : Array[Int32]
   mut eof : Bool
   mut end_of_nonterminal_extra : Bool
 }
@@ -10,20 +10,20 @@ priv struct ParseTokenSet {
 priv struct ParseSymbolSets {
   first_sets : Array[ParseTokenSet]
   last_sets : Array[ParseTokenSet]
-  reserved_first_sets : Array[Int]
+  reserved_first_sets : Array[Int32]
 }
 
 ///|
 fn build_parse_symbol_sets(grammar : PreparedGrammar) -> ParseSymbolSets {
   let first_sets : Array[ParseTokenSet] = []
   let last_sets : Array[ParseTokenSet] = []
-  let reserved_first_sets : Array[Int] = []
+  let reserved_first_sets : Array[Int32] = []
   for _ in grammar.syntax.variables {
     first_sets.push(parse_token_set_empty())
     last_sets.push(parse_token_set_empty())
     reserved_first_sets.push(0)
   }
-  let result = { first_sets, last_sets, reserved_first_sets }
+  let result = { first_sets, last_sets, reserved_first_sets, }
   for i in 0..<grammar.syntax.variables.length() {
     fill_first_set(result, grammar.syntax, i)
     fill_last_set(result, grammar.syntax, i)
@@ -106,7 +106,7 @@ fn add_following_tokens_for_production(
 ///|
 fn parse_reserved_token_set(
   grammar : PreparedGrammar,
-  reserved_set_id : Int,
+  reserved_set_id : Int32,
 ) -> ParseTokenSet {
   let result = parse_token_set_empty()
   if reserved_set_id >= 0 &&
@@ -149,7 +149,7 @@ fn parse_token_set_insert_rule_symbols(
 fn fill_first_set(
   sets : ParseSymbolSets,
   syntax : FlattenedSyntaxGrammar,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> Unit {
   let target = sets.first_sets[variable_index]
   let mut reserved_id = sets.reserved_first_sets[variable_index]
@@ -191,7 +191,7 @@ fn fill_first_set(
 fn fill_last_set(
   sets : ParseSymbolSets,
   syntax : FlattenedSyntaxGrammar,
-  variable_index : Int,
+  variable_index : Int32,
 ) -> Unit {
   let target = sets.last_sets[variable_index]
   let work : Array[InternalSymbol] = [
@@ -260,7 +260,7 @@ fn parse_symbol_last_set(
 fn parse_symbol_reserved_first_set(
   sets : ParseSymbolSets,
   symbol : InternalSymbol,
-) -> Int {
+) -> Int32 {
   match symbol {
     NonTerminal(index) =>
       if index >= 0 && index < sets.reserved_first_sets.length() {
@@ -274,7 +274,7 @@ fn parse_symbol_reserved_first_set(
 
 ///|
 fn parse_token_set_empty() -> ParseTokenSet {
-  { terminals: [], externals: [], eof: false, end_of_nonterminal_extra: false }
+  { terminals: [], externals: [], eof: false, end_of_nonterminal_extra: false, }
 }
 
 ///|
@@ -336,7 +336,7 @@ fn parse_token_set_insert_all_terminals(
 }
 
 ///|
-fn parse_token_set_insert_index(values : Array[Int], value : Int) -> Unit {
+fn parse_token_set_insert_index(values : Array[Int32], value : Int32) -> Unit {
   if !contains_int(values, value) {
     values.push(value)
     values.sort()
@@ -364,7 +364,7 @@ fn parse_token_set_same(left : ParseTokenSet, right : ParseTokenSet) -> Bool {
 }
 
 ///|
-fn parse_symbol_sets_weight(sets : ParseSymbolSets) -> Int {
+fn parse_symbol_sets_weight(sets : ParseSymbolSets) -> Int32 {
   let mut weight = 0
   for i in 0..<sets.first_sets.length() {
     let first_set = parse_symbol_first_set(sets, InternalSymbol::NonTerminal(i))
@@ -392,7 +392,7 @@ fn parse_symbol_sets_weight(sets : ParseSymbolSets) -> Int {
 }
 
 ///|
-fn following_token_sets_weight(sets : Array[ParseTokenSet]) -> Int {
+fn following_token_sets_weight(sets : Array[ParseTokenSet]) -> Int32 {
   let mut weight = 0
   for set in sets {
     weight += parse_token_set_weight(set)
@@ -401,7 +401,7 @@ fn following_token_sets_weight(sets : Array[ParseTokenSet]) -> Int {
 }
 
 ///|
-fn parse_token_set_weight(set : ParseTokenSet) -> Int {
+fn parse_token_set_weight(set : ParseTokenSet) -> Int32 {
   let mut weight = 0
   for terminal in set.terminals {
     weight += terminal + 1

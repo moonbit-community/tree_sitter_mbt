@@ -1,11 +1,11 @@
 ///|
 test "character set normalizes scalar ranges" {
   let set = character_set_from_ranges([
-    { start: 70U, end: 72U },
-    { start: 65U, end: 67U },
-    { start: 68U, end: 69U },
-    { start: 80U, end: 79U },
-    { start: 1114112U, end: 1114113U },
+    { start: 70U, end: 72U, },
+    { start: 65U, end: 67U, },
+    { start: 68U, end: 69U, },
+    { start: 80U, end: 79U, },
+    { start: 1114112U, end: 1114113U, },
   ])
 
   assert_eq(set.ranges.length(), 1)
@@ -19,9 +19,9 @@ test "character set normalizes scalar ranges" {
 ///|
 test "character set negation uses Unicode scalar bounds" {
   let set = character_set_from_ranges([
-    { start: 0U, end: 0U },
-    { start: 10U, end: 12U },
-    { start: unicode_scalar_max, end: unicode_scalar_max },
+    { start: 0U, end: 0U, },
+    { start: 10U, end: 12U, },
+    { start: unicode_scalar_max, end: unicode_scalar_max, },
   ])
   let negated = character_set_negated(set)
 
@@ -37,10 +37,10 @@ test "character set negation uses Unicode scalar bounds" {
 ///|
 test "character set intersection difference and symmetric difference are stable" {
   let left = character_set_from_ranges([
-    { start: 1U, end: 5U },
-    { start: 10U, end: 12U },
+    { start: 1U, end: 5U, },
+    { start: 10U, end: 12U, },
   ])
-  let right = character_set_from_ranges([{ start: 3U, end: 10U }])
+  let right = character_set_from_ranges([{ start: 3U, end: 10U, }])
 
   let intersection = character_set_intersection(left, right)
   assert_eq(intersection.ranges.length(), 2)

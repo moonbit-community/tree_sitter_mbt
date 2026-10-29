@@ -15,7 +15,7 @@ pub(all) struct CliParseCommandSourceResult {
 pub(all) struct CliParseCommandRunResult {
   results : Array[CliParseCommandSourceResult]
   stdout : String
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -35,11 +35,11 @@ pub(all) struct CliTestCommandFileResult {
 
 ///|
 pub(all) struct CliTestRunSummary {
-  total : Int
-  passed : Int
-  failed : Int
-  skipped : Int
-  platform_skipped : Int
+  total : Int32
+  passed : Int32
+  failed : Int32
+  skipped : Int32
+  platform_skipped : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -48,7 +48,7 @@ pub(all) struct CliTestCommandRunResult {
   summary : CliTestRunSummary
   stdout : String
   json_summary : String?
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -64,8 +64,8 @@ pub(all) suberror CliQueryRunError {
 pub(all) struct CliQueryCommandSourceResult {
   name : String?
   output : String
-  match_count : Int
-  capture_count : Int
+  match_count : Int32
+  capture_count : Int32
   has_parse_error : Bool
   successful : Bool
 } derive(Eq, Debug)
@@ -74,7 +74,7 @@ pub(all) struct CliQueryCommandSourceResult {
 pub(all) struct CliQueryCommandRunResult {
   results : Array[CliQueryCommandSourceResult]
   stdout : String
-  exit_code : Int
+  exit_code : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -100,7 +100,7 @@ pub fn run_cli_parse_command(
       duration_millis=cli_parse_elapsed_millis(start_time),
     )
     parse_results.push(result)
-    results.push({ name: source.name, result })
+    results.push({ name: source.name, result, })
   }
   {
     results,
@@ -135,7 +135,7 @@ pub fn run_cli_query_command(
     }
     results.push(result)
   }
-  { results, stdout: stdout.to_string(), exit_code }
+  { results, stdout: stdout.to_string(), exit_code, }
 }
 
 ///|
@@ -176,7 +176,7 @@ pub fn run_cli_test_command(
       for result in results {
         all_results.push(result)
       }
-      file_results.push({ name: input_file.name, results, update: None })
+      file_results.push({ name: input_file.name, results, update: None, })
     }
   }
   let summary = summarize_cli_test_results(all_results)
@@ -559,8 +559,8 @@ priv struct CliQueryCaptureInfo {
 ///|
 priv struct CliQueryExecution {
   output : String
-  match_count : Int
-  capture_count : Int
+  match_count : Int32
+  capture_count : Int32
   captures : Array[CliQueryCaptureInfo]
 }
 
@@ -586,7 +586,7 @@ fn execute_cli_query_source(
         command, cursor, compiled, source, out, captures,
       )
   }
-  { output: out.to_string(), match_count, capture_count, captures }
+  { output: out.to_string(), match_count, capture_count, captures, }
 }
 
 ///|
@@ -597,7 +597,7 @@ fn execute_cli_query_captures(
   source : Bytes,
   out : StringBuilder,
   captures : Array[CliQueryCaptureInfo],
-) -> (Int, Int) raise CliQueryRunError {
+) -> (Int32, Int32) raise CliQueryRunError {
   let mut capture_count = 0
   while true {
     let next = cursor.next_capture_with_text_predicates_bytes(compiled, source) catch {
@@ -626,7 +626,7 @@ fn execute_cli_query_matches(
   source : Bytes,
   out : StringBuilder,
   captures : Array[CliQueryCaptureInfo],
-) -> (Int, Int) raise CliQueryRunError {
+) -> (Int32, Int32) raise CliQueryRunError {
   let mut match_count = 0
   let mut capture_count = 0
   while true {
@@ -689,7 +689,7 @@ pub fn summarize_cli_test_results(
       CorpusRunPlatformSkipped => platform_skipped += 1
     }
   }
-  { total: results.length(), passed, failed, skipped, platform_skipped }
+  { total: results.length(), passed, failed, skipped, platform_skipped, }
 }
 
 ///|

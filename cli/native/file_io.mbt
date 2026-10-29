@@ -10,7 +10,7 @@ pub(all) suberror CliFileIoError {
   GrammarJsLoadFailed(
     path~ : String,
     runtime~ : String,
-    status~ : Int,
+    status~ : Int32,
     stderr~ : String
   )
   MissingLanguageConfig(String)
@@ -182,7 +182,7 @@ pub async fn read_cli_query_files(
 ) -> Array[@cli.CliQueryFile] {
   let files : Array[@cli.CliQueryFile] = []
   for path in paths {
-    files.push({ path, content: read_cli_file_string(path) })
+    files.push({ path, content: read_cli_file_string(path), })
   }
   files
 }
@@ -536,7 +536,11 @@ async fn read_cli_tags_command_configuration(
     Some(path) => read_cli_language_from_grammar_path(path)
     None => read_cli_language_from_config_location(location)
   }
-  { language, tags_query: tags_query.source, locals_query: locals_query.source }
+  {
+    language,
+    tags_query: tags_query.source,
+    locals_query: locals_query.source,
+  }
 }
 
 ///|
@@ -572,8 +576,8 @@ async fn read_cli_command_language(
   grammar_path~ : String?,
   lib_path~ : String?,
   scope~ : String?,
-  file_name? : String? = None,
-  source? : String? = None,
+  file_name~ : String? = None,
+  source~ : String? = None,
 ) -> @tree_sitter_mbt.Language {
   match lib_path {
     Some(path) => raise CliFileIoError::UnsupportedDynamicLanguage(path~)
@@ -759,7 +763,7 @@ fn cli_test_command_paths() -> Array[String] {
 
 ///|
 async fn read_cli_test_number_command_sources(
-  number : UInt,
+  number : UInt32,
 ) -> Array[@cli.CliParseCommandSource] {
   let example = read_cli_test_number_example(number)
   [
@@ -772,7 +776,7 @@ async fn read_cli_test_number_command_sources(
 }
 
 ///|
-async fn read_cli_test_number_example(number : UInt) -> @cli.CliCorpusExample {
+async fn read_cli_test_number_example(number : UInt32) -> @cli.CliCorpusExample {
   let target = @cli.normalize_test_number(number)
   let mut current = 0U
   for path in cli_test_command_paths() {
@@ -852,7 +856,7 @@ async fn read_cli_path_sources(
 
 ///|
 fn read_cli_stdin_source() -> Array[@cli.CliParseCommandSource] {
-  [{ name: None, contents: read_cli_stdin_bytes(), language_names: [] }]
+  [{ name: None, contents: read_cli_stdin_bytes(), language_names: [], }]
 }
 
 ///|
@@ -908,7 +912,7 @@ async fn expand_cli_glob_path(pattern : String) -> Array[String] {
 async fn expand_cli_glob_segments(
   prefix : String,
   segments : Array[String],
-  index : Int,
+  index : Int32,
 ) -> Array[String] {
   if index >= segments.length() {
     return if prefix.is_empty() { [] } else { [prefix] }
@@ -982,9 +986,9 @@ fn cli_glob_segment_matches(pattern : String, text : String) -> Bool {
 ///|
 fn cli_glob_segment_matches_at(
   pattern : String,
-  pattern_offset : Int,
+  pattern_offset : Int32,
   text : String,
-  text_offset : Int,
+  text_offset : Int32,
 ) -> Bool {
   if pattern_offset >= pattern.length() {
     return text_offset >= text.length()

@@ -1,6 +1,6 @@
 ///|
 pub(all) struct GenerateOptions {
-  abi_version : Int
+  abi_version : Int32
   language_name : String
   semantic_version : @tables.LanguageMetadata?
   root_alias : String
@@ -39,7 +39,7 @@ pub(all) struct GeneratedLanguage {
   node_types_json : String
   tables : @tables.GeneratedLanguageTables
   language_name : String
-  abi_version : Int
+  abi_version : Int32
   metadata : @tables.LanguageMetadata
   warnings : Array[GenerateWarning]
 } derive(Eq, Debug)
@@ -47,27 +47,27 @@ pub(all) struct GeneratedLanguage {
 ///|
 priv struct GeneratedMainLexTablesDraft {
   tables : Array[@tables.GeneratedLexTable]
-  state_ids : Array[Int]
+  state_ids : Array[Int32]
 }
 
 ///|
 priv struct GeneratedKeywordLexTableDraft {
-  capture_token : Int?
+  capture_token : Int32?
   table : @tables.GeneratedLexTable?
-  candidate_terminals : Array[Int]
-  word_terminal : Int
+  candidate_terminals : Array[Int32]
+  word_terminal : Int32
 }
 
 ///|
 priv struct GeneratedPublicSymbolsDraft {
-  public_symbol_map : Array[Int]
+  public_symbol_map : Array[Int32]
   alias_symbols : Array[@tables.GeneratedAlias]
   non_terminal_aliases : Array[@tables.GeneratedNonTerminalAliasEntry]
 }
 
 ///|
 pub(all) suberror GenerateError {
-  UnsupportedAbi(Int)
+  UnsupportedAbi(Int32)
   InvalidImportAlias(String)
   InvalidGrammar(String)
   UndeclaredPrecedence(String)
@@ -83,16 +83,16 @@ pub(all) suberror GenerateError {
   AmbiguousExtra(Array[String])
   ParseTableValueOutOfRange(
     kind~ : String,
-    value~ : Int,
-    min~ : Int,
-    max~ : Int
+    value~ : Int32,
+    min~ : Int32,
+    max~ : Int32
   )
 } derive(Eq, Debug)
 
 ///|
 pub fn generate_language(
   grammar_json : String,
-  options? : GenerateOptions = GenerateOptions::default(),
+  options~ : GenerateOptions = GenerateOptions::default(),
 ) -> GeneratedLanguage raise GenerateError {
   let grammar = @grammar.parse_grammar(grammar_json) catch {
     err => raise GenerateError::InvalidGrammar(describe_grammar_error(err))
@@ -171,7 +171,7 @@ pub fn generate_language(
 ///|
 fn generated_language_tables_from_draft(
   language_name : String,
-  abi_version : Int,
+  abi_version : Int32,
   metadata : @tables.LanguageMetadata,
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
@@ -229,7 +229,7 @@ fn generated_public_symbols(
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
 ) -> GeneratedPublicSymbolsDraft {
-  let public_symbol_map : Array[Int] = []
+  let public_symbol_map : Array[Int32] = []
   let alias_symbols : Array[@tables.GeneratedAlias] = []
   for i in 0..<parse_table.symbols.length() {
     public_symbol_map.push(i)
@@ -341,7 +341,7 @@ fn generated_public_symbol_id_for_alias(
   parse_table : ParseTableDraft,
   alias_symbols : Array[@tables.GeneratedAlias],
   alias_info : @tables.GeneratedAlias,
-) -> Int {
+) -> Int32 {
   match
     generated_existing_public_symbol_id_for_alias(
       grammar, parse_table, alias_info,
@@ -364,7 +364,7 @@ fn generated_existing_public_symbol_id_for_alias(
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
   alias_info : @tables.GeneratedAlias,
-) -> Int? {
+) -> Int32? {
   for i in 0..<parse_table.symbols.length() {
     if generated_symbol_name(grammar, parse_table.symbols[i]) ==
       alias_info.value &&
@@ -416,8 +416,8 @@ fn generated_default_aliases(
 fn generated_extra_symbol_ids(
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
-) -> Array[Int] {
-  let result : Array[Int] = []
+) -> Array[Int32] {
+  let result : Array[Int32] = []
   for symbol in grammar.syntax.extra_symbols {
     let id = parse_table_symbol_id_for_internal(parse_table, symbol)
     if id >= 0 {
@@ -451,8 +451,8 @@ fn generated_subtype_symbol_ids(
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
   supertype : InternalSymbol,
-) -> Array[Int] {
-  let symbol_ids : Array[Int] = []
+) -> Array[Int32] {
+  let symbol_ids : Array[Int32] = []
   match supertype {
     InternalSymbol::NonTerminal(index) =>
       if index >= 0 && index < grammar.syntax.variables.length() {
@@ -476,7 +476,7 @@ fn generated_subtype_symbol_ids(
 
 ///|
 fn push_generated_subtype_symbol_id(
-  symbol_ids : Array[Int],
+  symbol_ids : Array[Int32],
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
   supertype : InternalSymbol,
@@ -523,7 +523,7 @@ fn generated_main_lex_tables(
   keyword_lex : GeneratedKeywordLexTableDraft,
 ) -> GeneratedMainLexTablesDraft {
   let tables : Array[@tables.GeneratedLexTable] = []
-  let state_ids : Array[Int] = []
+  let state_ids : Array[Int32] = []
   for state in parse_table.states {
     let tokens = generated_main_lex_tokens_for_state(state, keyword_lex)
     if generated_lex_token_set_has_main_tokens(tokens) {
@@ -536,7 +536,7 @@ fn generated_main_lex_tables(
       state_ids.push(@tables.lex_state_none())
     }
   }
-  { tables, state_ids }
+  { tables, state_ids, }
 }
 
 ///|
@@ -544,8 +544,8 @@ fn generated_main_lex_tokens_for_state(
   state : ParseStateDraft,
   keyword_lex : GeneratedKeywordLexTableDraft,
 ) -> LexTokenSet {
-  let terminals : Array[Int] = []
-  let externals : Array[Int] = []
+  let terminals : Array[Int32] = []
+  let externals : Array[Int32] = []
   let mut eof = false
   for entry in state.terminal_entries {
     match entry.symbol {
@@ -567,8 +567,8 @@ fn generated_main_lex_tokens_for_state(
 
 ///|
 fn generated_main_lex_push_terminal(
-  terminals : Array[Int],
-  terminal : Int,
+  terminals : Array[Int32],
+  terminal : Int32,
   keyword_lex : GeneratedKeywordLexTableDraft,
 ) -> Unit {
   if keyword_lex.word_terminal >= 0 &&
@@ -637,9 +637,9 @@ fn generated_keyword_lex_table(
 fn generated_keyword_candidate_terminals(
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
-  word_terminal : Int,
-) -> Array[Int] {
-  let terminals : Array[Int] = []
+  word_terminal : Int32,
+) -> Array[Int32] {
+  let terminals : Array[Int32] = []
   for set in parse_table.reserved_word_sets.sets {
     for terminal in set.terminals {
       if terminal != word_terminal &&
@@ -671,7 +671,7 @@ fn generated_keyword_candidate_terminals(
 ///|
 fn keyword_candidate_in_parse_symbols(
   parse_table : ParseTableDraft,
-  terminal : Int,
+  terminal : Int32,
 ) -> Bool {
   parse_table_symbol_id_for_internal(
     parse_table,
@@ -734,7 +734,7 @@ fn generated_lex_state(
 fn generated_lex_accept_symbol_id(
   parse_table : ParseTableDraft,
   accept : LexAccept?,
-) -> Int? {
+) -> Int32? {
   match accept {
     Some(value) =>
       match value.symbol {
@@ -843,7 +843,7 @@ fn generated_field_map(
 }
 
 ///|
-fn generated_field_id(field_names : Array[String], name : String) -> Int {
+fn generated_field_id(field_names : Array[String], name : String) -> Int32 {
   for i in 1..<field_names.length() {
     if field_names[i] == name {
       return i
@@ -874,7 +874,7 @@ fn generated_external_scanner(
 
 ///|
 fn generated_external_scanner_states(
-  external_token_count : Int,
+  external_token_count : Int32,
   parse_table : ParseTableDraft,
 ) -> Array[Array[Bool]] {
   let rows : Array[Array[Bool]] = []
@@ -892,8 +892,8 @@ fn generated_external_scanner_states(
 fn generated_external_scanner_symbol_map(
   grammar : PreparedGrammar,
   parse_table : ParseTableDraft,
-) -> Array[Int] {
-  let symbols : Array[Int] = []
+) -> Array[Int32] {
+  let symbols : Array[Int32] = []
   for i in 0..<grammar.syntax.external_tokens.length() {
     match grammar.syntax.external_tokens[i].corresponding_internal_token {
       Some(symbol) =>
@@ -929,8 +929,8 @@ fn generated_reserved_word_sets(
 fn generated_token_set_symbol_ids(
   parse_table : ParseTableDraft,
   set : ParseTokenSet,
-) -> Array[Int] {
-  let ids : Array[Int] = []
+) -> Array[Int32] {
+  let ids : Array[Int32] = []
   for terminal in set.terminals {
     push_unique_int(
       ids,
@@ -1037,7 +1037,7 @@ fn generated_small_parse_table_sections(
 ) -> Array[@tables.GeneratedSmallParseTableSection] {
   let generated : Array[@tables.GeneratedSmallParseTableSection] = []
   for section in sections {
-    let symbols : Array[Int] = []
+    let symbols : Array[Int32] = []
     for symbol in section.symbols {
       symbols.push(parse_table_find_symbol_id(parse_table.symbols, symbol))
     }
@@ -1105,7 +1105,7 @@ fn generated_parse_action(
 ///|
 fn generated_lex_modes(
   parse_table : ParseTableDraft,
-  main_lex_state_ids : Array[Int],
+  main_lex_state_ids : Array[Int32],
 ) -> Array[@tables.GeneratedLexMode] {
   let modes : Array[@tables.GeneratedLexMode] = []
   for i in 0..<parse_table.states.length() {
@@ -1124,7 +1124,7 @@ fn generated_lex_modes(
 fn generated_token_count(
   grammar : PreparedGrammar,
   symbols : Array[ParseTableSymbolDraft],
-) -> Int {
+) -> Int32 {
   let mut count = 0
   for symbol in symbols {
     match symbol {
@@ -1142,7 +1142,7 @@ fn generated_token_count(
 ///|
 fn generated_external_token_has_internal(
   grammar : PreparedGrammar,
-  index : Int,
+  index : Int32,
 ) -> Bool {
   index >= 0 &&
   index < grammar.syntax.external_tokens.length() &&
@@ -1343,9 +1343,9 @@ priv enum VariableKind {
 
 ///|
 priv enum InternalSymbol {
-  Terminal(Int)
-  External(Int)
-  NonTerminal(Int)
+  Terminal(Int32)
+  External(Int32)
+  NonTerminal(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -1363,7 +1363,7 @@ priv enum InternedRule {
   IRPrec(value~ : @grammar.PrecedenceValue, content~ : InternedRule)
   IRPrecLeft(value~ : @grammar.PrecedenceValue, content~ : InternedRule)
   IRPrecRight(value~ : @grammar.PrecedenceValue, content~ : InternedRule)
-  IRPrecDynamic(value~ : Int, content~ : InternedRule)
+  IRPrecDynamic(value~ : Int32, content~ : InternedRule)
   IRToken(InternedRule)
   IRImmediateToken(InternedRule)
   IRReserved(context_name~ : String, content~ : InternedRule)
@@ -1470,8 +1470,8 @@ priv struct FlattenContext {
   field_name : String?
   precedence : @grammar.PrecedenceValue?
   associativity : Associativity
-  dynamic_precedence : Int
-  reserved_word_set_id : Int
+  dynamic_precedence : Int32
+  reserved_word_set_id : Int32
 }
 
 ///|
@@ -1482,13 +1482,13 @@ priv struct ProductionStep {
   field_name : String?
   precedence : @grammar.PrecedenceValue?
   associativity : Associativity
-  reserved_word_set_id : Int
+  reserved_word_set_id : Int32
 }
 
 ///|
 priv struct FlattenedProduction {
   steps : Array[ProductionStep]
-  dynamic_precedence : Int
+  dynamic_precedence : Int32
 }
 
 ///|
@@ -1521,7 +1521,7 @@ priv struct FlattenedGrammar {
 }
 
 ///|
-fn interned_snapshot_weight(snapshot : InternedGrammar) -> Int {
+fn interned_snapshot_weight(snapshot : InternedGrammar) -> Int32 {
   let mut weight = snapshot.name.length()
   weight += optional_internal_symbol_weight(snapshot.start_symbol)
   for variable in snapshot.variables {
@@ -1566,7 +1566,7 @@ fn interned_snapshot_weight(snapshot : InternedGrammar) -> Int {
 }
 
 ///|
-fn optional_internal_symbol_weight(symbol : InternalSymbol?) -> Int {
+fn optional_internal_symbol_weight(symbol : InternalSymbol?) -> Int32 {
   match symbol {
     Some(value) => internal_symbol_weight(value)
     None => 0
@@ -1574,14 +1574,14 @@ fn optional_internal_symbol_weight(symbol : InternalSymbol?) -> Int {
 }
 
 ///|
-fn internal_symbol_weight(symbol : InternalSymbol) -> Int {
+fn internal_symbol_weight(symbol : InternalSymbol) -> Int32 {
   match symbol {
     Terminal(index) | External(index) | NonTerminal(index) => index + 1
   }
 }
 
 ///|
-fn variable_kind_weight(kind : VariableKind) -> Int {
+fn variable_kind_weight(kind : VariableKind) -> Int32 {
   match kind {
     Named => 1
     Hidden => 2
@@ -1591,7 +1591,7 @@ fn variable_kind_weight(kind : VariableKind) -> Int {
 }
 
 ///|
-fn precedence_value_weight(value : @grammar.PrecedenceValue) -> Int {
+fn precedence_value_weight(value : @grammar.PrecedenceValue) -> Int32 {
   match value {
     Number(value) => value
     Name(value) => value.length()
@@ -1599,7 +1599,7 @@ fn precedence_value_weight(value : @grammar.PrecedenceValue) -> Int {
 }
 
 ///|
-fn interned_rule_weight(rule : InternedRule) -> Int {
+fn interned_rule_weight(rule : InternedRule) -> Int32 {
   match rule {
     IRAlias(content~, value~, named~) => {
       let named_weight = if named { 1 } else { 0 }
@@ -1631,7 +1631,7 @@ fn interned_rule_weight(rule : InternedRule) -> Int {
 }
 
 ///|
-fn extracted_snapshot_weight(snapshot : ExtractedGrammar) -> Int {
+fn extracted_snapshot_weight(snapshot : ExtractedGrammar) -> Int32 {
   let mut weight = 0
   weight += extracted_syntax_weight(snapshot.syntax)
   for variable in snapshot.lexical.variables {
@@ -1647,7 +1647,7 @@ fn extracted_snapshot_weight(snapshot : ExtractedGrammar) -> Int {
 }
 
 ///|
-fn extracted_syntax_weight(snapshot : ExtractedSyntaxGrammar) -> Int {
+fn extracted_syntax_weight(snapshot : ExtractedSyntaxGrammar) -> Int32 {
   let mut weight = snapshot.name.length()
   weight += optional_internal_symbol_weight(snapshot.start_symbol)
   for variable in snapshot.variables {
@@ -1695,7 +1695,7 @@ fn extracted_syntax_weight(snapshot : ExtractedSyntaxGrammar) -> Int {
 }
 
 ///|
-fn flattened_snapshot_weight(snapshot : FlattenedGrammar) -> Int {
+fn flattened_snapshot_weight(snapshot : FlattenedGrammar) -> Int32 {
   let mut weight = snapshot.syntax.name.length()
   weight += optional_internal_symbol_weight(snapshot.syntax.start_symbol)
   for variable in snapshot.syntax.variables {
@@ -1754,7 +1754,7 @@ fn flattened_snapshot_weight(snapshot : FlattenedGrammar) -> Int {
 }
 
 ///|
-fn flattened_production_weight(production : FlattenedProduction) -> Int {
+fn flattened_production_weight(production : FlattenedProduction) -> Int32 {
   let mut weight = production.dynamic_precedence
   for step in production.steps {
     weight += production_step_weight(step)
@@ -1763,7 +1763,7 @@ fn flattened_production_weight(production : FlattenedProduction) -> Int {
 }
 
 ///|
-fn production_step_weight(step : ProductionStep) -> Int {
+fn production_step_weight(step : ProductionStep) -> Int32 {
   let mut weight = internal_symbol_weight(step.symbol)
   match step.alias_name {
     Some(name) => weight += name.length()
@@ -1786,7 +1786,7 @@ fn production_step_weight(step : ProductionStep) -> Int {
 }
 
 ///|
-fn associativity_weight(associativity : Associativity) -> Int {
+fn associativity_weight(associativity : Associativity) -> Int32 {
   match associativity {
     NoAssociativity => 0
     Left => 1
@@ -1844,7 +1844,7 @@ fn flatten_context_default(
 }
 
 ///|
-fn default_reserved_set_id(sets : Array[ExtractedReservedSet]) -> Int {
+fn default_reserved_set_id(sets : Array[ExtractedReservedSet]) -> Int32 {
   let none_id = reserved_set_id(sets, "none")
   if none_id != 0 || (sets.length() > 0 && sets[0].name == "none") {
     return none_id
@@ -1863,11 +1863,11 @@ fn flatten_rule(
     IRAlias(content~, value~, named~) =>
       flatten_rule(
         content,
-        { ..context, alias_name: Some(value), alias_named: named },
+        { ..context, alias_name: Some(value), alias_named: named, },
         at_end,
         reserved_sets,
       )
-    IRBlank => [{ steps: [], dynamic_precedence: context.dynamic_precedence }]
+    IRBlank => [{ steps: [], dynamic_precedence: context.dynamic_precedence, }]
     IRString(_) | IRPattern(_) => []
     IRSymbol(symbol) =>
       [
@@ -1883,7 +1883,7 @@ fn flatten_rule(
     IRField(name~, content~) =>
       flatten_rule(
         content,
-        { ..context, field_name: Some(name) },
+        { ..context, field_name: Some(name), },
         at_end,
         reserved_sets,
       )
@@ -1991,7 +1991,7 @@ fn flatten_sequence(
   reserved_sets : Array[ExtractedReservedSet],
 ) -> Array[FlattenedProduction] {
   let mut result : Array[FlattenedProduction] = [
-    { steps: [], dynamic_precedence: 0 },
+    { steps: [], dynamic_precedence: 0, },
   ]
   for i in 0..<members.length() {
     let member_at_end = at_end && i + 1 == members.length()
@@ -2173,11 +2173,11 @@ fn rollback_last_step_precedence(
       steps.push(step)
     }
   }
-  { steps, dynamic_precedence: production.dynamic_precedence }
+  { steps, dynamic_precedence: production.dynamic_precedence, }
 }
 
 ///|
-fn reserved_set_id(sets : Array[ExtractedReservedSet], name : String) -> Int {
+fn reserved_set_id(sets : Array[ExtractedReservedSet], name : String) -> Int32 {
   for i in 0..<sets.length() {
     if sets[i].name == name {
       return i
@@ -2187,7 +2187,7 @@ fn reserved_set_id(sets : Array[ExtractedReservedSet], name : String) -> Int {
 }
 
 ///|
-fn strongest_dynamic_precedence(left : Int, right : Int) -> Int {
+fn strongest_dynamic_precedence(left : Int32, right : Int32) -> Int32 {
   if abs_int(right) > abs_int(left) {
     right
   } else {
@@ -2196,7 +2196,7 @@ fn strongest_dynamic_precedence(left : Int, right : Int) -> Int {
 }
 
 ///|
-fn abs_int(value : Int) -> Int {
+fn abs_int(value : Int32) -> Int32 {
   if value < 0 {
     0 - value
   } else {
@@ -2209,7 +2209,7 @@ fn expand_repeats(grammar : ExtractedGrammar) -> ExtractedGrammar {
   let transformed_variables : Array[InternedVariable] = []
   let auxiliary_variables : Array[InternedVariable] = []
   let repeat_symbols : Array[(InternedRule, InternalSymbol)] = []
-  let repeat_counts : Array[(String, Int)] = []
+  let repeat_counts : Array[(String, Int32)] = []
   let inline_removals : Array[InternalSymbol] = []
   for variable in grammar.syntax.variables {
     match variable.rule {
@@ -2295,7 +2295,7 @@ fn expand_repeats_in_rule(
   base_variables : Array[InternedVariable],
   auxiliary_variables : Array[InternedVariable],
   repeat_symbols : Array[(InternedRule, InternalSymbol)],
-  repeat_counts : Array[(String, Int)],
+  repeat_counts : Array[(String, Int32)],
 ) -> InternedRule {
   match rule {
     IRAlias(content~, value~, named~) =>
@@ -2421,7 +2421,7 @@ fn expand_repeats_in_rule_array(
   base_variables : Array[InternedVariable],
   auxiliary_variables : Array[InternedVariable],
   repeat_symbols : Array[(InternedRule, InternalSymbol)],
-  repeat_counts : Array[(String, Int)],
+  repeat_counts : Array[(String, Int32)],
 ) -> Array[InternedRule] {
   let result = []
   for rule in rules {
@@ -2442,7 +2442,7 @@ fn repeat_symbol(
   base_variables : Array[InternedVariable],
   auxiliary_variables : Array[InternedVariable],
   repeat_symbols : Array[(InternedRule, InternalSymbol)],
-  repeat_counts : Array[(String, Int)],
+  repeat_counts : Array[(String, Int32)],
 ) -> InternalSymbol {
   match find_repeat_symbol(repeat_symbols, inner) {
     Some(symbol) => symbol
@@ -2521,8 +2521,8 @@ fn next_non_terminal_symbol(
 ///|
 fn next_repeat_index(
   current_name : String,
-  repeat_counts : Array[(String, Int)],
-) -> Int {
+  repeat_counts : Array[(String, Int32)],
+) -> Int32 {
   let mut next = 1
   for entry in repeat_counts {
     if entry.0 == current_name && entry.1 >= next {
@@ -2789,7 +2789,7 @@ fn extract_tokens_in_rule(
   lexical_variables : Array[LexicalVariable],
   default_name : String,
   default_kind : VariableKind,
-  top_level? : Bool = false,
+  top_level~ : Bool = false,
 ) -> InternedRule {
   if is_direct_lexical_rule(rule) {
     let token_kind = if top_level {
@@ -2917,7 +2917,7 @@ fn is_direct_lexical_rule(rule : InternedRule) -> Bool {
 fn lexical_rule_name(
   rule : InternedRule,
   default_name : String,
-  fallback_index : Int,
+  fallback_index : Int32,
 ) -> String {
   match rule {
     IRString(value) => value
@@ -3039,7 +3039,7 @@ fn extract_extras(
         }
     }
   }
-  { symbols, separators }
+  { symbols, separators, }
 }
 
 ///|
@@ -3095,7 +3095,7 @@ fn extract_reserved_sets(
       )
       rules.push(replace_symbols_in_rule(extracted, replacements))
     }
-    result.push({ name: set.name, rules })
+    result.push({ name: set.name, rules, })
   }
   result
 }
@@ -3256,7 +3256,7 @@ fn intern_external_tokens(
 }
 
 ///|
-fn external_token_name(rule : @grammar.Rule, index : Int) -> String {
+fn external_token_name(rule : @grammar.Rule, index : Int32) -> String {
   match rule {
     Symbol(name) => name
     _ => "_external_token\{index}"
@@ -3267,7 +3267,7 @@ fn external_token_name(rule : @grammar.Rule, index : Int) -> String {
 fn intern_external_rule(
   rule : @grammar.Rule,
   grammar : @grammar.InputGrammar,
-  external_index : Int,
+  external_index : Int32,
 ) -> InternedRule raise GenerateError {
   match rule {
     Symbol(name) =>

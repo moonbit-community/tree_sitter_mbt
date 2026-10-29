@@ -20,8 +20,8 @@ pub(all) enum CliCommand {
 
 ///|
 pub(all) struct CliByteRange {
-  start : UInt
-  end : UInt
+  start : UInt32
+  end : UInt32
 } derive(Eq, Debug)
 
 ///|
@@ -50,7 +50,7 @@ pub(all) struct CliParseCommand {
   no_ranges : Bool
   time : Bool
   encoding : @api.InputEncoding?
-  test_number : UInt?
+  test_number : UInt32?
   rebuild : Bool
 } derive(Eq, Debug)
 
@@ -94,7 +94,7 @@ pub(all) struct CliQueryCommand {
   lang_name : String?
   scope : String?
   encoding : @api.InputEncoding?
-  test_number : UInt?
+  test_number : UInt32?
   rebuild : Bool
   output : CliQueryOutputMode
   byte_range : CliByteRange?
@@ -111,7 +111,7 @@ pub(all) struct CliTagsCommand {
   scope : String?
   time : Bool
   quiet : Bool
-  test_number : UInt?
+  test_number : UInt32?
   rebuild : Bool
 } derive(Eq, Debug)
 
@@ -148,7 +148,7 @@ fn parse_cli_parse_command_args(
   let mut no_ranges = false
   let mut time = false
   let mut encoding : @api.InputEncoding? = None
-  let mut test_number : UInt? = None
+  let mut test_number : UInt32? = None
   let mut rebuild = false
   let mut positional_mode = false
   let mut i = 0
@@ -566,7 +566,7 @@ fn parse_cli_query_command_args(
   let mut lang_name : String? = None
   let mut scope : String? = None
   let mut encoding : @api.InputEncoding? = None
-  let mut test_number : UInt? = None
+  let mut test_number : UInt32? = None
   let mut rebuild = false
   let mut output = CliQueryCaptures
   let mut byte_range : CliByteRange? = None
@@ -731,7 +731,7 @@ fn parse_cli_tags_command_args(
   let mut scope : String? = None
   let mut time = false
   let mut quiet = false
-  let mut test_number : UInt? = None
+  let mut test_number : UInt32? = None
   let mut rebuild = false
   let mut positional_mode = false
   let mut i = 0
@@ -887,10 +887,10 @@ fn cli_long_option(arg : String) -> (String, String?)? {
 ///|
 fn cli_option_value(
   args : ArrayView[String],
-  index : Int,
+  index : Int32,
   option : String,
   inline_value : String?,
-) -> (String, Int) raise CliArgsError {
+) -> (String, Int32) raise CliArgsError {
   match inline_value {
     Some(value) => (value, index)
     None =>
@@ -928,7 +928,7 @@ fn cli_parse_encoding_option(
 fn cli_parse_uint_option(
   option : String,
   value : String,
-) -> UInt raise CliArgsError {
+) -> UInt32 raise CliArgsError {
   if value.is_empty() {
     raise CliArgsError::InvalidOptionValue(option~, value~)
   }
@@ -955,7 +955,7 @@ fn cli_parse_byte_range_option(
       if start > end {
         raise CliArgsError::InvalidOptionValue(option~, value~)
       }
-      { start, end }
+      { start, end, }
     }
     None => raise CliArgsError::InvalidOptionValue(option~, value~)
   }
@@ -983,9 +983,9 @@ fn cli_split_once(value : String, needle : Char) -> (String, String)? {
 ///|
 fn cli_optional_stats_value(
   args : ArrayView[String],
-  index : Int,
+  index : Int32,
   inline_value : String?,
-) -> (CliTestStatsMode, Int) raise CliArgsError {
+) -> (CliTestStatsMode, Int32) raise CliArgsError {
   match inline_value {
     Some(value) => (cli_parse_stats_mode("--stat", value), index)
     None =>

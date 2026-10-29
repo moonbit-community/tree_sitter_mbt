@@ -2,7 +2,7 @@
 pub fn render_parse_cst_tree(
   source : Bytes,
   tree : @tree_sitter_mbt.Tree,
-  no_ranges? : Bool = false,
+  no_ranges~ : Bool = false,
 ) -> String {
   render_parse_cst_cursor(source, tree.walk(), no_ranges~)
 }
@@ -11,7 +11,7 @@ pub fn render_parse_cst_tree(
 pub fn render_parse_cst_cursor(
   source : Bytes,
   cursor : @tree_sitter_mbt.TreeCursor,
-  no_ranges? : Bool = false,
+  no_ranges~ : Bool = false,
 ) -> String {
   let out = StringBuilder::new()
   let total_width = cst_total_range_width(source)
@@ -63,8 +63,8 @@ fn write_cst_node(
   out : StringBuilder,
   cursor : @tree_sitter_mbt.TreeCursor,
   source : Bytes,
-  total_width : Int,
-  indent_level : Int,
+  total_width : Int32,
+  indent_level : Int32,
   no_ranges~ : Bool,
 ) -> Unit {
   let node = cursor.current_node()
@@ -117,7 +117,7 @@ fn write_cst_range(
   out : StringBuilder,
   start : @api.Point,
   end : @api.Point,
-  total_width : Int,
+  total_width : Int32,
 ) -> Unit {
   out.write_string(start.row.to_string())
   out.write_char(':')
@@ -131,14 +131,14 @@ fn write_cst_range(
 }
 
 ///|
-fn write_cst_padding(out : StringBuilder, width : Int) -> Unit {
+fn write_cst_padding(out : StringBuilder, width : Int32) -> Unit {
   for _ in 0..<width {
     out.write_char(' ')
   }
 }
 
 ///|
-fn cst_remaining_width(total_width : Int, point : @api.Point) -> Int {
+fn cst_remaining_width(total_width : Int32, point : @api.Point) -> Int32 {
   let remaining = total_width -
     cst_digit_extra(point.row.reinterpret_as_int()) -
     cst_digit_extra(point.column.reinterpret_as_int())
@@ -150,7 +150,7 @@ fn cst_remaining_width(total_width : Int, point : @api.Point) -> Int {
 }
 
 ///|
-fn cst_total_range_width(source : Bytes) -> Int {
+fn cst_total_range_width(source : Bytes) -> Int32 {
   let mut max_width = 1
   let mut row = 0
   let mut column = 0
@@ -175,7 +175,7 @@ fn cst_total_range_width(source : Bytes) -> Int {
 }
 
 ///|
-fn cst_digit_extra(value : Int) -> Int {
+fn cst_digit_extra(value : Int32) -> Int32 {
   let mut extra = 0
   let mut remaining = value
   while remaining >= 10 {

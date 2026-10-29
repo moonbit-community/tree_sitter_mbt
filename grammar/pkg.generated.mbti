@@ -46,7 +46,7 @@ pub(all) struct NamedRule {
 } derive(Eq, @debug.Debug)
 
 pub(all) enum PrecedenceValue {
-  Number(Int)
+  Number(Int32)
   Name(String)
 } derive(Eq, @debug.Debug)
 
@@ -69,7 +69,7 @@ pub(all) enum Rule {
   Prec(value~ : PrecedenceValue, content~ : Rule)
   PrecLeft(value~ : PrecedenceValue, content~ : Rule)
   PrecRight(value~ : PrecedenceValue, content~ : Rule)
-  PrecDynamic(value~ : Int, content~ : Rule)
+  PrecDynamic(value~ : Int32, content~ : Rule)
   Token(Rule)
   ImmediateToken(Rule)
   Reserved(context_name~ : String, content~ : Rule)
@@ -78,4 +78,3 @@ pub(all) enum Rule {
 // Type aliases
 
 // Traits
-

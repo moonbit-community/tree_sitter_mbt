@@ -88,7 +88,7 @@ pub fn QueryCursor::next_capture_with_text_predicates_string(
 ///|
 fn QueryCursor::match_with_id(
   self : QueryCursor,
-  match_id : Int,
+  match_id : Int32,
 ) -> QueryMatch? {
   for matched in self.matches {
     if matched.id == match_id {
@@ -129,7 +129,7 @@ fn query_text_predicate_matches(
 ///|
 fn query_captures_for_id(
   matched : QueryMatch,
-  capture_id : Int,
+  capture_id : Int32,
 ) -> Array[QueryCapture] {
   let result : Array[QueryCapture] = []
   for capture in matched.captures {

@@ -1,7 +1,7 @@
 ///|
 pub fn render_parse_normal_tree(
   tree : @tree_sitter_mbt.Tree,
-  no_ranges? : Bool = false,
+  no_ranges~ : Bool = false,
 ) -> String {
   render_parse_normal_cursor(tree.walk(), no_ranges~)
 }
@@ -9,7 +9,7 @@ pub fn render_parse_normal_tree(
 ///|
 pub fn render_parse_normal_cursor(
   cursor : @tree_sitter_mbt.TreeCursor,
-  no_ranges? : Bool = false,
+  no_ranges~ : Bool = false,
 ) -> String {
   let out = StringBuilder::new()
   let mut current = cursor
@@ -75,7 +75,7 @@ pub fn render_parse_normal_cursor(
 }
 
 ///|
-fn write_parse_indent(out : StringBuilder, indent_level : Int) -> Unit {
+fn write_parse_indent(out : StringBuilder, indent_level : Int32) -> Unit {
   for _ in 0..<indent_level {
     out.write_string("  ")
   }

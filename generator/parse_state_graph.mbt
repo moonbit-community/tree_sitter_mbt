@@ -1,14 +1,14 @@
 ///|
 priv struct ParseTransition {
   symbol : InternalSymbol
-  state_id : Int
+  state_id : Int32
 }
 
 ///|
 priv struct ParseStateGraphState {
-  id : Int
+  id : Int32
   item_set : ParseItemSet
-  core_id : Int
+  core_id : Int32
   terminal_transitions : Array[ParseTransition]
   nonterminal_transitions : Array[ParseTransition]
 }
@@ -16,7 +16,7 @@ priv struct ParseStateGraphState {
 ///|
 priv struct ParseStateGraph {
   states : Array[ParseStateGraphState]
-  start_state : Int
+  start_state : Int32
   nonterminal_extra_transitions : Array[ParseTransition]
 }
 
@@ -35,7 +35,7 @@ fn build_parse_state_graph(
     start_state: 1,
     nonterminal_extra_transitions: [],
   }
-  let queue : Array[Int] = []
+  let queue : Array[Int32] = []
   let core_sets : Array[ParseItemSetCore] = []
   ignore(
     parse_state_graph_add_state(graph, queue, core_sets, parse_item_set_empty()),
@@ -62,7 +62,7 @@ fn build_parse_state_graph(
 ///|
 fn parse_state_graph_add_nonterminal_extra_states(
   graph : ParseStateGraph,
-  queue : Array[Int],
+  queue : Array[Int32],
   core_sets : Array[ParseItemSetCore],
   builder : ParseItemSetBuilder,
 ) -> Unit raise GenerateError {
@@ -120,10 +120,10 @@ fn parse_state_graph_add_nonterminal_extra_states(
 ///|
 fn parse_state_graph_add_successors(
   graph : ParseStateGraph,
-  queue : Array[Int],
+  queue : Array[Int32],
   core_sets : Array[ParseItemSetCore],
   builder : ParseItemSetBuilder,
-  state_id : Int,
+  state_id : Int32,
   item_set : ParseItemSet,
 ) -> Unit {
   let terminal_successors : Array[ParseSuccessorSet] = []
@@ -188,12 +188,12 @@ fn parse_successor_set_for_symbol(
       return successors[i]
     }
     if comparison > 0 {
-      let successor = { symbol, item_set: parse_item_set_empty() }
+      let successor = { symbol, item_set: parse_item_set_empty(), }
       successors.insert(i, successor)
       return successor
     }
   }
-  let successor = { symbol, item_set: parse_item_set_empty() }
+  let successor = { symbol, item_set: parse_item_set_empty(), }
   successors.push(successor)
   successor
 }
@@ -201,10 +201,10 @@ fn parse_successor_set_for_symbol(
 ///|
 fn parse_state_graph_add_state(
   graph : ParseStateGraph,
-  queue : Array[Int],
+  queue : Array[Int32],
   core_sets : Array[ParseItemSetCore],
   item_set : ParseItemSet,
-) -> Int {
+) -> Int32 {
   for state in graph.states {
     if parse_item_set_same(state.item_set, item_set) {
       return state.id
@@ -228,7 +228,7 @@ fn parse_state_graph_add_state(
 fn parse_state_graph_core_id(
   core_sets : Array[ParseItemSetCore],
   core : ParseItemSetCore,
-) -> Int {
+) -> Int32 {
   for i in 0..<core_sets.length() {
     if parse_item_set_core_same(core_sets[i], core) {
       return i
@@ -281,7 +281,7 @@ fn parse_item_set_core_same(
 ///|
 fn parse_state_graph_smoke_weight(
   builder : ParseItemSetBuilder,
-) -> Int raise GenerateError {
+) -> Int32 raise GenerateError {
   let graph = build_parse_state_graph(builder)
   let mut weight = graph.start_state
   for state in graph.states {

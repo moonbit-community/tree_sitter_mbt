@@ -7,7 +7,7 @@ pub(all) suberror CliInputError {
 pub(all) enum CliInputSource {
   Stdin
   Paths(Array[String])
-  TestNumber(UInt)
+  TestNumber(UInt32)
 } derive(Eq, Debug)
 
 ///|
@@ -31,7 +31,7 @@ pub fn parse_paths_file_contents(contents : String) -> Array[String] {
 }
 
 ///|
-pub fn normalize_test_number(test_number : UInt) -> UInt {
+pub fn normalize_test_number(test_number : UInt32) -> UInt32 {
   if test_number == 0 {
     1
   } else {
@@ -43,7 +43,7 @@ pub fn normalize_test_number(test_number : UInt) -> UInt {
 pub fn select_input_source(
   paths_file_contents? : String,
   positional_paths? : Array[CliPathExpansion],
-  test_number? : UInt,
+  test_number? : UInt32,
 ) -> CliInputSource raise CliInputError {
   match paths_file_contents {
     Some(contents) => Paths(parse_paths_file_contents(contents))

@@ -24,8 +24,8 @@ pub(all) struct CliCorpusCorrection {
   input : String
   output : String
   attributes_str : String
-  header_delim_len : Int
-  divider_delim_len : Int
+  header_delim_len : Int32
+  divider_delim_len : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -40,7 +40,7 @@ pub(all) struct CliCorpusUpdatePlan {
 ///|
 priv struct CliCorpusSexpFormatter {
   chars : Array[Char]
-  mut index : Int
+  mut index : Int32
   mut quote : Char?
   mut saw_paren : Bool
   mut did_last : Bool
@@ -118,7 +118,7 @@ pub fn run_cli_corpus_file(
   include_pattern? : String,
   exclude_pattern? : String,
   file_name? : String,
-  show_fields? : Bool = false,
+  show_fields~ : Bool = false,
 ) -> Array[CliCorpusRunResult] raise {
   let results : Array[CliCorpusRunResult] = []
   for example in file.examples {
@@ -144,7 +144,7 @@ pub fn plan_cli_corpus_update(
   include_pattern? : String,
   exclude_pattern? : String,
   file_name? : String,
-  show_fields? : Bool = false,
+  show_fields~ : Bool = false,
 ) -> CliCorpusUpdatePlan raise {
   let results : Array[CliCorpusRunResult] = []
   let corrections : Array[CliCorpusCorrection] = []
@@ -184,7 +184,7 @@ pub fn plan_cli_corpus_update(
 pub fn run_cli_corpus_example(
   parser : @tree_sitter_mbt.Parser,
   example : CliCorpusExample,
-  show_fields? : Bool = false,
+  show_fields~ : Bool = false,
 ) -> CliCorpusRunResult raise {
   if example.attributes.expectation is Skip {
     return cli_corpus_run_result(
@@ -268,7 +268,7 @@ pub fn cli_corpus_run_results_have_failure(
 }
 
 ///|
-pub fn cli_corpus_run_exit_code(results : Array[CliCorpusRunResult]) -> Int {
+pub fn cli_corpus_run_exit_code(results : Array[CliCorpusRunResult]) -> Int32 {
   if cli_corpus_run_results_have_failure(results) {
     1
   } else {
@@ -279,7 +279,7 @@ pub fn cli_corpus_run_exit_code(results : Array[CliCorpusRunResult]) -> Int {
 ///|
 pub fn format_cli_corpus_sexp(
   sexp : String,
-  initial_indent_level? : Int = 0,
+  initial_indent_level~ : Int32 = 0,
 ) -> String {
   let formatter = CliCorpusSexpFormatter::new(sexp)
   let out = StringBuilder::new()
@@ -556,7 +556,10 @@ fn CliCorpusSexpFormatter::fetch_next(self : CliCorpusSexpFormatter) -> String? 
 }
 
 ///|
-fn cli_corpus_field_label_end_after_space(sexp : String, start : Int) -> Int? {
+fn cli_corpus_field_label_end_after_space(
+  sexp : String,
+  start : Int32,
+) -> Int32? {
   let mut offset = start
   let mut saw_field_char = false
   while offset < sexp.length() {
@@ -590,7 +593,7 @@ fn cli_corpus_field_char_is_ascii_alphanumeric(char : Char) -> Bool {
 }
 
 ///|
-fn cli_corpus_repeat_char(char : Char, count : Int) -> String {
+fn cli_corpus_repeat_char(char : Char, count : Int32) -> String {
   let out = StringBuilder::new()
   for _ in 0..<count {
     out.write_char(char)
@@ -599,7 +602,7 @@ fn cli_corpus_repeat_char(char : Char, count : Int) -> String {
 }
 
 ///|
-fn cli_corpus_write_indent(out : StringBuilder, indent_level : Int) -> Unit {
+fn cli_corpus_write_indent(out : StringBuilder, indent_level : Int32) -> Unit {
   for _ in 0..<indent_level {
     out.write_string("  ")
   }

@@ -5,21 +5,21 @@ struct Tree {
 
 ///|
 priv struct TreeData {
-  identity : Int
+  identity : Int32
   language : Language
   nodes : Array[NodeData]
-  root_index : Int
+  root_index : Int32
   included_ranges : Array[@api.Range]
   source_bytes : Bytes?
   source_encoding : @api.InputEncoding
-  source_chunk_end_offsets : Array[Int]
+  source_chunk_end_offsets : Array[Int32]
 }
 
 ///|
-let tree_identity_counter : Array[Int] = [0]
+let tree_identity_counter : Array[Int32] = [0]
 
 ///|
-fn next_tree_identity() -> Int {
+fn next_tree_identity() -> Int32 {
   tree_identity_counter[0] = tree_identity_counter[0] + 1
   tree_identity_counter[0]
 }
@@ -30,12 +30,12 @@ priv struct NodeData {
   grammar_kind : String
   symbol : @api.SymbolId
   grammar_symbol : @api.SymbolId
-  start_byte : UInt
-  end_byte : UInt
+  start_byte : UInt32
+  end_byte : UInt32
   start_point : @api.Point
   end_point : @api.Point
-  parent : Int
-  children : Array[Int]
+  parent : Int32
+  children : Array[Int32]
   field_id : @api.FieldId
   visible : Bool
   alias_visible : Bool
@@ -45,13 +45,13 @@ priv struct NodeData {
   has_changes : Bool
   has_error : Bool
   is_error : Bool
-  error_cost : Int
-  dynamic_precedence : Int
+  error_cost : Int32
+  dynamic_precedence : Int32
   fragile_left : Bool
   fragile_right : Bool
-  lookahead_char : Int?
+  lookahead_char : Int32?
   lookahead_bytes : Bytes?
-  lookahead_byte_count : Int
+  lookahead_byte_count : Int32
   parse_state : @api.StateId?
   next_parse_state : @api.StateId?
   external_scanner_state : Bytes?
@@ -64,14 +64,14 @@ priv struct NodeData {
 struct Node {
   language : Language
   mut data : TreeData?
-  index : Int
-  byte_offset : UInt
+  index : Int32
+  byte_offset : UInt32
   point_offset : @api.Point
 }
 
 ///|
 priv struct PublicChild {
-  index : Int
+  index : Int32
   field_id : @api.FieldId
 }
 
@@ -85,36 +85,36 @@ struct TreeCursor {
 fn NodeData::new(
   kind~ : String,
   symbol~ : @api.SymbolId,
-  start_byte~ : UInt,
-  end_byte~ : UInt,
+  start_byte~ : UInt32,
+  end_byte~ : UInt32,
   start_point~ : @api.Point,
   end_point~ : @api.Point,
-  grammar_kind? : String = kind,
-  grammar_symbol? : @api.SymbolId = symbol,
-  parent? : Int = -1,
-  children? : Array[Int] = [],
-  field_id? : @api.FieldId = @api.FieldId::new(0),
-  visible? : Bool = true,
-  alias_visible? : Bool = false,
-  named? : Bool = true,
-  extra? : Bool = false,
-  missing? : Bool = false,
-  has_changes? : Bool = false,
-  has_error? : Bool = false,
-  is_error? : Bool = false,
-  error_cost? : Int = 0,
-  dynamic_precedence? : Int = 0,
-  fragile_left? : Bool = false,
-  fragile_right? : Bool = false,
-  lookahead_char? : Int? = None,
-  lookahead_bytes? : Bytes? = None,
-  lookahead_byte_count? : Int = 0,
-  parse_state? : @api.StateId? = None,
-  next_parse_state? : @api.StateId? = None,
-  external_scanner_state? : Bytes? = None,
-  has_external_tokens? : Bool = external_scanner_state is Some(_),
-  has_external_scanner_state_change? : Bool = false,
-  depends_on_column? : Bool = false,
+  grammar_kind~ : String = kind,
+  grammar_symbol~ : @api.SymbolId = symbol,
+  parent~ : Int32 = -1,
+  children~ : Array[Int32] = [],
+  field_id~ : @api.FieldId = @api.FieldId::new(0),
+  visible~ : Bool = true,
+  alias_visible~ : Bool = false,
+  named~ : Bool = true,
+  extra~ : Bool = false,
+  missing~ : Bool = false,
+  has_changes~ : Bool = false,
+  has_error~ : Bool = false,
+  is_error~ : Bool = false,
+  error_cost~ : Int32 = 0,
+  dynamic_precedence~ : Int32 = 0,
+  fragile_left~ : Bool = false,
+  fragile_right~ : Bool = false,
+  lookahead_char~ : Int32? = None,
+  lookahead_bytes~ : Bytes? = None,
+  lookahead_byte_count~ : Int32 = 0,
+  parse_state~ : @api.StateId? = None,
+  next_parse_state~ : @api.StateId? = None,
+  external_scanner_state~ : Bytes? = None,
+  has_external_tokens~ : Bool = external_scanner_state is Some(_),
+  has_external_scanner_state_change~ : Bool = false,
+  depends_on_column~ : Bool = false,
 ) -> NodeData {
   {
     kind,
@@ -156,11 +156,11 @@ fn NodeData::new(
 fn Tree::from_fixture(
   language : Language,
   nodes : Array[NodeData],
-  included_ranges? : Array[@api.Range] = [],
-  root_index? : Int = 0,
-  source_bytes? : Bytes? = None,
-  source_encoding? : @api.InputEncoding = Utf8,
-  source_chunk_end_offsets? : Array[Int] = [],
+  included_ranges~ : Array[@api.Range] = [],
+  root_index~ : Int32 = 0,
+  source_bytes~ : Bytes? = None,
+  source_encoding~ : @api.InputEncoding = Utf8,
+  source_chunk_end_offsets~ : Array[Int32] = [],
 ) -> Tree {
   {
     data: {
@@ -189,7 +189,7 @@ pub fn Tree::root_node(self : Tree) -> Node {
 ///|
 pub fn Tree::root_node_with_offset(
   self : Tree,
-  byte_offset~ : UInt,
+  byte_offset~ : UInt32,
   point_offset~ : @api.Point,
 ) -> Node {
   Node::from_tree_with_offset(
@@ -274,7 +274,7 @@ pub fn Tree::changed_ranges(self : Tree, other : Tree) -> Array[@api.Range] {
 ///|
 pub fn Tree::walk(self : Tree) -> TreeCursor {
   let root = self.root_node()
-  { node: root, root }
+  { node: root, root, }
 }
 
 ///|
@@ -283,7 +283,7 @@ pub fn Tree::to_sexp(self : Tree) -> String {
 }
 
 ///|
-fn Node::from_tree(data : TreeData, index : Int) -> Node {
+fn Node::from_tree(data : TreeData, index : Int32) -> Node {
   Node::from_tree_with_offset(
     data,
     index,
@@ -295,8 +295,8 @@ fn Node::from_tree(data : TreeData, index : Int) -> Node {
 ///|
 fn Node::from_tree_with_offset(
   data : TreeData,
-  index : Int,
-  byte_offset~ : UInt,
+  index : Int32,
+  byte_offset~ : UInt32,
   point_offset~ : @api.Point,
 ) -> Node {
   {
@@ -356,7 +356,7 @@ fn Tree::copy_if_reusable_same_input(
   self : Tree,
   input : Bytes,
   encoding : @api.InputEncoding,
-  chunk_end_offsets : Array[Int],
+  chunk_end_offsets : Array[Int32],
   included_ranges : Array[@api.Range],
 ) -> Tree? {
   match self.data.source_bytes {
@@ -377,7 +377,7 @@ fn Tree::copy_if_reusable_same_input(
 ///|
 fn NodeData::edit(
   self : NodeData,
-  index : Int,
+  index : Int32,
   edit : @api.InputEdit,
   tree : TreeData,
 ) -> NodeData {
@@ -401,7 +401,7 @@ fn NodeData::edit(
 ///|
 fn node_data_touched_by_edit(
   data : NodeData,
-  index : Int,
+  index : Int32,
   edit : @api.InputEdit,
   tree : TreeData,
 ) -> Bool {
@@ -441,7 +441,7 @@ fn node_data_column_touched_by_edit(
 }
 
 ///|
-fn node_data_invalidation_end_byte(data : NodeData) -> UInt {
+fn node_data_invalidation_end_byte(data : NodeData) -> UInt32 {
   if data.lookahead_byte_count <= 0 {
     data.end_byte
   } else {
@@ -455,8 +455,8 @@ fn node_data_invalidation_end_byte(data : NodeData) -> UInt {
 ///|
 fn previous_sibling_touches_insertion(
   tree : TreeData,
-  index : Int,
-  byte : UInt,
+  index : Int32,
+  byte : UInt32,
 ) -> Bool {
   if index < 0 || index >= tree.nodes.length() {
     return false
@@ -482,7 +482,7 @@ fn previous_sibling_touches_insertion(
 }
 
 ///|
-fn int_arrays_same(left : Array[Int], right : Array[Int]) -> Bool {
+fn int_arrays_same(left : Array[Int32], right : Array[Int32]) -> Bool {
   if left.length() != right.length() {
     return false
   }
@@ -596,8 +596,8 @@ fn node_data_same(left : NodeData, right : NodeData) -> Bool {
 fn tree_changed_ranges_from_metadata(
   left : Tree,
   right : Tree,
-  ignore_root_start? : Bool = false,
-  ignore_root_end? : Bool = false,
+  ignore_root_start~ : Bool = false,
+  ignore_root_end~ : Bool = false,
 ) -> Array[@api.Range] {
   let ranges = []
   ignore(
@@ -617,8 +617,8 @@ fn collect_metadata_changed_ranges(
   left : Node,
   right : Node,
   ranges~ : Array[@api.Range],
-  ignore_start? : Bool = false,
-  ignore_end? : Bool = false,
+  ignore_start~ : Bool = false,
+  ignore_end~ : Bool = false,
 ) -> Bool {
   if left.is_null() || right.is_null() {
     return false
@@ -650,8 +650,8 @@ fn collect_metadata_changed_ranges(
 fn node_metadata_differs(
   left : Node,
   right : Node,
-  ignore_start? : Bool = false,
-  ignore_end? : Bool = false,
+  ignore_start~ : Bool = false,
+  ignore_end~ : Bool = false,
 ) -> Bool {
   match (left.node_data(), right.node_data()) {
     (Some(left_data), Some(right_data)) =>
@@ -725,7 +725,7 @@ fn range_array_changed_ranges(
   let differences = []
   let mut old_index = 0
   let mut new_index = 0
-  let mut current_byte : UInt = 0
+  let mut current_byte : UInt32 = 0
   let mut current_point = @api.Point::zero()
   let mut in_old_range = false
   let mut in_new_range = false
@@ -802,9 +802,9 @@ fn range_array_changed_ranges(
 ///|
 fn next_included_range_position(
   ranges : Array[@api.Range],
-  index : Int,
+  index : Int32,
   in_range : Bool,
-) -> (UInt, @api.Point) {
+) -> (UInt32, @api.Point) {
   if in_range {
     let range = ranges[index]
     (range.end_byte, range.end_point)
@@ -1016,7 +1016,7 @@ pub fn Node::grammar_symbol(self : Node) -> @api.SymbolId {
 }
 
 ///|
-pub fn Node::start_byte(self : Node) -> UInt {
+pub fn Node::start_byte(self : Node) -> UInt32 {
   match self.node_data() {
     Some(data) => add_u32_saturating(data.start_byte, self.byte_offset)
     None => 0
@@ -1024,7 +1024,7 @@ pub fn Node::start_byte(self : Node) -> UInt {
 }
 
 ///|
-pub fn Node::end_byte(self : Node) -> UInt {
+pub fn Node::end_byte(self : Node) -> UInt32 {
   match self.node_data() {
     Some(data) => add_u32_saturating(data.end_byte, self.byte_offset)
     None => 0
@@ -1117,12 +1117,12 @@ pub fn Node::next_parse_state(self : Node) -> @api.StateId? {
 }
 
 ///|
-pub fn Node::child_count(self : Node) -> Int {
+pub fn Node::child_count(self : Node) -> Int32 {
   self.public_children().length()
 }
 
 ///|
-pub fn Node::named_child_count(self : Node) -> Int {
+pub fn Node::named_child_count(self : Node) -> Int32 {
   let mut count = 0
   for child in self.public_children() {
     if self.child_node(child.index).is_named() {
@@ -1133,7 +1133,7 @@ pub fn Node::named_child_count(self : Node) -> Int {
 }
 
 ///|
-pub fn Node::child(self : Node, index : Int) -> Node {
+pub fn Node::child(self : Node, index : Int32) -> Node {
   let children = self.public_children()
   match children.get(index) {
     Some(child) => self.child_node(child.index)
@@ -1142,7 +1142,7 @@ pub fn Node::child(self : Node, index : Int) -> Node {
 }
 
 ///|
-pub fn Node::named_child(self : Node, index : Int) -> Node {
+pub fn Node::named_child(self : Node, index : Int32) -> Node {
   let mut seen = 0
   for child in self.public_children() {
     let node = self.child_node(child.index)
@@ -1197,7 +1197,7 @@ pub fn Node::previous_named_sibling(self : Node) -> Node {
 }
 
 ///|
-pub fn Node::field_name_for_child(self : Node, index : Int) -> String? {
+pub fn Node::field_name_for_child(self : Node, index : Int32) -> String? {
   match self.public_children().get(index) {
     Some(child) => self.language.field_name_for_id(child.field_id)
     None => None
@@ -1205,7 +1205,7 @@ pub fn Node::field_name_for_child(self : Node, index : Int) -> String? {
 }
 
 ///|
-pub fn Node::field_name_for_named_child(self : Node, index : Int) -> String? {
+pub fn Node::field_name_for_named_child(self : Node, index : Int32) -> String? {
   let mut seen = 0
   for child in self.public_children() {
     let node = self.child_node(child.index)
@@ -1260,8 +1260,8 @@ pub fn Node::child_with_descendant(self : Node, descendant : Node) -> Node {
 ///|
 pub fn Node::descendant_for_byte_range(
   self : Node,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Node {
   self.descendant_for_byte_range_inner(start_byte, end_byte, named_only=false)
 }
@@ -1269,8 +1269,8 @@ pub fn Node::descendant_for_byte_range(
 ///|
 pub fn Node::named_descendant_for_byte_range(
   self : Node,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Node {
   self.descendant_for_byte_range_inner(start_byte, end_byte, named_only=true)
 }
@@ -1298,12 +1298,12 @@ pub fn Node::named_descendant_for_point_range(
 }
 
 ///|
-pub fn Node::first_child_for_byte(self : Node, byte : UInt) -> Node {
+pub fn Node::first_child_for_byte(self : Node, byte : UInt32) -> Node {
   self.first_child_for_byte_inner(byte, named_only=false)
 }
 
 ///|
-pub fn Node::first_named_child_for_byte(self : Node, byte : UInt) -> Node {
+pub fn Node::first_named_child_for_byte(self : Node, byte : UInt32) -> Node {
   self.first_child_for_byte_inner(byte, named_only=true)
 }
 
@@ -1321,7 +1321,7 @@ pub fn Node::first_named_child_for_point(
 }
 
 ///|
-pub fn Node::descendant_count(self : Node) -> Int {
+pub fn Node::descendant_count(self : Node) -> Int32 {
   if self.is_null() {
     0
   } else {
@@ -1337,7 +1337,7 @@ pub fn Node::to_sexp(self : Node) -> String {
 }
 
 ///|
-fn Node::public_descendant_count(self : Node) -> Int {
+fn Node::public_descendant_count(self : Node) -> Int32 {
   let mut count = 0
   for child in self.public_children() {
     let node = self.child_node(child.index)
@@ -1349,8 +1349,8 @@ fn Node::public_descendant_count(self : Node) -> Int {
 ///|
 fn Node::descendant_for_byte_range_inner(
   self : Node,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
   named_only~ : Bool,
 ) -> Node {
   if !self.covers_byte_range(start_byte, end_byte) {
@@ -1435,7 +1435,7 @@ fn Node::descendant_for_point_range_inner(
 ///|
 fn Node::first_child_for_byte_inner(
   self : Node,
-  byte : UInt,
+  byte : UInt32,
   named_only~ : Bool,
 ) -> Node {
   for child in self.public_children() {
@@ -1465,8 +1465,8 @@ fn Node::first_child_for_point_inner(
 ///|
 fn Node::covers_byte_range(
   self : Node,
-  start_byte : UInt,
-  end_byte : UInt,
+  start_byte : UInt32,
+  end_byte : UInt32,
 ) -> Bool {
   !self.is_null() &&
   start_byte <= end_byte &&
@@ -1487,7 +1487,7 @@ fn Node::covers_point_range(
 }
 
 ///|
-fn Node::contains_structural_index(self : Node, target : Int) -> Bool {
+fn Node::contains_structural_index(self : Node, target : Int32) -> Bool {
   match self.data {
     Some(data) =>
       if target < 0 || target >= data.nodes.length() {
@@ -1507,7 +1507,7 @@ fn Node::contains_structural_index(self : Node, target : Int) -> Bool {
 }
 
 ///|
-fn Node::sibling(self : Node, step~ : Int) -> Node {
+fn Node::sibling(self : Node, step~ : Int32) -> Node {
   let parent = self.parent()
   if parent.is_null() {
     return Node::null(self.language)
@@ -1526,7 +1526,7 @@ fn Node::sibling(self : Node, step~ : Int) -> Node {
 }
 
 ///|
-fn Node::named_sibling(self : Node, step~ : Int) -> Node {
+fn Node::named_sibling(self : Node, step~ : Int32) -> Node {
   let parent = self.parent()
   if parent.is_null() {
     return Node::null(self.language)
@@ -1545,7 +1545,7 @@ fn Node::named_sibling(self : Node, step~ : Int) -> Node {
 }
 
 ///|
-fn Node::child_node(self : Node, index : Int) -> Node {
+fn Node::child_node(self : Node, index : Int32) -> Node {
   match self.data {
     Some(data) =>
       Node::from_tree_with_offset(
@@ -1590,7 +1590,7 @@ fn Node::named_public_children(self : Node) -> Array[PublicChild] {
 ///|
 fn Node::collect_public_children(
   self : Node,
-  index : Int,
+  index : Int32,
   inherited_field_id~ : @api.FieldId,
   result~ : Array[PublicChild],
 ) -> Unit {
@@ -1606,7 +1606,7 @@ fn Node::collect_public_children(
           inherited_field_id
         }
         if child.visible || child.alias_visible {
-          result.push({ index, field_id: effective_field_id })
+          result.push({ index, field_id: effective_field_id, })
         } else {
           for grandchild in child.children {
             self.collect_public_children(
@@ -1622,7 +1622,7 @@ fn Node::collect_public_children(
 }
 
 ///|
-fn Node::public_child_position(self : Node) -> (Node, Int)? {
+fn Node::public_child_position(self : Node) -> (Node, Int32)? {
   let parent = self.parent()
   if parent.is_null() {
     None
@@ -1749,7 +1749,7 @@ fn Node::unexpected_error_text(self : Node) -> String {
 }
 
 ///|
-fn unexpected_codepoint_text(codepoint : Int) -> String {
+fn unexpected_codepoint_text(codepoint : Int32) -> String {
   if codepoint == -1 {
     return "INVALID"
   }
@@ -1778,7 +1778,7 @@ fn Node::write_field_prefix(
 }
 
 ///|
-fn add_u32_saturating(left : UInt, right : UInt) -> UInt {
+fn add_u32_saturating(left : UInt32, right : UInt32) -> UInt32 {
   if right > @api.uint32_max() - left {
     @api.uint32_max()
   } else {
@@ -1802,7 +1802,7 @@ pub fn TreeCursor::current_field_name(self : TreeCursor) -> String? {
 }
 
 ///|
-pub fn TreeCursor::current_depth(self : TreeCursor) -> Int {
+pub fn TreeCursor::current_depth(self : TreeCursor) -> Int32 {
   let mut depth = 0
   let mut node = self.node
   while !node.is_null() && node.index != self.root.index {
@@ -1813,7 +1813,7 @@ pub fn TreeCursor::current_depth(self : TreeCursor) -> Int {
 }
 
 ///|
-pub fn TreeCursor::current_descendant_index(self : TreeCursor) -> Int {
+pub fn TreeCursor::current_descendant_index(self : TreeCursor) -> Int32 {
   let nodes = self.root.dfs_nodes()
   for i in 0..<nodes.length() {
     if nodes[i].index == self.node.index {
@@ -1832,7 +1832,7 @@ pub fn TreeCursor::goto_parent(self : TreeCursor) -> TreeCursor? {
   if parent.is_null() || !self.root.contains_structural_index(parent.index) {
     None
   } else {
-    Some({ node: parent, root: self.root })
+    Some({ node: parent, root: self.root, })
   }
 }
 
@@ -1842,14 +1842,14 @@ pub fn TreeCursor::goto_first_child(self : TreeCursor) -> TreeCursor? {
   if child.is_null() {
     None
   } else {
-    Some({ node: child, root: self.root })
+    Some({ node: child, root: self.root, })
   }
 }
 
 ///|
 pub fn TreeCursor::goto_first_child_for_byte(
   self : TreeCursor,
-  byte : UInt,
+  byte : UInt32,
 ) -> TreeCursor? {
   match self.goto_first_child_for_byte_with_index(byte) {
     Some((_, cursor)) => Some(cursor)
@@ -1860,13 +1860,13 @@ pub fn TreeCursor::goto_first_child_for_byte(
 ///|
 pub fn TreeCursor::goto_first_child_for_byte_with_index(
   self : TreeCursor,
-  byte : UInt,
-) -> (Int, TreeCursor)? {
+  byte : UInt32,
+) -> (Int32, TreeCursor)? {
   let children = self.node.public_children()
   for i in 0..<children.length() {
     let child = self.node.child_node(children[i].index)
     if child.end_byte() > byte {
-      return Some((i, { node: child, root: self.root }))
+      return Some((i, { node: child, root: self.root, }))
     }
   }
   None
@@ -1887,12 +1887,12 @@ pub fn TreeCursor::goto_first_child_for_point(
 pub fn TreeCursor::goto_first_child_for_point_with_index(
   self : TreeCursor,
   point : @api.Point,
-) -> (Int, TreeCursor)? {
+) -> (Int32, TreeCursor)? {
   let children = self.node.public_children()
   for i in 0..<children.length() {
     let child = self.node.child_node(children[i].index)
     if child.end_point().gt(point) {
-      return Some((i, { node: child, root: self.root }))
+      return Some((i, { node: child, root: self.root, }))
     }
   }
   None
@@ -1904,7 +1904,7 @@ pub fn TreeCursor::goto_last_child(self : TreeCursor) -> TreeCursor? {
   if count == 0 {
     None
   } else {
-    Some({ node: self.node.child(count - 1), root: self.root })
+    Some({ node: self.node.child(count - 1), root: self.root, })
   }
 }
 
@@ -1917,7 +1917,7 @@ pub fn TreeCursor::goto_next_sibling(self : TreeCursor) -> TreeCursor? {
   if node.is_null() {
     None
   } else {
-    Some({ node, root: self.root })
+    Some({ node, root: self.root, })
   }
 }
 
@@ -1930,18 +1930,18 @@ pub fn TreeCursor::goto_previous_sibling(self : TreeCursor) -> TreeCursor? {
   if node.is_null() {
     None
   } else {
-    Some({ node, root: self.root })
+    Some({ node, root: self.root, })
   }
 }
 
 ///|
 pub fn TreeCursor::goto_descendant(
   self : TreeCursor,
-  descendant_index : Int,
+  descendant_index : Int32,
 ) -> TreeCursor? {
   let nodes = self.root.dfs_nodes()
   match nodes.get(descendant_index) {
-    Some(node) => Some({ node, root: self.root })
+    Some(node) => Some({ node, root: self.root, })
     None => None
   }
 }
@@ -1949,7 +1949,7 @@ pub fn TreeCursor::goto_descendant(
 ///|
 pub fn TreeCursor::reset(self : TreeCursor, node : Node) -> TreeCursor {
   let _ = self
-  { node, root: node }
+  { node, root: node, }
 }
 
 ///|
@@ -1963,5 +1963,5 @@ pub fn TreeCursor::reset_to(
 
 ///|
 pub fn TreeCursor::copy(self : TreeCursor) -> TreeCursor {
-  { node: self.node, root: self.root }
+  { node: self.node, root: self.root, }
 }

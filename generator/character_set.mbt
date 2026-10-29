@@ -1,10 +1,10 @@
 ///|
-let unicode_scalar_max : UInt = 1114111U
+let unicode_scalar_max : UInt32 = 1114111U
 
 ///|
 priv struct CharacterRange {
-  start : UInt
-  end : UInt
+  start : UInt32
+  end : UInt32
 }
 
 ///|
@@ -14,7 +14,7 @@ priv struct CharacterSet {
 
 ///|
 fn character_set_empty() -> CharacterSet {
-  { ranges: [] }
+  { ranges: [], }
 }
 
 ///|
@@ -28,9 +28,9 @@ fn character_set_char(char : Char) -> CharacterSet {
 }
 
 ///|
-fn character_set_range(start : UInt, end : UInt) -> CharacterSet {
+fn character_set_range(start : UInt32, end : UInt32) -> CharacterSet {
   match normalized_character_range(start, end) {
-    Some(range) => { ranges: [range] }
+    Some(range) => { ranges: [range], }
     None => character_set_empty()
   }
 }
@@ -44,7 +44,7 @@ fn character_set_from_ranges(ranges : Array[CharacterRange]) -> CharacterSet {
       None => ()
     }
   }
-  { ranges: normalized }
+  { ranges: normalized, }
 }
 
 ///|
@@ -73,7 +73,7 @@ fn character_set_intersection(
     let start = max_uint(left_range.start, right_range.start)
     let end = min_uint(left_range.end, right_range.end)
     if start <= end {
-      ranges.push({ start, end })
+      ranges.push({ start, end, })
     }
     if left_range.end < right_range.end {
       left_index += 1
@@ -109,7 +109,7 @@ fn character_set_negated(set : CharacterSet) -> CharacterSet {
   let mut next = 0U
   for range in set.ranges {
     if next < range.start {
-      ranges.push({ start: next, end: range.start - 1U })
+      ranges.push({ start: next, end: range.start - 1U, })
     }
     if range.end == unicode_scalar_max {
       return { ranges, }
@@ -117,13 +117,13 @@ fn character_set_negated(set : CharacterSet) -> CharacterSet {
     next = range.end + 1U
   }
   if next <= unicode_scalar_max {
-    ranges.push({ start: next, end: unicode_scalar_max })
+    ranges.push({ start: next, end: unicode_scalar_max, })
   }
   { ranges, }
 }
 
 ///|
-fn character_set_contains(set : CharacterSet, code_point : UInt) -> Bool {
+fn character_set_contains(set : CharacterSet, code_point : UInt32) -> Bool {
   for range in set.ranges {
     if range.start <= code_point && code_point <= range.end {
       return true
@@ -138,7 +138,7 @@ fn character_set_is_empty(set : CharacterSet) -> Bool {
 }
 
 ///|
-fn character_set_range_count(set : CharacterSet) -> Int {
+fn character_set_range_count(set : CharacterSet) -> Int32 {
   set.ranges.length()
 }
 
@@ -148,7 +148,7 @@ fn character_set_same(left : CharacterSet, right : CharacterSet) -> Bool {
 }
 
 ///|
-fn character_set_compare(left : CharacterSet, right : CharacterSet) -> Int {
+fn character_set_compare(left : CharacterSet, right : CharacterSet) -> Int32 {
   let length = min_int(left.ranges.length(), right.ranges.length())
   for i in 0..<length {
     let start_compare = compare_uint(
@@ -188,11 +188,11 @@ fn character_set_ascii_whitespace() -> CharacterSet {
 }
 
 ///|
-fn character_set_smoke_weight() -> Int {
+fn character_set_smoke_weight() -> Int32 {
   let any = character_set_any()
   let normalized = character_set_from_ranges([
-    { start: 65U, end: 67U },
-    { start: 66U, end: 70U },
+    { start: 65U, end: 67U, },
+    { start: 66U, end: 70U, },
   ])
   let ascii = character_set_union(
     character_set_ascii_digit(),
@@ -213,7 +213,7 @@ fn character_set_smoke_weight() -> Int {
 }
 
 ///|
-fn character_set_weight(set : CharacterSet) -> Int {
+fn character_set_weight(set : CharacterSet) -> Int32 {
   let mut weight = 0
   for range in set.ranges {
     weight += range.start.reinterpret_as_int()
@@ -223,11 +223,11 @@ fn character_set_weight(set : CharacterSet) -> Int {
 }
 
 ///|
-fn normalized_character_range(start : UInt, end : UInt) -> CharacterRange? {
+fn normalized_character_range(start : UInt32, end : UInt32) -> CharacterRange? {
   if start > end || start > unicode_scalar_max {
     None
   } else {
-    Some({ start, end: min_uint(end, unicode_scalar_max) })
+    Some({ start, end: min_uint(end, unicode_scalar_max), })
   }
 }
 
@@ -278,7 +278,7 @@ fn merge_ranges(
 }
 
 ///|
-fn min_uint(left : UInt, right : UInt) -> UInt {
+fn min_uint(left : UInt32, right : UInt32) -> UInt32 {
   if left < right {
     left
   } else {
@@ -287,7 +287,7 @@ fn min_uint(left : UInt, right : UInt) -> UInt {
 }
 
 ///|
-fn max_uint(left : UInt, right : UInt) -> UInt {
+fn max_uint(left : UInt32, right : UInt32) -> UInt32 {
   if left > right {
     left
   } else {
@@ -296,7 +296,7 @@ fn max_uint(left : UInt, right : UInt) -> UInt {
 }
 
 ///|
-fn min_int(left : Int, right : Int) -> Int {
+fn min_int(left : Int32, right : Int32) -> Int32 {
   if left < right {
     left
   } else {
@@ -305,7 +305,7 @@ fn min_int(left : Int, right : Int) -> Int {
 }
 
 ///|
-fn compare_int(left : Int, right : Int) -> Int {
+fn compare_int(left : Int32, right : Int32) -> Int32 {
   if left < right {
     -1
   } else if left > right {
@@ -316,7 +316,7 @@ fn compare_int(left : Int, right : Int) -> Int {
 }
 
 ///|
-fn compare_uint(left : UInt, right : UInt) -> Int {
+fn compare_uint(left : UInt32, right : UInt32) -> Int32 {
   if left < right {
     -1
   } else if left > right {

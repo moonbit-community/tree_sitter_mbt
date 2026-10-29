@@ -19,8 +19,8 @@ pub(all) struct CliCorpusExample {
   name : String
   input : Bytes
   output : String
-  header_delim_len : Int
-  divider_delim_len : Int
+  header_delim_len : Int32
+  divider_delim_len : Int32
   has_fields : Bool
   attributes_str : String
   attributes : CliCorpusAttributes
@@ -44,9 +44,9 @@ pub(all) struct CliCorpusNormalizedOutput {
 priv struct CliCorpusPendingTest {
   name : String
   attributes_str : String
-  header_delim_len : Int
+  header_delim_len : Int32
   attributes : CliCorpusAttributes
-  body_start_line : Int
+  body_start_line : Int32
 }
 
 ///|
@@ -54,7 +54,7 @@ pub fn parse_corpus_file_contents(
   name : String,
   contents : String,
   file_name? : String,
-  current_platform? : String = "",
+  current_platform~ : String = "",
 ) -> CliCorpusFile {
   let lines = split_corpus_lines_inclusive(contents)
   let first_suffix = first_corpus_suffix(lines)
@@ -104,7 +104,7 @@ pub fn parse_corpus_file_contents(
       }
     None => ()
   }
-  { name, examples, file_name }
+  { name, examples, file_name, }
 }
 
 ///|
@@ -138,16 +138,16 @@ pub fn normalize_corpus_sexp_output(raw : String) -> CliCorpusNormalizedOutput {
     result.pop() |> ignore
   }
   let output = String::from_array(result)
-  { output, has_fields: output.contains(": (") }
+  { output, has_fields: output.contains(": ("), }
 }
 
 ///|
 fn parse_corpus_header(
   lines : Array[String],
   first_suffix : String?,
-  start_line : Int,
+  start_line : Int32,
   current_platform~ : String,
-) -> (CliCorpusPendingTest, Int)? {
+) -> (CliCorpusPendingTest, Int32)? {
   let (header_delim_len, suffix) = match
     parse_corpus_delimiter_line(lines[start_line], '=') {
     Some(result) => result
@@ -245,8 +245,8 @@ fn parse_corpus_header(
 ///|
 fn build_corpus_example(
   lines : Array[String],
-  start_line : Int,
-  end_line : Int,
+  start_line : Int32,
+  end_line : Int32,
   first_suffix : String?,
   pending : CliCorpusPendingTest,
   file_name : String?,
@@ -313,7 +313,7 @@ fn split_corpus_lines_inclusive(contents : String) -> Array[String] {
 fn parse_corpus_delimiter_line(
   line : String,
   delimiter : Char,
-) -> (Int, String)? {
+) -> (Int32, String)? {
   let mut delim_len = 0
   let mut done = false
   while !done && delim_len < line.length() {
@@ -358,7 +358,11 @@ fn corpus_marker_inner(marker : String, prefix : String) -> String {
 }
 
 ///|
-fn join_corpus_lines(lines : Array[String], start : Int, end : Int) -> String {
+fn join_corpus_lines(
+  lines : Array[String],
+  start : Int32,
+  end : Int32,
+) -> String {
   let out = StringBuilder::new()
   for index in start..<end {
     out.write_string(lines[index])
@@ -367,7 +371,11 @@ fn join_corpus_lines(lines : Array[String], start : Int, end : Int) -> String {
 }
 
 ///|
-fn corpus_input_bytes(lines : Array[String], start : Int, end : Int) -> Bytes {
+fn corpus_input_bytes(
+  lines : Array[String],
+  start : Int32,
+  end : Int32,
+) -> Bytes {
   let bytes = @utf8.encode(join_corpus_lines(lines, start, end)).to_array()
   if bytes.length() > 0 && bytes[bytes.length() - 1] == b'\n' {
     bytes.pop() |> ignore

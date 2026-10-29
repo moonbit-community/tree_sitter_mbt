@@ -11,45 +11,45 @@ import {
 
 // Errors
 pub(all) suberror QueryError {
-  Syntax(byte_offset~ : Int, reason~ : String)
-  NodeType(byte_offset~ : Int, name~ : String)
-  Field(byte_offset~ : Int, name~ : String)
-  Capture(byte_offset~ : Int, name~ : String)
-  Structure(byte_offset~ : Int, reason~ : String)
+  Syntax(byte_offset~ : Int32, reason~ : String)
+  NodeType(byte_offset~ : Int32, name~ : String)
+  Field(byte_offset~ : Int32, name~ : String)
+  Capture(byte_offset~ : Int32, name~ : String)
+  Structure(byte_offset~ : Int32, reason~ : String)
 }
 
 pub(all) suberror QueryPredicateError {
-  Predicate(pattern_index~ : Int, byte_offset~ : Int, operator~ : String, reason~ : String)
+  Predicate(pattern_index~ : Int32, byte_offset~ : Int32, operator~ : String, reason~ : String)
 }
 
 // Types and methods
 type Query
-pub fn Query::capture_count(Self) -> Int
-pub fn Query::capture_name_for_id(Self, Int) -> String?
-pub fn Query::capture_quantifier_for_id(Self, Int, Int) -> QueryCaptureQuantifier?
+pub fn Query::capture_count(Self) -> Int32
+pub fn Query::capture_name_for_id(Self, Int32) -> String?
+pub fn Query::capture_quantifier_for_id(Self, Int32, Int32) -> QueryCaptureQuantifier?
 pub fn Query::classify_predicates(Self) -> QueryPredicateClasses raise QueryPredicateError
 pub fn Query::disable_capture(Self, String) -> Bool
-pub fn Query::disable_pattern(Self, Int) -> Bool
-pub fn Query::end_byte_for_pattern(Self, Int) -> Int?
-pub fn Query::is_pattern_guaranteed_at_byte_offset(Self, Int) -> Bool
-pub fn Query::is_pattern_guaranteed_at_step(Self, Int, Int) -> Bool?
-pub fn Query::is_pattern_non_local(Self, Int) -> Bool?
-pub fn Query::is_pattern_rooted(Self, Int) -> Bool?
+pub fn Query::disable_pattern(Self, Int32) -> Bool
+pub fn Query::end_byte_for_pattern(Self, Int32) -> Int32?
+pub fn Query::is_pattern_guaranteed_at_byte_offset(Self, Int32) -> Bool
+pub fn Query::is_pattern_guaranteed_at_step(Self, Int32, Int32) -> Bool?
+pub fn Query::is_pattern_non_local(Self, Int32) -> Bool?
+pub fn Query::is_pattern_rooted(Self, Int32) -> Bool?
 pub fn Query::language(Self) -> @tree_sitter_mbt.Language
 pub fn Query::new(@tree_sitter_mbt.Language, String) -> Self raise QueryError
-pub fn Query::pattern_count(Self) -> Int
-pub fn Query::predicate_step_count_for_pattern(Self, Int) -> Int?
-pub fn Query::predicate_step_for_pattern(Self, Int, Int) -> QueryPredicateStep?
-pub fn Query::start_byte_for_pattern(Self, Int) -> Int?
-pub fn Query::string_count(Self) -> Int
-pub fn Query::string_value_for_id(Self, Int) -> String?
+pub fn Query::pattern_count(Self) -> Int32
+pub fn Query::predicate_step_count_for_pattern(Self, Int32) -> Int32?
+pub fn Query::predicate_step_for_pattern(Self, Int32, Int32) -> QueryPredicateStep?
+pub fn Query::start_byte_for_pattern(Self, Int32) -> Int32?
+pub fn Query::string_count(Self) -> Int32
+pub fn Query::string_value_for_id(Self, Int32) -> String?
 pub fn Query::text_predicates_match_bytes(Self, QueryMatch, Bytes) -> Bool raise QueryPredicateError
 pub fn Query::text_predicates_match_string(Self, QueryMatch, String) -> Bool raise QueryPredicateError
 
 pub(all) struct QueryCapture {
-  match_id : Int
-  pattern_index : Int
-  index : Int
+  match_id : Int32
+  pattern_index : Int32
+  index : Int32
   name : String
   node : @tree_sitter_mbt.Node
 }
@@ -65,7 +65,7 @@ pub(all) enum QueryCaptureQuantifier {
 type QueryCursor
 pub fn QueryCursor::did_exceed_match_limit(Self) -> Bool
 pub fn QueryCursor::exec(Self, Query, @tree_sitter_mbt.Node) -> Unit
-pub fn QueryCursor::match_limit(Self) -> UInt
+pub fn QueryCursor::match_limit(Self) -> UInt32
 pub fn QueryCursor::new() -> Self
 pub fn QueryCursor::next_capture(Self) -> QueryCapture?
 pub fn QueryCursor::next_capture_with_text_predicates_bytes(Self, Query, Bytes) -> QueryCapture? raise QueryPredicateError
@@ -73,35 +73,35 @@ pub fn QueryCursor::next_capture_with_text_predicates_string(Self, Query, String
 pub fn QueryCursor::next_match(Self) -> QueryMatch?
 pub fn QueryCursor::next_match_with_text_predicates_bytes(Self, Query, Bytes) -> QueryMatch? raise QueryPredicateError
 pub fn QueryCursor::next_match_with_text_predicates_string(Self, Query, String) -> QueryMatch? raise QueryPredicateError
-pub fn QueryCursor::remove_match(Self, Int) -> Unit
-pub fn QueryCursor::set_byte_range(Self, UInt, UInt) -> Bool
-pub fn QueryCursor::set_containing_byte_range(Self, UInt, UInt) -> Bool
+pub fn QueryCursor::remove_match(Self, Int32) -> Unit
+pub fn QueryCursor::set_byte_range(Self, UInt32, UInt32) -> Bool
+pub fn QueryCursor::set_containing_byte_range(Self, UInt32, UInt32) -> Bool
 pub fn QueryCursor::set_containing_point_range(Self, @api.Point, @api.Point) -> Bool
-pub fn QueryCursor::set_match_limit(Self, UInt) -> Unit
-pub fn QueryCursor::set_max_start_depth(Self, Int) -> Bool
+pub fn QueryCursor::set_match_limit(Self, UInt32) -> Unit
+pub fn QueryCursor::set_max_start_depth(Self, Int32) -> Bool
 pub fn QueryCursor::set_point_range(Self, @api.Point, @api.Point) -> Bool
 pub fn QueryCursor::set_progress_callback(Self, ((QueryCursorProgressState) -> Bool)?) -> Unit
 
 pub(all) struct QueryCursorProgressState {
-  current_byte_offset : UInt
+  current_byte_offset : UInt32
 } derive(Eq, @debug.Debug)
-pub fn QueryCursorProgressState::new(current_byte_offset~ : UInt) -> Self
+pub fn QueryCursorProgressState::new(current_byte_offset~ : UInt32) -> Self
 
 pub(all) struct QueryGeneralPredicate {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   operator : String
   args : Array[QueryPredicateArg]
 } derive(Eq, @debug.Debug)
 
 pub(all) struct QueryMatch {
-  id : Int
-  pattern_index : Int
+  id : Int32
+  pattern_index : Int32
   captures : Array[QueryCapture]
 }
 
 pub(all) enum QueryPredicateArg {
-  ArgCapture(Int)
+  ArgCapture(Int32)
   ArgString(String)
 } derive(Eq, @debug.Debug)
 
@@ -114,32 +114,32 @@ pub(all) struct QueryPredicateClasses {
 
 pub(all) enum QueryPredicateStep {
   Done
-  Capture(Int)
-  String(Int)
+  Capture(Int32)
+  String(Int32)
 } derive(Eq, @debug.Debug)
 
 pub(all) struct QueryPropertyAssertion {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   is_positive : Bool
   key : String
   value : String?
-  capture_id : Int?
+  capture_id : Int32?
 } derive(Eq, @debug.Debug)
 
 pub(all) struct QueryPropertySetting {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   key : String
   value : String?
-  capture_id : Int?
+  capture_id : Int32?
 } derive(Eq, @debug.Debug)
 
 pub(all) struct QueryTextPredicate {
-  pattern_index : Int
-  byte_offset : Int
+  pattern_index : Int32
+  byte_offset : Int32
   kind : QueryTextPredicateKind
-  capture_id : Int
+  capture_id : Int32
   args : Array[QueryPredicateArg]
 } derive(Eq, @debug.Debug)
 
@@ -159,4 +159,3 @@ pub(all) enum QueryTextPredicateKind {
 // Type aliases
 
 // Traits
-

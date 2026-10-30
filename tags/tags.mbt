@@ -279,7 +279,7 @@ fn compile_tags_query(
 
 ///|
 fn combine_tags_query_sources(sources : Array[String]) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut needs_newline = false
   for source in sources {
     if source.is_empty() {
@@ -1068,3 +1068,39 @@ fn tag_queue_entry_compare(
     0
   }
 }
+
+///|
+pub extend Tag with Debug::{to_repr}
+
+///|
+pub extend Tag with Eq::{not_equal, equal}
+
+///|
+pub extend TagKind with Debug::{to_repr}
+
+///|
+pub extend TagKind with Eq::{not_equal, equal}
+
+///|
+pub extend TagsProgressPhase with Debug::{to_repr}
+
+///|
+pub extend TagsProgressPhase with Eq::{not_equal, equal}
+
+///|
+pub extend TagsProgressState with Debug::{to_repr}
+
+///|
+pub extend TagsProgressState with Eq::{not_equal, equal}
+
+///|
+pub extend TagsResult with Debug::{to_repr}
+
+///|
+pub extend TagsResult with Eq::{not_equal, equal}
+
+///|
+pub extend Utf16ColumnRange with Debug::{to_repr}
+
+///|
+pub extend Utf16ColumnRange with Eq::{not_equal, equal}

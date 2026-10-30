@@ -1,6 +1,6 @@
 ///|
 test "parse minimal grammar preserves rule order and defaults" {
-  let grammar = parse_grammar(
+  let grammar = @grammar.parse_grammar(
     (
       #|{
       #|  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
@@ -17,7 +17,7 @@ test "parse minimal grammar preserves rule order and defaults" {
   assert_true(grammar.start_rule == Some("document"))
   assert_eq(grammar.rules.length(), 1)
   assert_eq(grammar.rules[0].name, "document")
-  assert_true(grammar.rules[0].rule == Rule::String("a"))
+  assert_true(grammar.rules[0].rule == @grammar.Rule::String("a"))
   assert_eq(grammar.extras.length(), 0)
   assert_eq(grammar.externals.length(), 0)
   assert_eq(grammar.inline.length(), 0)
@@ -33,7 +33,7 @@ test "parse minimal grammar preserves rule order and defaults" {
 
 ///|
 test "parse grammar rule forms and ordered top level collections" {
-  let grammar = parse_grammar(
+  let grammar = @grammar.parse_grammar(
     (
       #|{
       #|  "name": "forms",
@@ -83,75 +83,106 @@ test "parse grammar rule forms and ordered top level collections" {
   assert_true(grammar.inherits == Some("base"))
   assert_true(grammar.word == Some("identifier"))
   assert_eq(grammar.extras.length(), 1)
-  assert_true(grammar.extras[0] == Rule::String(" "))
+  assert_true(grammar.extras[0] == @grammar.Rule::String(" "))
   assert_eq(grammar.externals.length(), 1)
-  assert_true(grammar.externals[0] == Rule::Symbol("external_token"))
+  assert_true(grammar.externals[0] == @grammar.Rule::Symbol("external_token"))
   assert_eq(grammar.inline.length(), 0)
   assert_eq(grammar.conflicts.length(), 0)
-  assert_true(grammar.precedences[0][0] == PrecedenceValue::Name("low"))
-  assert_true(grammar.precedences[0][1] == PrecedenceValue::Number(1))
-  assert_true(grammar.precedences[0][2] == PrecedenceValue::Name("call"))
-  assert_true(grammar.precedences[0][3] == PrecedenceValue::Name("and"))
+  assert_true(
+    grammar.precedences[0][0] == @grammar.PrecedenceValue::Name("low"),
+  )
+  assert_true(grammar.precedences[0][1] == @grammar.PrecedenceValue::Number(1))
+  assert_true(
+    grammar.precedences[0][2] == @grammar.PrecedenceValue::Name("call"),
+  )
+  assert_true(
+    grammar.precedences[0][3] == @grammar.PrecedenceValue::Name("and"),
+  )
   assert_eq(grammar.reserved.length(), 2)
   assert_eq(grammar.reserved[0].name, "global")
-  assert_true(grammar.reserved[0].rules[0] == Rule::Symbol("identifier"))
+  assert_true(
+    grammar.reserved[0].rules[0] == @grammar.Rule::Symbol("identifier"),
+  )
   assert_eq(grammar.reserved[1].name, "empty")
   assert_eq(grammar.supertypes.length(), 0)
 
-  guard grammar.rules[0].rule is Rule::Seq(members) else {
+  guard grammar.rules[0].rule is @grammar.Rule::Seq(members) else {
     fail("document should parse as a sequence")
   }
   assert_true(
-    members[0] == Rule::Field(name="left", content=Rule::Symbol("identifier")),
+    members[0] ==
+    @grammar.Rule::Field(
+      name="left",
+      content=@grammar.Rule::Symbol("identifier"),
+    ),
   )
-  assert_true(members[1] == Rule::Choice([Rule::String("a"), Rule::Blank]))
+  assert_true(
+    members[1] ==
+    @grammar.Rule::Choice([@grammar.Rule::String("a"), @grammar.Rule::Blank]),
+  )
   assert_true(
     members[2] ==
-    Rule::Choice([
-      Rule::Repeat(Rule::Pattern(value="[a-z]+", flags="iuvx")),
-      Rule::Blank,
+    @grammar.Rule::Choice([
+      @grammar.Rule::Repeat(
+        @grammar.Rule::Pattern(value="[a-z]+", flags="iuvx"),
+      ),
+      @grammar.Rule::Blank,
     ]),
   )
-  assert_true(members[3] == Rule::Repeat1(Rule::String("b")))
+  assert_true(members[3] == @grammar.Rule::Repeat1(@grammar.Rule::String("b")))
   assert_true(
     members[4] ==
-    Rule::Alias(content=Rule::Symbol("identifier"), value="name", named=true),
+    @grammar.Rule::Alias(
+      content=@grammar.Rule::Symbol("identifier"),
+      value="name",
+      named=true,
+    ),
   )
   assert_true(
     members[5] ==
-    Rule::Prec(value=PrecedenceValue::Number(1), content=Rule::String("p")),
+    @grammar.Rule::Prec(
+      value=@grammar.PrecedenceValue::Number(1),
+      content=@grammar.Rule::String("p"),
+    ),
   )
   assert_true(
     members[6] ==
-    Rule::PrecLeft(
-      value=PrecedenceValue::Name("left_group"),
-      content=Rule::String("l"),
+    @grammar.Rule::PrecLeft(
+      value=@grammar.PrecedenceValue::Name("left_group"),
+      content=@grammar.Rule::String("l"),
     ),
   )
   assert_true(
     members[7] ==
-    Rule::PrecRight(
-      value=PrecedenceValue::Name("right_group"),
-      content=Rule::String("r"),
+    @grammar.Rule::PrecRight(
+      value=@grammar.PrecedenceValue::Name("right_group"),
+      content=@grammar.Rule::String("r"),
     ),
   )
   assert_true(
-    members[8] == Rule::PrecDynamic(value=2, content=Rule::String("d")),
+    members[8] ==
+    @grammar.Rule::PrecDynamic(value=2, content=@grammar.Rule::String("d")),
   )
-  assert_true(members[9] == Rule::Token(Rule::String("tok")))
+  assert_true(members[9] == @grammar.Rule::Token(@grammar.Rule::String("tok")))
   assert_true(
-    members[10] == Rule::ImmediateToken(Rule::Pattern(value="[0-9]+", flags="")),
+    members[10] ==
+    @grammar.Rule::ImmediateToken(
+      @grammar.Rule::Pattern(value="[0-9]+", flags=""),
+    ),
   )
   assert_true(
     members[11] ==
-    Rule::Reserved(context_name="global", content=Rule::Symbol("identifier")),
+    @grammar.Rule::Reserved(
+      context_name="global",
+      content=@grammar.Rule::Symbol("identifier"),
+    ),
   )
 }
 
 ///|
 test "parse grammar reports stable shape errors" {
   let token_result = @test.expect_error(() => {
-    parse_grammar(
+    @grammar.parse_grammar(
       (
         #|{
         #|  "name": "bad",
@@ -167,14 +198,14 @@ test "parse grammar reports stable shape errors" {
   })
   assert_true(
     token_result
-    is GrammarError::TokenContainsSymbol(
+    is @grammar.GrammarError::TokenContainsSymbol(
       path="$.rules.document",
       symbol="identifier"
     ),
   )
 
   let extra_result = @test.expect_error(() => {
-    parse_grammar(
+    @grammar.parse_grammar(
       (
         #|{
         #|  "name": "bad_extra",
@@ -186,10 +217,12 @@ test "parse grammar reports stable shape errors" {
       ),
     )
   })
-  assert_true(extra_result is GrammarError::EmptyStringExtra("$.extras[0]"))
+  assert_true(
+    extra_result is @grammar.GrammarError::EmptyStringExtra("$.extras[0]"),
+  )
 
   let unknown_result = @test.expect_error(() => {
-    parse_grammar(
+    @grammar.parse_grammar(
       (
         #|{
         #|  "name": "bad_type",
@@ -202,13 +235,16 @@ test "parse grammar reports stable shape errors" {
   })
   assert_true(
     unknown_result
-    is GrammarError::UnknownRuleType(path="$.rules.document", rule_type="NOPE"),
+    is @grammar.GrammarError::UnknownRuleType(
+      path="$.rules.document",
+      rule_type="NOPE"
+    ),
   )
 }
 
 ///|
 test "parse grammar normalizes reachable rules and metadata references" {
-  let grammar = parse_grammar(
+  let grammar = @grammar.parse_grammar(
     (
       #|{
       #|  "name": "normalize",
@@ -250,13 +286,15 @@ test "parse grammar normalizes reachable rules and metadata references" {
   assert_eq(grammar.reserved.length(), 1)
   assert_eq(grammar.reserved[0].name, "global")
   assert_eq(grammar.reserved[0].rules.length(), 1)
-  assert_true(grammar.reserved[0].rules[0] == Rule::Symbol("reserved_rule"))
+  assert_true(
+    grammar.reserved[0].rules[0] == @grammar.Rule::Symbol("reserved_rule"),
+  )
 }
 
 ///|
 test "parse grammar rejects undeclared reserved context" {
   let result = @test.expect_error(() => {
-    parse_grammar(
+    @grammar.parse_grammar(
       (
         #|{
         #|  "name": "bad_reserved_context",
@@ -274,13 +312,15 @@ test "parse grammar rejects undeclared reserved context" {
       ),
     )
   })
-  assert_true(result is GrammarError::UndeclaredReservedContext("local"))
+  assert_true(
+    result is @grammar.GrammarError::UndeclaredReservedContext("local"),
+  )
 }
 
 ///|
 test "parse grammar reports reserved word set shape errors" {
   let result = @test.expect_error(() => {
-    parse_grammar(
+    @grammar.parse_grammar(
       (
         #|{
         #|  "name": "bad_reserved_shape",
@@ -294,5 +334,7 @@ test "parse grammar reports reserved word set shape errors" {
       ),
     )
   })
-  assert_true(result is GrammarError::ExpectedArray("$.reserved.global"))
+  assert_true(
+    result is @grammar.GrammarError::ExpectedArray("$.reserved.global"),
+  )
 }

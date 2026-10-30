@@ -1,11 +1,4 @@
 ///|
-fn[T, E : Error] capture_parser_result(f : () -> T raise E) -> Result[T, E] {
-  try f() catch {
-    error => Err(error)
-  } noraise {
-    value => Ok(value)
-  }
-}
 
 ///|
 struct Parser {
@@ -494,7 +487,7 @@ fn Parser::parse_full_input(
     }
     None => create_external_scanner_session(language.tables)
   }
-  let result : Result[Tree, ParseError] = capture_parser_result(() => {
+  let result : Result[Tree, ParseError] = try
     self.parse_full_input_loop(
       language,
       input,
@@ -506,13 +499,21 @@ fn Parser::parse_full_input(
       included_ranges~,
       logger~,
     )
-  })
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   match result {
     Ok(tree) => {
       self.outstanding_parse = None
-      let cleanup_result : Result[Unit, ParseError] = capture_parser_result(() => {
+      let cleanup_result : Result[Unit, ParseError] = try
         destroy_external_scanner_session(scanner_session)
-      })
+      catch {
+        error => Err(error)
+      } noraise {
+        value => Ok(value)
+      }
       match cleanup_result {
         Ok(_) => tree
         Err(error) => raise error
@@ -526,10 +527,13 @@ fn Parser::parse_full_input(
         }
         _ => {
           self.outstanding_parse = None
-          let cleanup_result : Result[Unit, ParseError] = capture_parser_result(() => {
-              destroy_external_scanner_session(scanner_session)
-            },
-          )
+          let cleanup_result : Result[Unit, ParseError] = try
+            destroy_external_scanner_session(scanner_session)
+          catch {
+            error => Err(error)
+          } noraise {
+            value => Ok(value)
+          }
           match cleanup_result {
             Ok(_) => raise error
             Err(cleanup_error) => raise cleanup_error
@@ -642,22 +646,25 @@ fn Parser::parse_full_input_loop(
     let token = match lookahead {
       Some(value) => value
       None => {
-        let lex_result : Result[LexedToken, ParseError] = capture_parser_result(() => {
-            lex_main_token(
-              tables,
-              top.state_id,
-              input,
-              encoding~,
-              decode_callback~,
-              chunk_end_offsets~,
-              current_byte,
-              current_point,
-              included_ranges~,
-              external_scanner_state=last_external_scanner_state,
-              logger~,
-            )
-          },
-        )
+        let lex_result : Result[LexedToken, ParseError] = try
+          lex_main_token(
+            tables,
+            top.state_id,
+            input,
+            encoding~,
+            decode_callback~,
+            chunk_end_offsets~,
+            current_byte,
+            current_point,
+            included_ranges~,
+            external_scanner_state=last_external_scanner_state,
+            logger~,
+          )
+        catch {
+          error => Err(error)
+        } noraise {
+          value => Ok(value)
+        }
         match lex_result {
           Ok(value) => {
             lookahead = Some(value)
@@ -1047,22 +1054,25 @@ fn Parser::parse_full_input_branch_loop(
       }
       None => ()
     }
-    let branch_result : Result[Array[AcceptedParseBranch], ParseError] = capture_parser_result(() => {
-        parse_branch_step(
-          language,
-          tables,
-          input,
-          encoding~,
-          decode_callback~,
-          chunk_end_offsets~,
-          included_ranges~,
-          logger~,
-          branch,
-          branches,
-          next_order~,
-        )
-      },
-    )
+    let branch_result : Result[Array[AcceptedParseBranch], ParseError] = try
+      parse_branch_step(
+        language,
+        tables,
+        input,
+        encoding~,
+        decode_callback~,
+        chunk_end_offsets~,
+        included_ranges~,
+        logger~,
+        branch,
+        branches,
+        next_order~,
+      )
+    catch {
+      error => Err(error)
+    } noraise {
+      value => Ok(value)
+    }
     match branch_result {
       Ok(accepted_now) => {
         next_order += accepted_now.length()
@@ -1142,7 +1152,7 @@ fn parse_branch_step(
   let token = match branch.lookahead {
     Some(value) => value
     None => {
-      let lex_result : Result[LexedToken, ParseError] = capture_parser_result(() => {
+      let lex_result : Result[LexedToken, ParseError] = try
         lex_main_token(
           tables,
           top.state_id,
@@ -1156,7 +1166,11 @@ fn parse_branch_step(
           external_scanner_state=branch.last_external_scanner_state,
           logger~,
         )
-      })
+      catch {
+        error => Err(error)
+      } noraise {
+        value => Ok(value)
+      }
       match lex_result {
         Ok(value) => {
           branch.lookahead = Some(value)
@@ -1814,7 +1828,7 @@ fn parse_state_can_lex_current_input(
   included_ranges~ : Array[@api.Range],
   external_scanner_state~ : Bytes,
 ) -> Bool raise ParseError {
-  let result : Result[LexedToken, ParseError] = capture_parser_result(() => {
+  let result : Result[LexedToken, ParseError] = try
     lex_main_token(
       tables,
       state_id,
@@ -1828,7 +1842,11 @@ fn parse_state_can_lex_current_input(
       external_scanner_state~,
       logger=None,
     )
-  })
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   match result {
     Ok(_) => true
     Err(LexError(_)) => false
@@ -2355,7 +2373,7 @@ fn lex_error_state_token(
   external_scanner_state~ : Bytes,
   logger~ : Logger?,
 ) -> LexedToken? raise ParseError {
-  let result : Result[LexedToken, ParseError] = capture_parser_result(() => {
+  let result : Result[LexedToken, ParseError] = try
     lex_main_token(
       tables,
       0,
@@ -2369,7 +2387,11 @@ fn lex_error_state_token(
       external_scanner_state~,
       logger~,
     )
-  })
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   match result {
     Ok(token) =>
       if token.end_byte > token.start_byte {
@@ -2555,9 +2577,11 @@ fn create_external_scanner_session(
   if !scanner.has_scan_callback() {
     return None
   }
-  let result : Result[Unit, @api.ScannerError] = capture_parser_result(() => {
-    scanner.create()
-  })
+  let result : Result[Unit, @api.ScannerError] = try scanner.create() catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   match result {
     Ok(_) => Some(scanner)
     Err(error) => raise ParseError::ScannerError(error)
@@ -2570,9 +2594,13 @@ fn destroy_external_scanner_session(
 ) -> Unit raise ParseError {
   match scanner {
     Some(scanner) => {
-      let result : Result[Unit, @api.ScannerError] = capture_parser_result(() => {
+      let result : Result[Unit, @api.ScannerError] = try
         scanner.destroy()
-      })
+      catch {
+        error => Err(error)
+      } noraise {
+        value => Ok(value)
+      }
       match result {
         Ok(_) => ()
         Err(error) => raise ParseError::ScannerError(error)
@@ -2587,9 +2615,11 @@ fn Parser::destroy_outstanding_external_scanner(self : Parser) -> Unit {
   match self.outstanding_external_scanner {
     Some(scanner) => {
       self.outstanding_external_scanner = None
-      let _ : Result[Unit, @api.ScannerError] = capture_parser_result(() => {
-        scanner.destroy()
-      })
+      let _ : Result[Unit, @api.ScannerError] = try scanner.destroy() catch {
+        error => Err(error)
+      } noraise {
+        value => Ok(value)
+      }
     }
     None => ()
   }
@@ -3444,10 +3474,13 @@ fn scan_external_token(
     None => None
   }
   parser_log(logger, Lex, "external scanner start")
-  let deserialize_result : Result[Unit, @api.ScannerError] = capture_parser_result(() => {
-      scanner.deserialize(external_scanner_state)
-    },
-  )
+  let deserialize_result : Result[Unit, @api.ScannerError] = try
+    scanner.deserialize(external_scanner_state)
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   match deserialize_result {
     Ok(_) => ()
     Err(error) => raise ParseError::ScannerError(error)
@@ -3480,10 +3513,13 @@ fn scan_external_token(
       included_ranges~,
     ),
   )
-  let scan_result : Result[@tables.ExternalScanResult, @api.ScannerError] = capture_parser_result(() => {
-      scanner.scan(context)
-    },
-  )
+  let scan_result : Result[@tables.ExternalScanResult, @api.ScannerError] = try
+    scanner.scan(context)
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   flush_external_context_logs(context, logger)
   let scan_start_byte = start_byte
   match scan_result {
@@ -3642,9 +3678,13 @@ fn flush_external_context_logs(
 fn serialize_external_scanner_state(
   scanner : @tables.ExternalScannerDescriptor,
 ) -> Bytes raise ParseError {
-  let result : Result[Bytes, @api.ScannerError] = capture_parser_result(() => {
+  let result : Result[Bytes, @api.ScannerError] = try
     scanner.serialize()
-  })
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   match result {
     Ok(bytes) => {
       if bytes.length() > @tables.external_scanner_serialization_buffer_size() {
@@ -4083,7 +4123,7 @@ fn keyword_fallback_token(
     return token
   }
   guard tables.keyword_lex_table() is Some(keyword_table) else { return token }
-  let result : Result[LexedToken, ParseError] = capture_parser_result(() => {
+  let result : Result[LexedToken, ParseError] = try
     scan_lex_table(
       keyword_table,
       input,
@@ -4095,7 +4135,11 @@ fn keyword_fallback_token(
       included_ranges~,
       state_id~,
     )
-  })
+  catch {
+    error => Err(error)
+  } noraise {
+    value => Ok(value)
+  }
   guard result is Ok(keyword) else { return token }
   if keyword.start_byte != token.start_byte ||
     keyword.end_byte != token.end_byte {
@@ -4592,3 +4636,27 @@ fn symbol_id_from_int(value : Int32) -> @api.SymbolId {
 fn state_id_from_int(value : Int32) -> @api.StateId {
   @api.StateId::new(value.reinterpret_as_uint())
 }
+
+///|
+pub extend IncludedRangesError with Debug::{to_repr}
+
+///|
+pub extend IncludedRangesError with Eq::{not_equal, equal}
+
+///|
+pub extend LanguageError with Debug::{to_repr}
+
+///|
+pub extend LanguageError with Eq::{not_equal, equal}
+
+///|
+pub extend ParseError with Debug::{to_repr}
+
+///|
+pub extend ParseError with Eq::{not_equal, equal}
+
+///|
+pub extend ParseState with Debug::{to_repr}
+
+///|
+pub extend ParseState with Eq::{not_equal, equal}

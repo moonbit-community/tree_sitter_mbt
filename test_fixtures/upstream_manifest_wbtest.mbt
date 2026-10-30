@@ -1493,3 +1493,21 @@ fn upstream_fixture_manifest() -> Array[UpstreamFixture] {
     },
   ]
 }
+
+///|
+pub extend UpstreamExpectedGenerateError with Debug::{to_repr}
+
+///|
+pub extend UpstreamExpectedGenerateError with Eq::{not_equal, equal}
+
+///|
+pub extend UpstreamFixture with Debug::{to_repr}
+
+///|
+pub extend UpstreamFixture with Eq::{not_equal, equal}
+
+///|
+pub extend UpstreamFixtureStatus with Debug::{to_repr}
+
+///|
+pub extend UpstreamFixtureStatus with Eq::{not_equal, equal}

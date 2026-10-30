@@ -14,7 +14,7 @@ fn cli_corpus_run_diagnostics_parser() -> @tree_sitter_mbt.Parser raise {
 
 ///|
 test "cli corpus correction preserves parsed delimiter and attributes" {
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|======
@@ -27,7 +27,7 @@ test "cli corpus correction preserves parsed delimiter and attributes" {
       #|
     ),
   )
-  let correction = cli_corpus_correction_from_example(
+  let correction = @cli.cli_corpus_correction_from_example(
     file.examples[0],
     output="  new output\n",
   )
@@ -38,7 +38,7 @@ test "cli corpus correction preserves parsed delimiter and attributes" {
   assert_eq(correction.header_delim_len, 6)
   assert_eq(correction.divider_delim_len, 5)
   assert_eq(
-    render_cli_corpus_corrections([correction]),
+    @cli.render_cli_corpus_corrections([correction]),
     (
       #|======
       #|Correction target
@@ -55,8 +55,8 @@ test "cli corpus correction preserves parsed delimiter and attributes" {
 
 ///|
 test "cli corpus correction renderer separates multiple entries" {
-  let rendered = render_cli_corpus_corrections([
-    CliCorpusCorrection::{
+  let rendered = @cli.render_cli_corpus_corrections([
+    @cli.CliCorpusCorrection::{
       name: "first",
       input: "input 1",
       output: "output 1",
@@ -64,7 +64,7 @@ test "cli corpus correction renderer separates multiple entries" {
       header_delim_len: 4,
       divider_delim_len: 3,
     },
-    CliCorpusCorrection::{
+    @cli.CliCorpusCorrection::{
       name: "second",
       input: "input 2",
       output: "output 2",
@@ -99,9 +99,9 @@ test "cli corpus correction renderer separates multiple entries" {
 
 ///|
 test "cli corpus sexp formatter mirrors upstream examples" {
-  assert_eq(format_cli_corpus_sexp(""), "")
+  assert_eq(@cli.format_cli_corpus_sexp(""), "")
   assert_eq(
-    format_cli_corpus_sexp("(a b: (c) (d) e: (f (g (h (MISSING i)))))"),
+    @cli.format_cli_corpus_sexp("(a b: (c) (d) e: (f (g (h (MISSING i)))))"),
     (
       #|(a
       #|  b: (c)
@@ -113,7 +113,9 @@ test "cli corpus sexp formatter mirrors upstream examples" {
     ),
   )
   assert_eq(
-    format_cli_corpus_sexp("(program (ERROR (UNEXPECTED ' ')) (identifier))"),
+    @cli.format_cli_corpus_sexp(
+      "(program (ERROR (UNEXPECTED ' ')) (identifier))",
+    ),
     (
       #|(program
       #|  (ERROR
@@ -122,7 +124,7 @@ test "cli corpus sexp formatter mirrors upstream examples" {
     ),
   )
   assert_eq(
-    format_cli_corpus_sexp("(source_file (MISSING \")\"))"),
+    @cli.format_cli_corpus_sexp("(source_file (MISSING \")\"))"),
     (
       #|(source_file
       #|  (MISSING ")"))
@@ -133,7 +135,7 @@ test "cli corpus sexp formatter mirrors upstream examples" {
 ///|
 test "cli corpus update plan writes actual output for clean mismatch" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -145,14 +147,14 @@ test "cli corpus update plan writes actual output for clean mismatch" {
       #|
     ),
   )
-  let plan = plan_cli_corpus_update(parser, file)
+  let plan = @cli.plan_cli_corpus_update(parser, file)
   assert_true(plan.can_update)
   assert_true(!plan.has_unexpected_parse_errors)
   assert_eq(plan.results.length(), 1)
   assert_true(plan.results[0].status is CorpusRunFailed)
   assert_eq(plan.corrections.length(), 1)
   assert_eq(
-    render_cli_corpus_corrections(plan.corrections),
+    @cli.render_cli_corpus_corrections(plan.corrections),
     (
       #|===
       #|Needs update
@@ -170,7 +172,7 @@ test "cli corpus update plan writes actual output for clean mismatch" {
 ///|
 test "cli corpus update plan blocks unexpected parse errors" {
   let parser = cli_corpus_run_diagnostics_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -182,13 +184,13 @@ test "cli corpus update plan blocks unexpected parse errors" {
       #|
     ),
   )
-  let plan = plan_cli_corpus_update(parser, file)
+  let plan = @cli.plan_cli_corpus_update(parser, file)
   assert_true(!plan.can_update)
   assert_true(plan.has_unexpected_parse_errors)
   assert_eq(plan.results.length(), 1)
   assert_true(plan.results[0].status is CorpusRunFailed)
   assert_eq(
-    render_cli_corpus_corrections(plan.corrections),
+    @cli.render_cli_corpus_corrections(plan.corrections),
     (
       #|===
       #|Unexpected error
@@ -205,7 +207,7 @@ test "cli corpus update plan blocks unexpected parse errors" {
 ///|
 test "cli corpus update plan preserves filtered and fail-fast tail entries" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -230,7 +232,11 @@ test "cli corpus update plan preserves filtered and fail-fast tail entries" {
       #|
     ),
   )
-  let plan = plan_cli_corpus_update(parser, file, exclude_pattern="Filtered")
+  let plan = @cli.plan_cli_corpus_update(
+    parser,
+    file,
+    exclude_pattern="Filtered",
+  )
   assert_true(plan.can_update)
   assert_true(plan.stopped_on_fail_fast)
   assert_eq(plan.results.length(), 1)
@@ -246,7 +252,7 @@ test "cli corpus update plan preserves filtered and fail-fast tail entries" {
 ///|
 test "cli corpus update plan preserves error expectations" {
   let parser = cli_corpus_run_diagnostics_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -259,7 +265,7 @@ test "cli corpus update plan preserves error expectations" {
       #|
     ),
   )
-  let plan = plan_cli_corpus_update(parser, file)
+  let plan = @cli.plan_cli_corpus_update(parser, file)
   assert_true(plan.can_update)
   assert_true(!plan.has_unexpected_parse_errors)
   assert_eq(plan.results.length(), 1)
@@ -270,7 +276,7 @@ test "cli corpus update plan preserves error expectations" {
 ///|
 test "cli corpus runner strips fields unless expected output keeps them" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -283,7 +289,7 @@ test "cli corpus runner strips fields unless expected output keeps them" {
     ),
     file_name="corpus.txt",
   )
-  let results = run_cli_corpus_file(parser, file)
+  let results = @cli.run_cli_corpus_file(parser, file)
   assert_eq(results.length(), 1)
   let result = results[0]
   assert_true(result.status is CorpusRunPassed)
@@ -291,14 +297,14 @@ test "cli corpus runner strips fields unless expected output keeps them" {
   assert_eq(result.actual, "(document (item))")
   assert_true(!result.has_parse_error)
   assert_true(result.file_name == Some("corpus.txt"))
-  assert_true(!cli_corpus_run_results_have_failure(results))
-  assert_eq(cli_corpus_run_exit_code(results), 0)
+  assert_true(!@cli.cli_corpus_run_results_have_failure(results))
+  assert_eq(@cli.cli_corpus_run_exit_code(results), 0)
 }
 
 ///|
 test "cli corpus runner show_fields keeps fields for comparison" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -310,20 +316,20 @@ test "cli corpus runner show_fields keeps fields for comparison" {
       #|
     ),
   )
-  let results = run_cli_corpus_file(parser, file, show_fields=true)
+  let results = @cli.run_cli_corpus_file(parser, file, show_fields=true)
   assert_eq(results.length(), 1)
   let result = results[0]
   assert_true(result.status is CorpusRunFailed)
   assert_eq(result.expected, "(document (item))")
   assert_eq(result.actual, "(document left: (item))")
-  assert_true(cli_corpus_run_results_have_failure(results))
-  assert_eq(cli_corpus_run_exit_code(results), 1)
+  assert_true(@cli.cli_corpus_run_results_have_failure(results))
+  assert_eq(@cli.cli_corpus_run_exit_code(results), 1)
 }
 
 ///|
 test "cli corpus runner compares cst output" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -338,7 +344,7 @@ test "cli corpus runner compares cst output" {
       #|
     ),
   )
-  let result = run_cli_corpus_example(parser, file.examples[0])
+  let result = @cli.run_cli_corpus_example(parser, file.examples[0])
   assert_true(result.status is CorpusRunPassed)
   assert_true(result.is_cst)
   assert_eq(result.actual, file.examples[0].output)
@@ -347,7 +353,7 @@ test "cli corpus runner compares cst output" {
 ///|
 test "cli corpus runner handles error expectations" {
   let parser = cli_corpus_run_diagnostics_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -367,12 +373,12 @@ test "cli corpus runner handles error expectations" {
       #|
     ),
   )
-  let passing = run_cli_corpus_example(parser, file.examples[0])
+  let passing = @cli.run_cli_corpus_example(parser, file.examples[0])
   assert_true(passing.status is CorpusRunPassed)
   assert_true(passing.has_parse_error)
   assert_eq(passing.expected, "ERROR")
   assert_eq(passing.actual, "(document (UNEXPECTED 'x') (MISSING \"a\"))")
-  let failing = run_cli_corpus_example(parser, file.examples[1])
+  let failing = @cli.run_cli_corpus_example(parser, file.examples[1])
   assert_true(failing.status is CorpusRunFailed)
   assert_true(!failing.has_parse_error)
   assert_eq(failing.expected, "NO ERROR")
@@ -382,7 +388,7 @@ test "cli corpus runner handles error expectations" {
 ///|
 test "cli corpus runner returns skip and platform outcomes" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -403,17 +409,17 @@ test "cli corpus runner returns skip and platform outcomes" {
     ),
     current_platform="linux",
   )
-  let results = run_cli_corpus_file(parser, file)
+  let results = @cli.run_cli_corpus_file(parser, file)
   assert_eq(results.length(), 2)
   assert_true(results[0].status is CorpusRunSkipped)
   assert_true(results[1].status is CorpusRunPlatformSkipped)
-  assert_true(!cli_corpus_run_results_have_failure(results))
+  assert_true(!@cli.cli_corpus_run_results_have_failure(results))
 }
 
 ///|
 test "cli corpus runner filters examples and honors fail fast" {
   let parser = cli_corpus_run_pair_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -434,25 +440,38 @@ test "cli corpus runner filters examples and honors fail fast" {
     file_name="corpus.txt",
   )
   assert_true(
-    cli_corpus_example_is_selected(file.examples[0], include_pattern="First"),
+    @cli.cli_corpus_example_is_selected(
+      file.examples[0],
+      include_pattern="First",
+    ),
   )
   assert_true(
-    !cli_corpus_example_is_selected(file.examples[1], exclude_pattern="Second"),
+    !@cli.cli_corpus_example_is_selected(
+      file.examples[1],
+      exclude_pattern="Second",
+    ),
   )
   assert_true(
-    cli_corpus_example_is_selected(
+    @cli.cli_corpus_example_is_selected(
       file.examples[0],
       include_pattern="First",
       exclude_pattern="First",
     ),
   )
   assert_true(
-    !cli_corpus_example_is_selected(file.examples[0], file_name="other.txt"),
+    !@cli.cli_corpus_example_is_selected(
+      file.examples[0],
+      file_name="other.txt",
+    ),
   )
-  let filtered = run_cli_corpus_file(parser, file, include_pattern="Second")
+  let filtered = @cli.run_cli_corpus_file(
+    parser,
+    file,
+    include_pattern="Second",
+  )
   assert_eq(filtered.length(), 1)
   assert_true(filtered[0].status is CorpusRunPassed)
-  let fail_fast = run_cli_corpus_file(parser, file)
+  let fail_fast = @cli.run_cli_corpus_file(parser, file)
   assert_eq(fail_fast.length(), 1)
   assert_true(fail_fast[0].status is CorpusRunFailed)
 }
@@ -460,7 +479,7 @@ test "cli corpus runner filters examples and honors fail fast" {
 ///|
 test "cli corpus runner fail fast stops after passing error expectation" {
   let parser = cli_corpus_run_diagnostics_parser()
-  let file = parse_corpus_file_contents(
+  let file = @cli.parse_corpus_file_contents(
     "sample",
     (
       #|===
@@ -480,7 +499,7 @@ test "cli corpus runner fail fast stops after passing error expectation" {
       #|
     ),
   )
-  let results = run_cli_corpus_file(parser, file)
+  let results = @cli.run_cli_corpus_file(parser, file)
   assert_eq(results.length(), 1)
   assert_true(results[0].status is CorpusRunPassed)
   assert_true(results[0].expectation is Error)
@@ -489,11 +508,15 @@ test "cli corpus runner fail fast stops after passing error expectation" {
 ///|
 test "cli corpus sexp field stripper mirrors upstream shape" {
   assert_eq(
-    strip_cli_corpus_sexp_fields("(a b: (c) (d) e: (f (g field: (MISSING i))))"),
+    @cli.strip_cli_corpus_sexp_fields(
+      "(a b: (c) (d) e: (f (g field: (MISSING i))))",
+    ),
     "(a (c) (d) (f (g (MISSING i))))",
   )
   assert_eq(
-    strip_cli_corpus_sexp_fields("(a keyword-like: (c) invalid-: (d) (h: (i)))"),
+    @cli.strip_cli_corpus_sexp_fields(
+      "(a keyword-like: (c) invalid-: (d) (h: (i)))",
+    ),
     "(a keyword-like: (c) invalid-: (d) (h: (i)))",
   )
 }

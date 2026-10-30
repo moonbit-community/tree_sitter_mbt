@@ -17,7 +17,7 @@ test "language facade wraps validated tables without runtime leakage" {
       [@tables.GeneratedParseTableCell::EmptyCell],
     ],
   )
-  let language = language_from_generated_tables(tables)
+  let language = @tree_sitter_mbt.language_from_generated_tables(tables)
   assert_eq(language.name(), "fixture")
   assert_eq(language.abi_version(), @tables.target_abi_version())
   assert_eq(language.symbol_count(), 1)
@@ -38,7 +38,7 @@ test "language facade wraps validated tables without runtime leakage" {
 
 ///|
 test "parser requires a language before parsing" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   let result = @test.expect_error(() => parser.parse_bytes(b""))
   match result {
     NoLanguage => ()
@@ -48,10 +48,10 @@ test "parser requires a language before parsing" {
 
 ///|
 test "parser rejects old tree from another language" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
 
-  let old_parser = Parser::new()
+  let old_parser = @tree_sitter_mbt.Parser::new()
   old_parser.set_language(
     generated_language_from(
       (
@@ -75,11 +75,11 @@ test "parser rejects old tree from another language" {
 ///|
 test "parser accepts same-language old tree with full reparse fallback" {
   let language = parser_smoke_language()
-  let old_parser = Parser::new()
+  let old_parser = @tree_sitter_mbt.Parser::new()
   old_parser.set_language(language)
   let old_tree = old_parser.parse_bytes(b"a")
 
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a", old_tree=Some(old_tree))
   assert_eq(tree.to_sexp(), "(document)")
@@ -113,7 +113,7 @@ fn facade_unbounded_range() -> @api.Range {
 
 ///|
 test "parser included ranges validate and preserve copies" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   assert_eq(parser.included_ranges().length(), 0)
 
   let ranges = [facade_range(0, 1)]
@@ -152,7 +152,7 @@ test "parser included ranges validate and preserve copies" {
 
 ///|
 test "parser lexes from a single included range" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   parser.set_included_ranges([facade_range_at(2, 3)])
   let tree = parser.parse_bytes(b"xxa")
@@ -170,7 +170,7 @@ test "parser lexes from a single included range" {
 
 ///|
 test "parser lexes across multiple included ranges" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -207,7 +207,7 @@ test "parser lexes across multiple included ranges" {
 
 ///|
 test "parser skips empty included ranges while lexing" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   parser.set_included_ranges([
     facade_range_at(0, 0),
@@ -225,7 +225,7 @@ test "parser skips empty included ranges while lexing" {
 
 ///|
 test "parser accepts explicit unbounded included range" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   parser.set_included_ranges([
     @api.Range::unbounded(start_byte=0, start_point=@api.Point::zero()),
@@ -237,7 +237,10 @@ test "parser accepts explicit unbounded included range" {
 }
 
 ///|
-fn facade_log_entry(kind : LogType, message : String) -> String {
+fn facade_log_entry(
+  kind : @tree_sitter_mbt.LogType,
+  message : String,
+) -> String {
   let kind_name = match kind {
     Lex => "lex"
     Parse => "parse"
@@ -270,12 +273,14 @@ fn facade_contains_symbol(
 
 ///|
 test "parser logger can be replaced, observed, and cleared" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let logs : Array[String] = []
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   match parser.logger() {
@@ -298,7 +303,7 @@ test "parser logger can be replaced, observed, and cleared" {
 
 ///|
 test "parser reset preserves configured facade state" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let ranges = [facade_range(0, 1)]
   parser.set_included_ranges(ranges)
@@ -306,7 +311,9 @@ test "parser reset preserves configured facade state" {
   let logs : Array[String] = []
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
 
@@ -322,13 +329,15 @@ test "parser reset preserves configured facade state" {
 }
 
 ///|
-fn generated_language_from(grammar_json : String) -> Language raise {
+fn generated_language_from(
+  grammar_json : String,
+) -> @tree_sitter_mbt.Language raise {
   let generated = @generator.generate_language(grammar_json)
-  language_from_generated_tables(generated.tables)
+  @tree_sitter_mbt.language_from_generated_tables(generated.tables)
 }
 
 ///|
-fn parser_smoke_language() -> Language raise {
+fn parser_smoke_language() -> @tree_sitter_mbt.Language raise {
   generated_language_from(
     (
       #|{
@@ -375,7 +384,9 @@ test "language symbol lookup and next state use generated table entries" {
 }
 
 ///|
-fn lookahead_names(iterator : LookaheadIterator) -> Array[String] {
+fn lookahead_names(
+  iterator : @tree_sitter_mbt.LookaheadIterator,
+) -> Array[String] {
   let names : Array[String] = []
   while iterator.next() {
     match iterator.current_symbol_name() {
@@ -415,7 +426,7 @@ test "lookahead iterator reset preserves invalid state failures" {
   assert_true(iterator.current_symbol_name() == Some("ERROR"))
   assert_true(lookahead_names(iterator) == ["a", "document"])
 
-  let other = language_from_generated_tables(
+  let other = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="lookahead_reset",
       symbol_count=1,
@@ -448,7 +459,7 @@ test "lookahead iterator reset preserves invalid state failures" {
 
 ///|
 test "language lookahead iterator preserves small table section order" {
-  let language = language_from_generated_tables(
+  let language = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="small_lookahead",
       symbol_count=3,
@@ -551,7 +562,7 @@ test "language exposes supertypes and subtypes" {
 
 ///|
 test "language next state treats shift extra as same state" {
-  let language = language_from_generated_tables(
+  let language = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="shift_extra",
       symbol_count=1,
@@ -584,8 +595,8 @@ test "language next state treats shift extra as same state" {
 }
 
 ///|
-fn accept_trailing_extra_language() -> Language raise {
-  language_from_generated_tables(
+fn accept_trailing_extra_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="accept_trailing_extra",
       symbol_count=4,
@@ -688,8 +699,8 @@ fn accept_trailing_extra_language() -> Language raise {
 ///|
 fn accept_trailing_external_extra_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="accept_trailing_external_extra",
       symbol_count=4,
@@ -790,8 +801,8 @@ fn accept_trailing_external_extra_language(
 ///|
 fn external_extra_between_tokens_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_extra_between_tokens",
       symbol_count=5,
@@ -915,7 +926,7 @@ fn external_extra_between_tokens_language(
 
 ///|
 test "parser preserves trailing extra shifted after root reduction" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(accept_trailing_extra_language())
   let tree = parser.parse_bytes(b"a!")
   assert_eq(tree.to_sexp(), "(document (comment))")
@@ -933,7 +944,7 @@ test "parser preserves trailing extra shifted after root reduction" {
 
 ///|
 test "parser preserves trailing external extra shifted after root reduction" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     accept_trailing_external_extra_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -967,7 +978,7 @@ test "parser preserves trailing external extra shifted after root reduction" {
 
 ///|
 test "parser preserves external extra between ordinary tokens" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_extra_between_tokens_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -1005,7 +1016,7 @@ test "parser preserves external extra between ordinary tokens" {
 
 ///|
 test "parser ignores zero-width external extra between ordinary tokens" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_extra_between_tokens_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -1038,7 +1049,7 @@ test "parser ignores zero-width external extra between ordinary tokens" {
 
 ///|
 test "language next state maps builtin error symbols to error state" {
-  let language = language_from_generated_tables(
+  let language = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="builtin_error",
       symbol_count=3,
@@ -1084,7 +1095,7 @@ test "language next state maps builtin error symbols to error state" {
 
 ///|
 test "parser skips repetition shift as runtime parse action" {
-  let language = language_from_generated_tables(
+  let language = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="repetition_shift",
       symbol_count=1,
@@ -1121,7 +1132,7 @@ test "parser skips repetition shift as runtime parse action" {
       ],
     ),
   )
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let result = @test.expect_error(() => parser.parse_bytes(b"x"))
   match result {
@@ -1135,7 +1146,7 @@ test "parser skips repetition shift as runtime parse action" {
 
 ///|
 test "parser missing-token recovery skips repetition shifts" {
-  let language = language_from_generated_tables(
+  let language = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="missing_repetition_shift",
       symbol_count=3,
@@ -1205,7 +1216,7 @@ test "parser missing-token recovery skips repetition shifts" {
       production_infos=[@tables.GeneratedProductionInfo::new()],
     ),
   )
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let result = @test.expect_error(() => parser.parse_bytes(b""))
   match result {
@@ -1219,7 +1230,7 @@ test "parser missing-token recovery skips repetition shifts" {
 
 ///|
 test "parser recovers by inserting a missing terminal before EOF" {
-  let language = language_from_generated_tables(
+  let language = @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="missing_terminal",
       symbol_count=3,
@@ -1290,10 +1301,12 @@ test "parser recovers by inserting a missing terminal before EOF" {
     ),
   )
   let logs : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(language)
@@ -1307,7 +1320,7 @@ test "parser recovers by inserting a missing terminal before EOF" {
 
 ///|
 test "parser parses minimal generated language from bytes" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   let language = parser_smoke_language()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
@@ -1330,10 +1343,12 @@ test "parser parses minimal generated language from bytes" {
 ///|
 test "parser recovers lex failure as error leaf before generated token" {
   let logs : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(parser_smoke_language())
@@ -1356,7 +1371,7 @@ test "parser recovers lex failure as error leaf before generated token" {
 
 ///|
 test "parser formats recovered unexpected character boundaries" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   assert_eq(
     parser.parse_bytes(b"\na").to_sexp(),
@@ -1373,8 +1388,8 @@ test "parser formats recovered unexpected character boundaries" {
 }
 
 ///|
-fn error_lex_fallback_language() -> Language raise {
-  language_from_generated_tables(
+fn error_lex_fallback_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="error_lex_fallback",
       symbol_count=4,
@@ -1476,7 +1491,7 @@ fn error_lex_fallback_language() -> Language raise {
 
 ///|
 test "parser uses error-state lex mode for recovered error span" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(error_lex_fallback_language())
   let tree = parser.parse_bytes(b"xxa")
   assert_eq(tree.to_sexp(), "(document (UNEXPECTED 'x'))")
@@ -1488,8 +1503,8 @@ test "parser uses error-state lex mode for recovered error span" {
 }
 
 ///|
-fn unexpected_token_skip_language() -> Language raise {
-  language_from_generated_tables(
+fn unexpected_token_skip_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="unexpected_token_skip",
       symbol_count=4,
@@ -1580,8 +1595,8 @@ fn unexpected_token_skip_language() -> Language raise {
 }
 
 ///|
-fn recover_action_language() -> Language raise {
-  language_from_generated_tables(
+fn recover_action_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="recover_action",
       symbol_count=4,
@@ -1684,10 +1699,12 @@ fn recover_action_language() -> Language raise {
 ///|
 test "parser executes recover action by wrapping lookahead" {
   let logs : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(recover_action_language())
@@ -1704,8 +1721,8 @@ test "parser executes recover action by wrapping lookahead" {
 }
 
 ///|
-fn recover_eof_language() -> Language raise {
-  language_from_generated_tables(
+fn recover_eof_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="recover_eof",
       symbol_count=2,
@@ -1766,10 +1783,12 @@ fn recover_eof_language() -> Language raise {
 ///|
 test "parser recovers eof by pushing empty error node" {
   let logs : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(recover_eof_language())
@@ -1784,8 +1803,8 @@ test "parser recovers eof by pushing empty error node" {
 }
 
 ///|
-fn all_potential_reduce_language() -> Language raise {
-  language_from_generated_tables(
+fn all_potential_reduce_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="all_potential_reduce",
       symbol_count=6,
@@ -1914,10 +1933,12 @@ fn all_potential_reduce_language() -> Language raise {
 ///|
 test "parser tries all potential reductions before skipping token" {
   let logs : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(all_potential_reduce_language())
@@ -1935,8 +1956,8 @@ test "parser tries all potential reductions before skipping token" {
 }
 
 ///|
-fn all_potential_reduce_order_language() -> Language raise {
-  language_from_generated_tables(
+fn all_potential_reduce_order_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="all_potential_reduce_order",
       symbol_count=7,
@@ -2060,7 +2081,7 @@ fn all_potential_reduce_order_language() -> Language raise {
 
 ///|
 test "parser orders all potential reductions by reduce symbol" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(all_potential_reduce_order_language())
   let tree = parser.parse_bytes(b"ac")
   assert_eq(tree.to_sexp(), "(high (UNEXPECTED 'c'))")
@@ -2068,8 +2089,8 @@ test "parser orders all potential reductions by reduce symbol" {
 }
 
 ///|
-fn dynamic_reduce_choice_language() -> Language raise {
-  language_from_generated_tables(
+fn dynamic_reduce_choice_language() -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="dynamic_reduce_choice",
       symbol_count=4,
@@ -2168,7 +2189,7 @@ fn dynamic_reduce_choice_language() -> Language raise {
 
 ///|
 test "parser prefers higher dynamic precedence among reduce alternatives" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(dynamic_reduce_choice_language())
   let tree = parser.parse_bytes(b"a")
   let root = tree.root_node()
@@ -2180,7 +2201,7 @@ test "parser prefers higher dynamic precedence among reduce alternatives" {
 
 ///|
 test "parser prefers higher dynamic precedence across shift reduce branches" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -2255,10 +2276,12 @@ test "parser prefers higher dynamic precedence across shift reduce branches" {
 ///|
 test "parser skips lexed unexpected token before reducing" {
   let logs : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(unexpected_token_skip_language())
@@ -2276,7 +2299,7 @@ test "parser skips lexed unexpected token before reducing" {
 
 ///|
 test "parser recovers missing terminal in generated language" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let tree = parser.parse_bytes(b"")
   assert_eq(tree.to_sexp(), "(document (MISSING \"a\"))")
@@ -2285,7 +2308,7 @@ test "parser recovers missing terminal in generated language" {
 
 ///|
 test "parser attaches recovered lex error before generated missing token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let tree = parser.parse_bytes(b"x")
   assert_eq(tree.to_sexp(), "(document (UNEXPECTED 'x') (MISSING \"a\"))")
@@ -2299,7 +2322,7 @@ test "parser attaches recovered lex error before generated missing token" {
 fn external_scanner_language(
   scanner : @tables.ExternalScannerDescriptor,
   main_lex~ : Bool = false,
-) -> Language raise {
+) -> @tree_sitter_mbt.Language raise {
   let token_lex_state = if main_lex { 0 } else { @tables.lex_state_none() }
   let eof_lex_state = if main_lex { 1 } else { 0 }
   let main_lex_tables = if main_lex {
@@ -2331,7 +2354,7 @@ fn external_scanner_language(
       ]),
     ]
   }
-  language_from_generated_tables(
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_scan",
       symbol_count=3,
@@ -2412,8 +2435,8 @@ fn external_scanner_language(
 fn external_internal_line_break_language(
   scanner : @tables.ExternalScannerDescriptor,
   internal_token_name~ : String = "line_break",
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_internal_line_break",
       symbol_count=4,
@@ -2524,8 +2547,8 @@ fn external_internal_line_break_language(
 ///|
 fn epsilon_external_then_token_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="epsilon_external_tokens",
       symbol_count=4,
@@ -2660,8 +2683,8 @@ fn utf16_surrogate_scanner_language(
   first_token_name~ : String = "surrogate",
   second_token_name~ : String = "supplementary",
   root_name~ : String = "program",
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name=language_name,
       symbol_count=4,
@@ -2754,8 +2777,8 @@ fn utf16_surrogate_scanner_language(
 ///|
 fn external_lookahead_eof_boundary_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_lookahead_eof_boundary",
       symbol_count=6,
@@ -2908,8 +2931,8 @@ fn external_lookahead_eof_boundary_language(
 ///|
 fn external_zero_width_extra_fallback_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_zero_width_extra_fallback",
       symbol_count=4,
@@ -3056,8 +3079,8 @@ fn external_lookahead_eof_boundary_scanner() -> @tables.ExternalScannerDescripto
 ///|
 fn external_pair_scanner_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_pair_scan",
       symbol_count=3,
@@ -3157,8 +3180,8 @@ fn external_pair_scanner_language(
 ///|
 fn external_after_a_scanner_language(
   scanner : @tables.ExternalScannerDescriptor,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name="external_after_a_scan",
       symbol_count=4,
@@ -3261,7 +3284,7 @@ fn external_after_a_scanner_language(
 
 ///|
 test "parser accepts external scanner token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -3288,7 +3311,7 @@ test "parser accepts external scanner token" {
 
 ///|
 test "parser maps external scanner token to paired internal terminal" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_internal_line_break_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -3321,7 +3344,7 @@ test "parser maps external scanner token to paired internal terminal" {
 
 ///|
 test "parser maps external scanner token to paired anonymous literal terminal" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_internal_line_break_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -3352,7 +3375,7 @@ test "parser maps external scanner token to paired anonymous literal terminal" {
 
 ///|
 test "parser accepts external scanner token built with advance and mark_end" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -3377,7 +3400,7 @@ test "parser accepts external scanner token built with advance and mark_end" {
 
 ///|
 test "external scanner token after mark_end clamps start to marked end" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -3400,11 +3423,13 @@ test "external scanner token after mark_end clamps start to marked end" {
 
 ///|
 test "external scanner context records column access and logs through parser logger" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   let logs : Array[String] = []
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   parser.set_language(
@@ -3428,7 +3453,7 @@ test "external scanner context records column access and logs through parser log
 
 ///|
 test "external scanner column ignores file start BOM" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -3458,7 +3483,7 @@ test "external scanner column ignores file start BOM" {
 
 ///|
 test "parser accepts external scanner zero-width state change token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -3475,7 +3500,7 @@ test "parser accepts external scanner zero-width state change token" {
 
 ///|
 test "parser accepts external scanner zero-width serialized state change token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3502,7 +3527,7 @@ test "parser accepts external scanner zero-width serialized state change token" 
 
 ///|
 test "parser accepts external scanner zero-width ordinary token without state change" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => {
@@ -3519,7 +3544,7 @@ test "parser accepts external scanner zero-width ordinary token without state ch
 
 ///|
 test "parser accepts zero-width external token before main token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     epsilon_external_then_token_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -3547,7 +3572,7 @@ test "parser accepts zero-width external token before main token" {
 
 ///|
 test "parser ignores zero-width external extra without state change" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_zero_width_extra_fallback_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -3568,7 +3593,7 @@ test "parser ignores zero-width external extra without state change" {
 
 ///|
 test "parser ignores zero-width external extra range without state change" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_zero_width_extra_fallback_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -3587,7 +3612,7 @@ test "parser ignores zero-width external extra range without state change" {
 
 ///|
 test "parser falls back to main lexer when external scanner returns no token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => @tables.ExternalScanResult::NoToken),
@@ -3602,7 +3627,7 @@ test "parser falls back to main lexer when external scanner returns no token" {
 ///|
 test "parser runs external scanner lifecycle callbacks" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3653,7 +3678,7 @@ test "parser reuses unchanged same-input old tree without scanner session" {
       },
     ),
   )
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let old_tree = parser.parse_bytes(b"x")
   assert_true(
@@ -3661,10 +3686,12 @@ test "parser reuses unchanged same-input old tree without scanner session" {
   )
 
   let logs : Array[String] = []
-  let reparsing_parser = Parser::new()
+  let reparsing_parser = @tree_sitter_mbt.Parser::new()
   reparsing_parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   reparsing_parser.set_language(language)
@@ -3681,7 +3708,7 @@ test "parser reuses unchanged same-input old tree without scanner session" {
 test "parser passes previous external scanner state to next scan" {
   let events : Array[String] = []
   let scan_count = [0]
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_pair_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3724,7 +3751,7 @@ test "parser passes previous external scanner state to next scan" {
 ///|
 test "parser destroys external scanner after scanner failure" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3755,7 +3782,7 @@ test "parser destroys external scanner after scanner failure" {
 ///|
 test "parser reset destroys external scanner retained after cancellation" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3780,7 +3807,9 @@ test "parser reset destroys external scanner retained after cancellation" {
   let result = @test.expect_error(() => {
     parser.parse_bytes(
       b"x",
-      options=ParseOptions::progress(state => state.current_byte_offset == 0),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset == 0
+      }),
     )
   })
   match result {
@@ -3799,7 +3828,7 @@ test "parser reset destroys external scanner retained after cancellation" {
 ///|
 test "parser set_language destroys external scanner retained after cancellation" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3824,7 +3853,9 @@ test "parser set_language destroys external scanner retained after cancellation"
   let result = @test.expect_error(() => {
     parser.parse_bytes(
       b"x",
-      options=ParseOptions::progress(state => state.current_byte_offset == 0),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset == 0
+      }),
     )
   })
   assert_true(result is Cancelled(_))
@@ -3837,7 +3868,7 @@ test "parser set_language destroys external scanner retained after cancellation"
 ///|
 test "parser reuses external scanner retained after cancellation" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3862,7 +3893,9 @@ test "parser reuses external scanner retained after cancellation" {
   let result = @test.expect_error(() => {
     parser.parse_bytes(
       b"x",
-      options=ParseOptions::progress(state => state.current_byte_offset == 0),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset == 0
+      }),
     )
   })
   assert_true(result is Cancelled(_))
@@ -3879,7 +3912,7 @@ test "parser reuses external scanner retained after cancellation" {
 test "parser resumes external scanner state retained after cancellation" {
   let events : Array[String] = []
   let scan_count = [0]
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_pair_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3911,7 +3944,9 @@ test "parser resumes external scanner state retained after cancellation" {
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"xy",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   match cancelled {
@@ -3936,7 +3971,7 @@ test "parser resumes external scanner state retained after cancellation" {
 ///|
 test "parser validates external scanner serialized state size" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -3976,7 +4011,7 @@ test "parser validates external scanner serialized state size" {
 
 ///|
 test "parser reports missing external scanner callback" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::new(
@@ -4000,7 +4035,7 @@ test "parser reports missing external scanner callback" {
 
 ///|
 test "parser reports external scanner callback failure" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => raise @api.ScannerError::Failure("boom")),
@@ -4016,7 +4051,7 @@ test "parser reports external scanner callback failure" {
 
 ///|
 test "parser validates external scanner token id" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => {
@@ -4037,7 +4072,7 @@ test "parser validates external scanner token id" {
 
 ///|
 test "parser validates external scanner whitelist" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -4064,7 +4099,7 @@ test "parser validates external scanner whitelist" {
 
 ///|
 test "parser validates external scanner consumed input bounds" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => {
@@ -4085,7 +4120,7 @@ test "parser validates external scanner consumed input bounds" {
 
 ///|
 test "parser rejects external scanner token range before current byte" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => {
@@ -4116,7 +4151,7 @@ test "parser rejects external scanner token range before current byte" {
 
 ///|
 test "parser passes snapped included range start to external scanner" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4146,7 +4181,7 @@ test "parser passes snapped included range start to external scanner" {
 
 ///|
 test "parser external scanner context updates eof after advance" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4177,7 +4212,7 @@ test "parser external scanner context updates eof after advance" {
 ///|
 test "parser external scanner mark_end at included range start uses previous range end" {
   let scan_offsets : Array[UInt32] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_pair_scanner_language(
       external_scanner(context => {
@@ -4216,7 +4251,7 @@ test "parser external scanner mark_end at included range start uses previous ran
 
 ///|
 test "external scanner eof lookahead follows included range expansion" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_lookahead_eof_boundary_language(
       external_lookahead_eof_boundary_scanner(),
@@ -4234,7 +4269,7 @@ test "external scanner eof lookahead follows included range expansion" {
 ///|
 test "parser passes EOF state to external scanner context" {
   let saw_eof = [false]
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4258,7 +4293,7 @@ test "parser passes EOF state to external scanner context" {
 test "external scanner get_column works at EOF" {
   let saw_eof = [false]
   let saw_column = [false]
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_after_a_scanner_language(
       external_scanner(context => {
@@ -4289,7 +4324,7 @@ test "external scanner get_column works at EOF" {
 ///|
 test "external scanner repeated get_column after advance is bounded" {
   let columns : Array[UInt32] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4312,7 +4347,7 @@ test "external scanner repeated get_column after advance is bounded" {
 
 ///|
 test "external scanner context reports code point column" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4355,7 +4390,7 @@ test "external scanner chooses token from current column" {
     )
   }
 
-  let leading_parser = Parser::new()
+  let leading_parser = @tree_sitter_mbt.Parser::new()
   leading_parser.set_language(make_language())
   let leading_tree = leading_parser.parse_bytes(b"x")
   assert_eq(leading_tree.to_sexp(), "(document (column_zero))")
@@ -4364,7 +4399,7 @@ test "external scanner chooses token from current column" {
   assert_eq(leading_child.start_byte(), 0)
   assert_eq(leading_child.end_byte(), 1)
 
-  let indented_parser = Parser::new()
+  let indented_parser = @tree_sitter_mbt.Parser::new()
   indented_parser.set_language(make_language())
   indented_parser.set_included_ranges([facade_range_at(2, 3)])
   let indented_tree = indented_parser.parse_bytes(b"  x")
@@ -4377,7 +4412,7 @@ test "external scanner chooses token from current column" {
 
 ///|
 test "external scanner skip unicode extra keeps code point column" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4416,7 +4451,7 @@ test "external scanner skip unicode extra keeps code point column" {
 
 ///|
 test "external scanner get_column marks node changed after column shift" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4451,7 +4486,7 @@ test "external scanner get_column marks node changed after column shift" {
 
 ///|
 test "external scanner context does not count leading BOM as column" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(context => {
@@ -4474,7 +4509,7 @@ test "external scanner context does not count leading BOM as column" {
 
 ///|
 test "parser validates external scanner consumed included range bounds" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       external_scanner(_context => {
@@ -4501,8 +4536,8 @@ fn scalar_token_language(
   name : String,
   token_name : String,
   codepoint : Int32,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name~,
       symbol_count=3,
@@ -4602,8 +4637,8 @@ fn scalar_pair_language(
   first_codepoint : Int32,
   second_token : String,
   second_codepoint : Int32,
-) -> Language raise {
-  language_from_generated_tables(
+) -> @tree_sitter_mbt.Language raise {
+  @tree_sitter_mbt.language_from_generated_tables(
     @tables.GeneratedLanguageTables::new(
       name~,
       symbol_count=4,
@@ -4723,13 +4758,13 @@ fn scalar_pair_language(
 }
 
 ///|
-fn invalid_utf8_language() -> Language raise {
+fn invalid_utf8_language() -> @tree_sitter_mbt.Language raise {
   scalar_token_language("invalid_utf8", "invalid_utf8", -1)
 }
 
 ///|
 test "parser advances invalid UTF-8 as decode error token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(invalid_utf8_language())
   let tree = parser.parse_bytes(Bytes::from_array([b'\xFF']))
   assert_eq(tree.to_sexp(), "(document)")
@@ -4746,19 +4781,19 @@ test "parser advances invalid UTF-8 as decode error token" {
 
 ///|
 test "parser does not join UTF-8 scalar across callback chunks" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language(
       "split_utf8_decode_errors", "invalid_first", -1, "invalid_second", -1,
     ),
   )
-  let input = Input::from_callback((byte, _point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, _point) => {
     if byte == 0 {
-      InputChunk::from_bytes(Bytes::from_array([b'\xC2']))
+      @tree_sitter_mbt.InputChunk::from_bytes(Bytes::from_array([b'\xC2']))
     } else if byte == 1 {
-      InputChunk::from_bytes(Bytes::from_array([b'\xB1']))
+      @tree_sitter_mbt.InputChunk::from_bytes(Bytes::from_array([b'\xB1']))
     } else {
-      InputChunk::eof()
+      @tree_sitter_mbt.InputChunk::eof()
     }
   })
   let tree = parser.parse(input)
@@ -4774,16 +4809,21 @@ test "parser does not join UTF-8 scalar across callback chunks" {
 
 ///|
 test "parser parses UTF-16 input facade" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
 
-  let le = parser.parse(Input::from_string("a", encoding=Utf16LE))
+  let le = parser.parse(
+    @tree_sitter_mbt.Input::from_string("a", encoding=Utf16LE),
+  )
   assert_eq(le.to_sexp(), "(document)")
   assert_eq(le.root_node().end_byte(), 2)
   assert_true(le.root_node().end_point() == @api.Point::new(row=0, column=2))
 
   let be = parser.parse(
-    Input::from_bytes(Bytes::from_array([b'\x00', b'a']), encoding=Utf16BE),
+    @tree_sitter_mbt.Input::from_bytes(
+      Bytes::from_array([b'\x00', b'a']),
+      encoding=Utf16BE,
+    ),
   )
   assert_eq(be.to_sexp(), "(document)")
   assert_eq(be.root_node().end_byte(), 2)
@@ -4797,12 +4837,14 @@ test "parser encodes supplementary UTF-16 string input as surrogate pair" {
     fail("expected valid supplementary char")
   }
   let source = String::from_array([face])
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_token_language("string_utf16_face", "face", 0x1F600),
   )
 
-  let le = parser.parse(Input::from_string(source, encoding=Utf16LE))
+  let le = parser.parse(
+    @tree_sitter_mbt.Input::from_string(source, encoding=Utf16LE),
+  )
   assert_eq(le.to_sexp(), "(document)")
   let le_child = le.root_node().child(0)
   assert_eq(le_child.type_(), "face")
@@ -4810,7 +4852,9 @@ test "parser encodes supplementary UTF-16 string input as surrogate pair" {
   assert_eq(le_child.end_byte(), 4)
   assert_true(le_child.end_point() == @api.Point::new(row=0, column=4))
 
-  let be = parser.parse(Input::from_string(source, encoding=Utf16BE))
+  let be = parser.parse(
+    @tree_sitter_mbt.Input::from_string(source, encoding=Utf16BE),
+  )
   assert_eq(be.to_sexp(), "(document)")
   let be_child = be.root_node().child(0)
   assert_eq(be_child.type_(), "face")
@@ -4821,7 +4865,7 @@ test "parser encodes supplementary UTF-16 string input as surrogate pair" {
 
 ///|
 test "parser skips file-start BOM before lexing" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
 
   let utf8 = parser.parse_bytes(
@@ -4834,7 +4878,7 @@ test "parser skips file-start BOM before lexing" {
   assert_true(utf8_child.start_point() == @api.Point::new(row=0, column=3))
 
   let utf16 = parser.parse(
-    Input::from_bytes(
+    @tree_sitter_mbt.Input::from_bytes(
       Bytes::from_array([b'\xFF', b'\xFE', b'a', b'\x00']),
       encoding=Utf16LE,
     ),
@@ -4848,7 +4892,7 @@ test "parser skips file-start BOM before lexing" {
 
 ///|
 test "parser treats non-file-start BOM as ordinary input" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(scalar_token_language("bom_token", "bom", 0xFEFF))
   parser.set_included_ranges([facade_range_at(1, 4)])
   let tree = parser.parse_bytes(
@@ -4864,10 +4908,10 @@ test "parser treats non-file-start BOM as ordinary input" {
 
 ///|
 test "parser decodes UTF-16 surrogate pair as one code point" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(scalar_token_language("grinning_face", "face", 0x1F600))
   let tree = parser.parse(
-    Input::from_bytes(
+    @tree_sitter_mbt.Input::from_bytes(
       Bytes::from_array([b'\x3D', b'\xD8', b'\x00', b'\xDE']),
       encoding=Utf16LE,
     ),
@@ -4882,12 +4926,15 @@ test "parser decodes UTF-16 surrogate pair as one code point" {
 
 ///|
 test "parser keeps lone UTF-16 surrogate as code point" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_token_language("lone_lead_surrogate", "lead", 0xD800),
   )
   let tree = parser.parse(
-    Input::from_bytes(Bytes::from_array([b'\x00', b'\xD8']), encoding=Utf16LE),
+    @tree_sitter_mbt.Input::from_bytes(
+      Bytes::from_array([b'\x00', b'\xD8']),
+      encoding=Utf16LE,
+    ),
   )
   assert_eq(tree.to_sexp(), "(document)")
   let child = tree.root_node().child(0)
@@ -4899,18 +4946,22 @@ test "parser keeps lone UTF-16 surrogate as code point" {
 
 ///|
 test "parser does not join UTF-16 surrogate pair across callback chunks" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("split_surrogates", "lead", 0xD800, "trail", 0xDE00),
   )
-  let input = Input::from_callback(
+  let input = @tree_sitter_mbt.Input::from_callback(
     (byte, _point) => {
       if byte == 0 {
-        InputChunk::from_bytes(Bytes::from_array([b'\x00', b'\xD8']))
+        @tree_sitter_mbt.InputChunk::from_bytes(
+          Bytes::from_array([b'\x00', b'\xD8']),
+        )
       } else if byte == 2 {
-        InputChunk::from_bytes(Bytes::from_array([b'\x00', b'\xDE']))
+        @tree_sitter_mbt.InputChunk::from_bytes(
+          Bytes::from_array([b'\x00', b'\xDE']),
+        )
       } else {
-        InputChunk::eof()
+        @tree_sitter_mbt.InputChunk::eof()
       }
     },
     encoding=Utf16LE,
@@ -4928,7 +4979,7 @@ test "parser does not join UTF-16 surrogate pair across callback chunks" {
 
 ///|
 test "external scanner sees UTF-16 lead surrogate at callback chunk end" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     utf16_surrogate_scanner_language(
       @tables.ExternalScannerDescriptor::with_scan(
@@ -4959,12 +5010,15 @@ test "external scanner sees UTF-16 lead surrogate at callback chunk end" {
     ),
   )
   let poisoned_chunk = Bytes::from_array([b'\x3E', b'\xD8', b'\x8B', b'\xDD'])
-  let input = Input::from_callback(
+  let input = @tree_sitter_mbt.Input::from_callback(
     (byte, _point) => {
       if byte == 0 {
-        InputChunk::new(chunk=Some(poisoned_chunk), bytes_read=2)
+        @tree_sitter_mbt.InputChunk::new(
+          chunk=Some(poisoned_chunk),
+          bytes_read=2,
+        )
       } else {
-        InputChunk::eof()
+        @tree_sitter_mbt.InputChunk::eof()
       }
     },
     encoding=Utf16LE,
@@ -4975,10 +5029,13 @@ test "external scanner sees UTF-16 lead surrogate at callback chunk end" {
 
 ///|
 test "parser advances odd UTF-16 tail as decode error token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(invalid_utf8_language())
   let tree = parser.parse(
-    Input::from_bytes(Bytes::from_array([b'\x61']), encoding=Utf16LE),
+    @tree_sitter_mbt.Input::from_bytes(
+      Bytes::from_array([b'\x61']),
+      encoding=Utf16LE,
+    ),
   )
   assert_eq(tree.to_sexp(), "(document)")
   let child = tree.root_node().child(0)
@@ -4990,7 +5047,7 @@ test "parser advances odd UTF-16 tail as decode error token" {
 
 ///|
 test "parser stores configured included ranges on parse tree" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let ranges = [facade_range(0, 1)]
   parser.set_included_ranges(ranges)
@@ -5000,7 +5057,7 @@ test "parser stores configured included ranges on parse tree" {
 
 ///|
 test "tree copy preserves syntax and copied included ranges" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let ranges = [facade_range(0, 1)]
   parser.set_included_ranges(ranges)
@@ -5033,7 +5090,7 @@ test "tree copy preserves syntax and copied included ranges" {
 
 ///|
 test "changed ranges ignores empty combined root range" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -5048,7 +5105,7 @@ test "changed ranges ignores empty combined root range" {
   )
   let tree = parser.parse_bytes(b"")
 
-  let ranged_parser = Parser::new()
+  let ranged_parser = @tree_sitter_mbt.Parser::new()
   ranged_parser.set_language(parser.language().unwrap())
   ranged_parser.set_included_ranges([
     @api.Range::unbounded(start_byte=0, start_point=@api.Point::zero()),
@@ -5064,7 +5121,7 @@ test "changed ranges ignores empty combined root range" {
 
 ///|
 test "tree edit updates ranges and marks touched nodes changed" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -5116,7 +5173,7 @@ test "tree edit updates ranges and marks touched nodes changed" {
 
 ///|
 test "tree edit pure insertion leaves shifted sibling unchanged" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -5164,7 +5221,7 @@ test "tree edit pure insertion leaves shifted sibling unchanged" {
 
 ///|
 test "tree edit pure insertion at first child start marks first child" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -5211,7 +5268,7 @@ test "tree edit pure insertion at first child start marks first child" {
 
 ///|
 test "changed ranges narrows edited old tree against full reparse" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -5251,7 +5308,7 @@ test "changed ranges narrows edited old tree against full reparse" {
 
 ///|
 test "node edit lets held handles follow tree edits explicitly" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -5297,32 +5354,32 @@ test "node edit lets held handles follow tree edits explicitly" {
 
 ///|
 test "parser parses minimal generated language from string" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   assert_eq(parser.parse_string("a").to_sexp(), "(document)")
 }
 
 ///|
 test "parser parses UTF-8 Input facade" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_string("a")
+  let input = @tree_sitter_mbt.Input::from_string("a")
   assert_eq(parser.parse(input).to_sexp(), "(document)")
 }
 
 ///|
 test "parser reads chunked Input callback" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let offsets : Array[UInt32] = []
   let columns : Array[UInt32] = []
-  let input = Input::from_callback((byte, point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, point) => {
     offsets.push(byte)
     columns.push(point.column)
     if byte == 0 {
-      InputChunk::from_bytes(b"a")
+      @tree_sitter_mbt.InputChunk::from_bytes(b"a")
     } else {
-      InputChunk::eof()
+      @tree_sitter_mbt.InputChunk::eof()
     }
   })
   let tree = parser.parse(input)
@@ -5333,11 +5390,11 @@ test "parser reads chunked Input callback" {
 
 ///|
 test "parser checks Input language before reading callback" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   let offsets : Array[UInt32] = []
-  let input = Input::from_callback((byte, _point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, _point) => {
     offsets.push(byte)
-    InputChunk::new(chunk=None, bytes_read=1)
+    @tree_sitter_mbt.InputChunk::new(chunk=None, bytes_read=1)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -5349,7 +5406,7 @@ test "parser checks Input language before reading callback" {
 
 ///|
 test "parser checks Input old tree before reading callback" {
-  let old_parser = Parser::new()
+  let old_parser = @tree_sitter_mbt.Parser::new()
   old_parser.set_language(
     generated_language_from(
       (
@@ -5364,12 +5421,12 @@ test "parser checks Input old tree before reading callback" {
   )
   let old_tree = old_parser.parse_bytes(b"b")
 
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let offsets : Array[UInt32] = []
-  let input = Input::from_callback((byte, _point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, _point) => {
     offsets.push(byte)
-    InputChunk::new(chunk=None, bytes_read=1)
+    @tree_sitter_mbt.InputChunk::new(chunk=None, bytes_read=1)
   })
   let result = @test.expect_error(() => {
     parser.parse(input, old_tree=Some(old_tree))
@@ -5383,17 +5440,19 @@ test "parser checks Input old tree before reading callback" {
 
 ///|
 test "parser can cancel Input before reading callback" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let offsets : Array[UInt32] = []
-  let input = Input::from_callback((byte, _point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, _point) => {
     offsets.push(byte)
-    InputChunk::from_bytes(b"a")
+    @tree_sitter_mbt.InputChunk::from_bytes(b"a")
   })
   let result = @test.expect_error(() => {
     parser.parse(
       input,
-      options=ParseOptions::progress(state => state.current_byte_offset == 0),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset == 0
+      }),
     )
   })
   match result {
@@ -5405,21 +5464,21 @@ test "parser can cancel Input before reading callback" {
 
 ///|
 test "parser checks Input progress once at initial byte" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let progress_offsets : Array[UInt32] = []
   let input_offsets : Array[UInt32] = []
-  let input = Input::from_callback((byte, _point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, _point) => {
     input_offsets.push(byte)
     if byte == 0 {
-      InputChunk::from_bytes(b"a")
+      @tree_sitter_mbt.InputChunk::from_bytes(b"a")
     } else {
-      InputChunk::eof()
+      @tree_sitter_mbt.InputChunk::eof()
     }
   })
   let tree = parser.parse(
     input,
-    options=ParseOptions::progress(state => {
+    options=@tree_sitter_mbt.ParseOptions::progress(state => {
       progress_offsets.push(state.current_byte_offset)
       false
     }),
@@ -5442,23 +5501,23 @@ test "parser checks Input progress once at initial byte" {
 
 ///|
 test "parser advances Input callback point across newlines" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("input_callback_newline_point", "newline", 10, "a", 97),
   )
   let offsets : Array[UInt32] = []
   let rows : Array[UInt32] = []
   let columns : Array[UInt32] = []
-  let input = Input::from_callback((byte, point) => {
+  let input = @tree_sitter_mbt.Input::from_callback((byte, point) => {
     offsets.push(byte)
     rows.push(point.row)
     columns.push(point.column)
     if byte == 0 {
-      InputChunk::from_bytes(b"\n")
+      @tree_sitter_mbt.InputChunk::from_bytes(b"\n")
     } else if byte == 1 {
-      InputChunk::from_bytes(b"a")
+      @tree_sitter_mbt.InputChunk::from_bytes(b"a")
     } else {
-      InputChunk::eof()
+      @tree_sitter_mbt.InputChunk::eof()
     }
   })
   let tree = parser.parse(input)
@@ -5470,14 +5529,16 @@ test "parser advances Input callback point across newlines" {
 
 ///|
 test "parser Input resume skips fresh initial progress check" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("input_progress_resume", "a", 97, "b", 98),
   )
   let cancelled = @test.expect_error(() => {
     parser.parse(
-      Input::from_bytes(b"ab"),
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      @tree_sitter_mbt.Input::from_bytes(b"ab"),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   match cancelled {
@@ -5487,8 +5548,8 @@ test "parser Input resume skips fresh initial progress check" {
 
   let resume_offsets : Array[UInt32] = []
   let tree = parser.parse(
-    Input::from_bytes(b"ab"),
-    options=ParseOptions::progress(state => {
+    @tree_sitter_mbt.Input::from_bytes(b"ab"),
+    options=@tree_sitter_mbt.ParseOptions::progress(state => {
       resume_offsets.push(state.current_byte_offset)
       state.current_byte_offset == 0
     }),
@@ -5503,10 +5564,10 @@ test "parser Input resume skips fresh initial progress check" {
 
 ///|
 test "parser reports invalid Input callback chunk" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_callback((_byte, _point) => {
-    InputChunk::new(chunk=None, bytes_read=1)
+  let input = @tree_sitter_mbt.Input::from_callback((_byte, _point) => {
+    @tree_sitter_mbt.InputChunk::new(chunk=None, bytes_read=1)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -5521,10 +5582,10 @@ test "parser reports invalid Input callback chunk" {
 
 ///|
 test "parser reports oversized Input callback chunk length" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_callback((_byte, _point) => {
-    InputChunk::new(chunk=Some(b"a"), bytes_read=2)
+  let input = @tree_sitter_mbt.Input::from_callback((_byte, _point) => {
+    @tree_sitter_mbt.InputChunk::new(chunk=Some(b"a"), bytes_read=2)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -5539,10 +5600,10 @@ test "parser reports oversized Input callback chunk length" {
 
 ///|
 test "parser reports negative Input callback chunk length" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_callback((_byte, _point) => {
-    InputChunk::new(chunk=Some(b"a"), bytes_read=-1)
+  let input = @tree_sitter_mbt.Input::from_callback((_byte, _point) => {
+    @tree_sitter_mbt.InputChunk::new(chunk=Some(b"a"), bytes_read=-1)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -5553,10 +5614,10 @@ test "parser reports negative Input callback chunk length" {
 
 ///|
 test "parser reports non-empty EOF Input callback chunk" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_callback((_byte, _point) => {
-    InputChunk::new(chunk=Some(b"a"), bytes_read=0)
+  let input = @tree_sitter_mbt.Input::from_callback((_byte, _point) => {
+    @tree_sitter_mbt.InputChunk::new(chunk=Some(b"a"), bytes_read=0)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -5571,11 +5632,17 @@ test "parser reports non-empty EOF Input callback chunk" {
 
 ///|
 test "parser parse options can cancel before parsing" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let state = ParseState::new(current_byte_offset=7, has_error=true)
+  let state = @tree_sitter_mbt.ParseState::new(
+    current_byte_offset=7,
+    has_error=true,
+  )
   let result = @test.expect_error(() => {
-    parser.parse_bytes(b"a", options=ParseOptions::cancelled(state))
+    parser.parse_bytes(
+      b"a",
+      options=@tree_sitter_mbt.ParseOptions::cancelled(state),
+    )
   })
   match result {
     Cancelled(cancelled) => assert_true(cancelled == state)
@@ -5586,7 +5653,7 @@ test "parser parse options can cancel before parsing" {
 ///|
 test "parser preconfigured cancellation skips external scanner create" {
   let events : Array[String] = []
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     external_scanner_language(
       @tables.ExternalScannerDescriptor::with_callbacks(
@@ -5608,9 +5675,15 @@ test "parser preconfigured cancellation skips external scanner create" {
       ),
     ),
   )
-  let state = ParseState::new(current_byte_offset=7, has_error=true)
+  let state = @tree_sitter_mbt.ParseState::new(
+    current_byte_offset=7,
+    has_error=true,
+  )
   let result = @test.expect_error(() => {
-    parser.parse_bytes(b"x", options=ParseOptions::cancelled(state))
+    parser.parse_bytes(
+      b"x",
+      options=@tree_sitter_mbt.ParseOptions::cancelled(state),
+    )
   })
   match result {
     Cancelled(cancelled) => assert_true(cancelled == state)
@@ -5621,13 +5694,13 @@ test "parser preconfigured cancellation skips external scanner create" {
 
 ///|
 test "parser progress callback can cancel during parsing" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(scalar_pair_language("progress_cancel", "a", 97, "b", 98))
   let offsets : Array[UInt32] = []
   let result = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => {
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
         offsets.push(state.current_byte_offset)
         state.current_byte_offset >= 1
       }),
@@ -5645,12 +5718,14 @@ test "parser progress callback can cancel during parsing" {
 
 ///|
 test "parser resumes outstanding parse after progress cancellation" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(scalar_pair_language("progress_resume", "a", 97, "b", 98))
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   match cancelled {
@@ -5661,7 +5736,7 @@ test "parser resumes outstanding parse after progress cancellation" {
   let resume_offsets : Array[UInt32] = []
   let tree = parser.parse_bytes(
     b"ab",
-    options=ParseOptions::progress(state => {
+    options=@tree_sitter_mbt.ParseOptions::progress(state => {
       resume_offsets.push(state.current_byte_offset)
       state.current_byte_offset == 0
     }),
@@ -5676,20 +5751,24 @@ test "parser resumes outstanding parse after progress cancellation" {
 
 ///|
 test "parser logs when resuming outstanding parse" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("progress_resume_log", "a", 97, "b", 98),
   )
   let logs : Array[String] = []
   parser.set_logger(
     Some(
-      Logger::new((kind, message) => logs.push(facade_log_entry(kind, message))),
+      @tree_sitter_mbt.Logger::new((kind, message) => {
+        logs.push(facade_log_entry(kind, message))
+      }),
     ),
   )
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   assert_true(cancelled is Cancelled(_))
@@ -5700,19 +5779,21 @@ test "parser logs when resuming outstanding parse" {
 
 ///|
 test "parser resume ignores newly supplied old tree" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("progress_resume_old_tree", "a", 97, "b", 98),
   )
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   assert_true(cancelled is Cancelled(_))
 
-  let old_parser = Parser::new()
+  let old_parser = @tree_sitter_mbt.Parser::new()
   old_parser.set_language(parser_smoke_language())
   let unrelated_old_tree = old_parser.parse_bytes(b"a")
   let tree = parser.parse_bytes(b"ab", old_tree=Some(unrelated_old_tree))
@@ -5721,7 +5802,7 @@ test "parser resume ignores newly supplied old tree" {
 
 ///|
 test "parser preconfigured cancellation preserves outstanding parse state" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language(
       "progress_resume_preconfigured_cancel", "a", 97, "b", 98,
@@ -5730,14 +5811,22 @@ test "parser preconfigured cancellation preserves outstanding parse state" {
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   assert_true(cancelled is Cancelled(_))
 
-  let configured_state = ParseState::new(current_byte_offset=7, has_error=true)
+  let configured_state = @tree_sitter_mbt.ParseState::new(
+    current_byte_offset=7,
+    has_error=true,
+  )
   let configured = @test.expect_error(() => {
-    parser.parse_bytes(b"ab", options=ParseOptions::cancelled(configured_state))
+    parser.parse_bytes(
+      b"ab",
+      options=@tree_sitter_mbt.ParseOptions::cancelled(configured_state),
+    )
   })
   match configured {
     Cancelled(state) => assert_true(state == configured_state)
@@ -5747,7 +5836,7 @@ test "parser preconfigured cancellation preserves outstanding parse state" {
   let resume_offsets : Array[UInt32] = []
   let tree = parser.parse_bytes(
     b"ab",
-    options=ParseOptions::progress(state => {
+    options=@tree_sitter_mbt.ParseOptions::progress(state => {
       resume_offsets.push(state.current_byte_offset)
       state.current_byte_offset == 0
     }),
@@ -5759,14 +5848,16 @@ test "parser preconfigured cancellation preserves outstanding parse state" {
 
 ///|
 test "parser reset clears parse state retained after cancellation" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("progress_reset_resume", "a", 97, "b", 98),
   )
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   assert_true(cancelled is Cancelled(_))
@@ -5775,7 +5866,9 @@ test "parser reset clears parse state retained after cancellation" {
   let restarted = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset == 0),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset == 0
+      }),
     )
   })
   match restarted {
@@ -5786,14 +5879,16 @@ test "parser reset clears parse state retained after cancellation" {
 
 ///|
 test "parser set_language clears parse state retained after cancellation" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("progress_set_language_resume", "a", 97, "b", 98),
   )
   let cancelled = @test.expect_error(() => {
     parser.parse_bytes(
       b"ab",
-      options=ParseOptions::progress(state => state.current_byte_offset >= 1),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset >= 1
+      }),
     )
   })
   assert_true(cancelled is Cancelled(_))
@@ -5802,7 +5897,9 @@ test "parser set_language clears parse state retained after cancellation" {
   let restarted = @test.expect_error(() => {
     parser.parse_bytes(
       b"a",
-      options=ParseOptions::progress(state => state.current_byte_offset == 0),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => {
+        state.current_byte_offset == 0
+      }),
     )
   })
   match restarted {
@@ -5813,12 +5910,12 @@ test "parser set_language clears parse state retained after cancellation" {
 
 ///|
 test "parser progress state reports recovered lex errors" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let saw_error_state = [false]
   let tree = parser.parse_bytes(
     b"xa",
-    options=ParseOptions::progress(state => {
+    options=@tree_sitter_mbt.ParseOptions::progress(state => {
       if state.current_byte_offset == 1 && state.has_error {
         saw_error_state[0] = true
       }
@@ -5831,12 +5928,12 @@ test "parser progress state reports recovered lex errors" {
 
 ///|
 test "parser progress state reports missing-token recovery" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let result = @test.expect_error(() => {
     parser.parse_bytes(
       b"",
-      options=ParseOptions::progress(state => state.has_error),
+      options=@tree_sitter_mbt.ParseOptions::progress(state => state.has_error),
     )
   })
   match result {
@@ -5850,12 +5947,14 @@ test "parser progress state reports missing-token recovery" {
 
 ///|
 test "parser parses custom decoded input" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_custom_bytes(Bytes::from_array([b'\xFE']), (
-    _bytes,
-    _offset,
-  ) => InputDecodeResult::CodePoint(97, bytes=1))
+  let input = @tree_sitter_mbt.Input::from_custom_bytes(
+    Bytes::from_array([b'\xFE']),
+    (_bytes, _offset) => {
+      @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=1)
+    },
+  )
   let tree = parser.parse(input)
   assert_eq(tree.to_sexp(), "(document)")
   let child = tree.root_node().child(0)
@@ -5866,12 +5965,12 @@ test "parser parses custom decoded input" {
 
 ///|
 test "parser maps custom decode error to sentinel token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(invalid_utf8_language())
-  let input = Input::from_custom_bytes(Bytes::from_array([b'\xFE']), (
-    _bytes,
-    _offset,
-  ) => InputDecodeResult::DecodeError)
+  let input = @tree_sitter_mbt.Input::from_custom_bytes(
+    Bytes::from_array([b'\xFE']),
+    (_bytes, _offset) => @tree_sitter_mbt.InputDecodeResult::DecodeError,
+  )
   let tree = parser.parse(input)
   assert_eq(tree.to_sexp(), "(document)")
   let child = tree.root_node().child(0)
@@ -5882,12 +5981,14 @@ test "parser maps custom decode error to sentinel token" {
 
 ///|
 test "parser maps custom negative code point to decode error sentinel" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(invalid_utf8_language())
-  let input = Input::from_custom_bytes(Bytes::from_array([b'\xFE']), (
-    _bytes,
-    _offset,
-  ) => InputDecodeResult::CodePoint(-1, bytes=0))
+  let input = @tree_sitter_mbt.Input::from_custom_bytes(
+    Bytes::from_array([b'\xFE']),
+    (_bytes, _offset) => {
+      @tree_sitter_mbt.InputDecodeResult::CodePoint(-1, bytes=0)
+    },
+  )
   let tree = parser.parse(input)
   assert_eq(tree.to_sexp(), "(document)")
   let child = tree.root_node().child(0)
@@ -5898,21 +5999,25 @@ test "parser maps custom negative code point to decode error sentinel" {
 
 ///|
 test "parser advances custom Input callback point by consumed bytes" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let offsets : Array[UInt32] = []
   let columns : Array[UInt32] = []
-  let input = Input::from_custom_callback(
+  let input = @tree_sitter_mbt.Input::from_custom_callback(
     (byte, point) => {
       offsets.push(byte)
       columns.push(point.column)
       if byte == 0 {
-        InputChunk::from_bytes(Bytes::from_array([b'\x01', b'\x02']))
+        @tree_sitter_mbt.InputChunk::from_bytes(
+          Bytes::from_array([b'\x01', b'\x02']),
+        )
       } else {
-        InputChunk::eof()
+        @tree_sitter_mbt.InputChunk::eof()
       }
     },
-    (_bytes, _offset) => InputDecodeResult::CodePoint(97, bytes=2),
+    (_bytes, _offset) => {
+      @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=2)
+    },
   )
   let tree = parser.parse(input)
   assert_eq(tree.to_sexp(), "(document)")
@@ -5923,29 +6028,29 @@ test "parser advances custom Input callback point by consumed bytes" {
 
 ///|
 test "parser passes absolute offsets to custom decoder across chunks" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     scalar_pair_language("custom_decoder_offsets", "a", 97, "b", 98),
   )
   let read_offsets : Array[UInt32] = []
   let decode_offsets : Array[Int32] = []
-  let input = Input::from_custom_callback(
+  let input = @tree_sitter_mbt.Input::from_custom_callback(
     (byte, _point) => {
       read_offsets.push(byte)
       if byte == 0 {
-        InputChunk::from_bytes(Bytes::from_array([b'\x01']))
+        @tree_sitter_mbt.InputChunk::from_bytes(Bytes::from_array([b'\x01']))
       } else if byte == 1 {
-        InputChunk::from_bytes(Bytes::from_array([b'\x02']))
+        @tree_sitter_mbt.InputChunk::from_bytes(Bytes::from_array([b'\x02']))
       } else {
-        InputChunk::eof()
+        @tree_sitter_mbt.InputChunk::eof()
       }
     },
     (_bytes, offset) => {
       decode_offsets.push(offset)
       if offset == 0 {
-        InputDecodeResult::CodePoint(97, bytes=1)
+        @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=1)
       } else {
-        InputDecodeResult::CodePoint(98, bytes=1)
+        @tree_sitter_mbt.InputDecodeResult::CodePoint(98, bytes=1)
       }
     },
   )
@@ -5972,9 +6077,9 @@ test "parser passes absolute offsets to custom decoder across chunks" {
 
 ///|
 test "parser rejects custom Input without decoder" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_bytes(b"a", encoding=Custom)
+  let input = @tree_sitter_mbt.Input::from_bytes(b"a", encoding=Custom)
   let result = @test.expect_error(() => parser.parse(input))
   match result {
     InvalidInputDecode(
@@ -5987,13 +6092,13 @@ test "parser rejects custom Input without decoder" {
 
 ///|
 test "parser rejects custom callback without decoder before reading" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
   let offsets : Array[UInt32] = []
-  let input = Input::from_callback(
+  let input = @tree_sitter_mbt.Input::from_callback(
     (byte, _point) => {
       offsets.push(byte)
-      InputChunk::from_bytes(b"a")
+      @tree_sitter_mbt.InputChunk::from_bytes(b"a")
     },
     encoding=Custom,
   )
@@ -6010,10 +6115,10 @@ test "parser rejects custom callback without decoder before reading" {
 
 ///|
 test "parser validates custom decode consumed byte count" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_custom_bytes(b"a", (_bytes, _offset) => {
-    InputDecodeResult::CodePoint(97, bytes=0)
+  let input = @tree_sitter_mbt.Input::from_custom_bytes(b"a", (_bytes, _offset) => {
+    @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=0)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -6025,10 +6130,10 @@ test "parser validates custom decode consumed byte count" {
 
 ///|
 test "parser validates custom decode consumed input bounds" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_custom_bytes(b"a", (_bytes, _offset) => {
-    InputDecodeResult::CodePoint(97, bytes=2)
+  let input = @tree_sitter_mbt.Input::from_custom_bytes(b"a", (_bytes, _offset) => {
+    @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=2)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -6042,23 +6147,23 @@ test "parser validates custom decode consumed input bounds" {
 
 ///|
 test "parser validates custom decode consumed chunk bounds" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_custom_callback(
+  let input = @tree_sitter_mbt.Input::from_custom_callback(
     (byte, _point) => {
       if byte == 0 {
-        InputChunk::from_bytes(b"a")
+        @tree_sitter_mbt.InputChunk::from_bytes(b"a")
       } else if byte == 1 {
-        InputChunk::from_bytes(b"b")
+        @tree_sitter_mbt.InputChunk::from_bytes(b"b")
       } else {
-        InputChunk::eof()
+        @tree_sitter_mbt.InputChunk::eof()
       }
     },
     (bytes, offset) => {
       if bytes.length() == 1 || offset > 0 {
-        InputDecodeResult::CodePoint(97, bytes=1)
+        @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=1)
       } else {
-        InputDecodeResult::CodePoint(97, bytes=2)
+        @tree_sitter_mbt.InputDecodeResult::CodePoint(97, bytes=2)
       }
     },
   )
@@ -6074,10 +6179,10 @@ test "parser validates custom decode consumed chunk bounds" {
 
 ///|
 test "parser validates custom decode code point range" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(parser_smoke_language())
-  let input = Input::from_custom_bytes(b"a", (_bytes, _offset) => {
-    InputDecodeResult::CodePoint(0x110000, bytes=1)
+  let input = @tree_sitter_mbt.Input::from_custom_bytes(b"a", (_bytes, _offset) => {
+    @tree_sitter_mbt.InputDecodeResult::CodePoint(0x110000, bytes=1)
   })
   let result = @test.expect_error(() => parser.parse(input))
   match result {
@@ -6091,7 +6196,7 @@ test "parser validates custom decode code point range" {
 
 ///|
 test "parser handles blank start rule" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   let language = generated_language_from(
     (
       #|{
@@ -6114,7 +6219,7 @@ test "parser handles blank start rule" {
 
 ///|
 test "parser handles token start rule" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6140,7 +6245,7 @@ test "parser handles token start rule" {
 
 ///|
 test "parser honors immediate token boundaries" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6174,7 +6279,7 @@ test "parser honors immediate token boundaries" {
 
 ///|
 test "parser keeps terminal extras outside reduce child counts" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6216,7 +6321,7 @@ test "parser keeps terminal extras outside reduce child counts" {
 
 ///|
 test "parser omits inlined named helper rules" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6246,7 +6351,7 @@ test "parser omits inlined named helper rules" {
 
 ///|
 test "parser generated repeat1 accepts multiple items" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6270,7 +6375,7 @@ test "parser generated repeat1 accepts multiple items" {
 
 ///|
 test "parser inserts missing token before unlexable next sibling" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6307,7 +6412,7 @@ test "parser inserts missing token before unlexable next sibling" {
 
 ///|
 test "parser handles readme-style expression grammar" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6377,7 +6482,7 @@ test "parser handles readme-style expression grammar" {
 
 ///|
 test "parser applies named aliases in root productions" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6408,7 +6513,7 @@ test "parser applies named aliases in root productions" {
 
 ///|
 test "parser applies anonymous aliases to named rules" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6447,7 +6552,7 @@ test "parser applies anonymous aliases to named rules" {
 
 ///|
 test "parser treats anonymous ERROR token as ordinary token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6475,7 +6580,7 @@ test "parser treats anonymous ERROR token as ordinary token" {
 
 ///|
 test "parser rejects exact reserved word in word-token context" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6507,7 +6612,7 @@ test "parser rejects exact reserved word in word-token context" {
 
 ///|
 test "parser falls back unreserved keyword candidate to word token" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (
@@ -6538,7 +6643,7 @@ test "parser falls back unreserved keyword candidate to word token" {
 
 ///|
 test "parser replaces word capture with keyword accepted by current state" {
-  let parser = Parser::new()
+  let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(
     generated_language_from(
       (

@@ -26,17 +26,13 @@ fn lex_dfa_accept_variable(dfa : LexDfa, state_id : Int32) -> Int32? {
 fn expanded_lexical_from_rules(
   variables : Array[LexicalVariable],
   separators : Array[InternedRule],
-) -> Result[ExpandedLexicalGrammar, GenerateError] {
-  try expand_tokens(token_expansion_fixture(variables, separators)) catch {
-    error => Err(error)
-  } noraise {
-    expanded => Ok(expanded.lexical)
-  }
+) -> ExpandedLexicalGrammar raise GenerateError {
+  expand_tokens(token_expansion_fixture(variables, separators)).lexical
 }
 
 ///|
 test "lex dfa keeps continuation after a shorter completed token" {
-  let result = expanded_lexical_from_rules(
+  let lexical = expanded_lexical_from_rules(
     [
       lexical_variable(
         0,
@@ -53,7 +49,6 @@ test "lex dfa keeps continuation after a shorter completed token" {
     ],
     [],
   )
-  guard result is Ok(lexical) else { fail("token expansion should succeed") }
   let dfa = build_lex_dfa(lexical, lex_token_set([0, 1]))
 
   guard lex_dfa_step(dfa, dfa.start_state, 'a') is Some(after_a) else {
@@ -68,7 +63,7 @@ test "lex dfa keeps continuation after a shorter completed token" {
 
 ///|
 test "lex dfa chooses explicit precedence among completed tokens" {
-  let result = expanded_lexical_from_rules(
+  let lexical = expanded_lexical_from_rules(
     [
       lexical_variable(
         0,
@@ -88,7 +83,6 @@ test "lex dfa chooses explicit precedence among completed tokens" {
     ],
     [],
   )
-  guard result is Ok(lexical) else { fail("token expansion should succeed") }
   let dfa = build_lex_dfa(lexical, lex_token_set([0, 1]))
 
   guard lex_dfa_step(dfa, dfa.start_state, 'a') is Some(after_a) else {
@@ -99,7 +93,7 @@ test "lex dfa chooses explicit precedence among completed tokens" {
 
 ///|
 test "lex dfa keeps nul transition separate from eof action" {
-  let result = expanded_lexical_from_rules(
+  let lexical = expanded_lexical_from_rules(
     [
       lexical_variable(
         0,
@@ -110,7 +104,6 @@ test "lex dfa keeps nul transition separate from eof action" {
     ],
     [],
   )
-  guard result is Ok(lexical) else { fail("token expansion should succeed") }
   let dfa = build_lex_dfa(lexical, lex_token_set([0], eof=true))
 
   assert_true(dfa.states[dfa.start_state].eof_action is Some(_))
@@ -122,7 +115,7 @@ test "lex dfa keeps nul transition separate from eof action" {
 
 ///|
 test "lex dfa propagates eof validity only through separators" {
-  let result = expanded_lexical_from_rules(
+  let lexical = expanded_lexical_from_rules(
     [
       lexical_variable(
         0,
@@ -133,7 +126,6 @@ test "lex dfa propagates eof validity only through separators" {
     ],
     [InternedRule::IRString(" ")],
   )
-  guard result is Ok(lexical) else { fail("token expansion should succeed") }
   let dfa = build_lex_dfa(lexical, lex_token_set([0], eof=true))
 
   assert_true(dfa.states[dfa.start_state].eof_action is Some(_))
@@ -152,7 +144,7 @@ test "lex dfa propagates eof validity only through separators" {
 
 ///|
 test "lex dfa does not add initial separators for immediate-only token set" {
-  let result = expanded_lexical_from_rules(
+  let lexical = expanded_lexical_from_rules(
     [
       lexical_variable(
         0,
@@ -163,7 +155,6 @@ test "lex dfa does not add initial separators for immediate-only token set" {
     ],
     [InternedRule::IRString(" ")],
   )
-  guard result is Ok(lexical) else { fail("token expansion should succeed") }
   let dfa = build_lex_dfa(lexical, lex_token_set([0]))
 
   assert_true(lex_dfa_step(dfa, dfa.start_state, ' ') is None)
@@ -172,7 +163,7 @@ test "lex dfa does not add initial separators for immediate-only token set" {
 
 ///|
 test "lex dfa carries external token slots for explicit and paired tokens" {
-  let result = expanded_lexical_from_rules(
+  let lexical = expanded_lexical_from_rules(
     [
       lexical_variable(
         0,
@@ -183,9 +174,7 @@ test "lex dfa carries external token slots for explicit and paired tokens" {
     ],
     [],
   )
-  guard result is Ok(base_lexical) else {
-    fail("token expansion should succeed")
-  }
+  let base_lexical = lexical
   let lexical : ExpandedLexicalGrammar = {
     ..base_lexical,
     external_tokens: [

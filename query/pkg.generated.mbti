@@ -61,6 +61,9 @@ pub(all) enum QueryCaptureQuantifier {
   One
   OneOrMore
 } derive(Eq, @debug.Debug)
+pub fn QueryCaptureQuantifier::equal(Self, Self) -> Bool
+pub fn QueryCaptureQuantifier::not_equal(Self, Self) -> Bool
+pub fn QueryCaptureQuantifier::to_repr(Self) -> @debug.Repr
 
 type QueryCursor
 pub fn QueryCursor::did_exceed_match_limit(Self) -> Bool
@@ -85,7 +88,10 @@ pub fn QueryCursor::set_progress_callback(Self, ((QueryCursorProgressState) -> B
 pub(all) struct QueryCursorProgressState {
   current_byte_offset : UInt32
 } derive(Eq, @debug.Debug)
+pub fn QueryCursorProgressState::equal(Self, Self) -> Bool
 pub fn QueryCursorProgressState::new(current_byte_offset~ : UInt32) -> Self
+pub fn QueryCursorProgressState::not_equal(Self, Self) -> Bool
+pub fn QueryCursorProgressState::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryGeneralPredicate {
   pattern_index : Int32
@@ -93,6 +99,9 @@ pub(all) struct QueryGeneralPredicate {
   operator : String
   args : Array[QueryPredicateArg]
 } derive(Eq, @debug.Debug)
+pub fn QueryGeneralPredicate::equal(Self, Self) -> Bool
+pub fn QueryGeneralPredicate::not_equal(Self, Self) -> Bool
+pub fn QueryGeneralPredicate::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryMatch {
   id : Int32
@@ -104,6 +113,9 @@ pub(all) enum QueryPredicateArg {
   ArgCapture(Int32)
   ArgString(String)
 } derive(Eq, @debug.Debug)
+pub fn QueryPredicateArg::equal(Self, Self) -> Bool
+pub fn QueryPredicateArg::not_equal(Self, Self) -> Bool
+pub fn QueryPredicateArg::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryPredicateClasses {
   text_predicates : Array[QueryTextPredicate]
@@ -111,12 +123,18 @@ pub(all) struct QueryPredicateClasses {
   property_assertions : Array[QueryPropertyAssertion]
   general_predicates : Array[QueryGeneralPredicate]
 } derive(Eq, @debug.Debug)
+pub fn QueryPredicateClasses::equal(Self, Self) -> Bool
+pub fn QueryPredicateClasses::not_equal(Self, Self) -> Bool
+pub fn QueryPredicateClasses::to_repr(Self) -> @debug.Repr
 
 pub(all) enum QueryPredicateStep {
   Done
   Capture(Int32)
   String(Int32)
 } derive(Eq, @debug.Debug)
+pub fn QueryPredicateStep::equal(Self, Self) -> Bool
+pub fn QueryPredicateStep::not_equal(Self, Self) -> Bool
+pub fn QueryPredicateStep::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryPropertyAssertion {
   pattern_index : Int32
@@ -126,6 +144,9 @@ pub(all) struct QueryPropertyAssertion {
   value : String?
   capture_id : Int32?
 } derive(Eq, @debug.Debug)
+pub fn QueryPropertyAssertion::equal(Self, Self) -> Bool
+pub fn QueryPropertyAssertion::not_equal(Self, Self) -> Bool
+pub fn QueryPropertyAssertion::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryPropertySetting {
   pattern_index : Int32
@@ -134,6 +155,9 @@ pub(all) struct QueryPropertySetting {
   value : String?
   capture_id : Int32?
 } derive(Eq, @debug.Debug)
+pub fn QueryPropertySetting::equal(Self, Self) -> Bool
+pub fn QueryPropertySetting::not_equal(Self, Self) -> Bool
+pub fn QueryPropertySetting::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryTextPredicate {
   pattern_index : Int32
@@ -142,6 +166,9 @@ pub(all) struct QueryTextPredicate {
   capture_id : Int32
   args : Array[QueryPredicateArg]
 } derive(Eq, @debug.Debug)
+pub fn QueryTextPredicate::equal(Self, Self) -> Bool
+pub fn QueryTextPredicate::not_equal(Self, Self) -> Bool
+pub fn QueryTextPredicate::to_repr(Self) -> @debug.Repr
 
 pub(all) enum QueryTextPredicateKind {
   TextEq
@@ -155,6 +182,9 @@ pub(all) enum QueryTextPredicateKind {
   TextAnyOf
   TextNotAnyOf
 } derive(Eq, @debug.Debug)
+pub fn QueryTextPredicateKind::equal(Self, Self) -> Bool
+pub fn QueryTextPredicateKind::not_equal(Self, Self) -> Bool
+pub fn QueryTextPredicateKind::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

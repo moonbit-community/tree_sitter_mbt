@@ -307,3 +307,21 @@ pub fn Logger::new(callback : (LogType, String) -> Unit) -> Logger {
 pub fn Logger::log(self : Logger, kind : LogType, message : String) -> Unit {
   (self.callback)(kind, message)
 }
+
+///|
+pub extend InputChunk with Debug::{to_repr}
+
+///|
+pub extend InputChunk with Eq::{not_equal, equal}
+
+///|
+pub extend InputDecodeResult with Debug::{to_repr}
+
+///|
+pub extend InputDecodeResult with Eq::{not_equal, equal}
+
+///|
+pub extend LogType with Debug::{to_repr}
+
+///|
+pub extend LogType with Eq::{not_equal, equal}

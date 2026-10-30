@@ -25,7 +25,7 @@ fn generator_test_contains_string(
 
 ///|
 fn generator_test_source_for_path(
-  sources : Array[GeneratedSource],
+  sources : Array[@generator.GeneratedSource],
   path : String,
 ) -> String? {
   for source in sources {
@@ -59,7 +59,7 @@ fn generator_test_assert_valid_json(source : String) -> Unit raise {
 
 ///|
 test "generate language validates grammar json and uses grammar name by default" {
-  let generated = generate_language(minimal_grammar_json())
+  let generated = @generator.generate_language(minimal_grammar_json())
   assert_eq(generated.language_name, "minimal")
   assert_eq(generated.abi_version, @tables.target_abi_version())
   generator_test_assert_valid_json(generated.node_types_json)
@@ -205,8 +205,8 @@ test "generate language validates grammar json and uses grammar name by default"
 
 ///|
 test "generate language options can override language name" {
-  let generated = generate_language(minimal_grammar_json(), options={
-    ..GenerateOptions::default(),
+  let generated = @generator.generate_language(minimal_grammar_json(), options={
+    ..@generator.GenerateOptions::default(),
     language_name: "override",
   })
   assert_eq(generated.language_name, "override")
@@ -215,8 +215,8 @@ test "generate language options can override language name" {
 
 ///|
 test "generate language sources honor custom import aliases" {
-  let generated = generate_language(minimal_grammar_json(), options={
-    ..GenerateOptions::default(),
+  let generated = @generator.generate_language(minimal_grammar_json(), options={
+    ..@generator.GenerateOptions::default(),
     root_alias: "runtime_facade",
     tables_alias: "runtime_tables",
     api_alias: "runtime_api",
@@ -262,41 +262,46 @@ test "generate language sources honor custom import aliases" {
 ///|
 test "generate language rejects invalid import aliases" {
   let invalid_character = @test.expect_error(() => {
-    generate_language(minimal_grammar_json(), options={
-      ..GenerateOptions::default(),
+    @generator.generate_language(minimal_grammar_json(), options={
+      ..@generator.GenerateOptions::default(),
       root_alias: "bad-alias",
     })
   })
   assert_true(
-    invalid_character is GenerateError::InvalidImportAlias("bad-alias"),
+    invalid_character
+    is @generator.GenerateError::InvalidImportAlias("bad-alias"),
   )
   let invalid_start = @test.expect_error(() => {
-    generate_language(minimal_grammar_json(), options={
-      ..GenerateOptions::default(),
+    @generator.generate_language(minimal_grammar_json(), options={
+      ..@generator.GenerateOptions::default(),
       tables_alias: "1tables",
     })
   })
-  assert_true(invalid_start is GenerateError::InvalidImportAlias("1tables"))
+  assert_true(
+    invalid_start is @generator.GenerateError::InvalidImportAlias("1tables"),
+  )
   let keyword = @test.expect_error(() => {
-    generate_language(minimal_grammar_json(), options={
-      ..GenerateOptions::default(),
+    @generator.generate_language(minimal_grammar_json(), options={
+      ..@generator.GenerateOptions::default(),
       api_alias: "fn",
     })
   })
-  assert_true(keyword is GenerateError::InvalidImportAlias("fn"))
+  assert_true(keyword is @generator.GenerateError::InvalidImportAlias("fn"))
   let duplicate = @test.expect_error(() => {
-    generate_language(minimal_grammar_json(), options={
-      ..GenerateOptions::default(),
+    @generator.generate_language(minimal_grammar_json(), options={
+      ..@generator.GenerateOptions::default(),
       root_alias: "shared_alias",
       tables_alias: "shared_alias",
     })
   })
-  assert_true(duplicate is GenerateError::InvalidImportAlias("shared_alias"))
+  assert_true(
+    duplicate is @generator.GenerateError::InvalidImportAlias("shared_alias"),
+  )
 }
 
 ///|
 test "generate language emits keyword lex table for word-like string token" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "keyword_literal",
@@ -325,7 +330,7 @@ test "generate language emits keyword lex table for word-like string token" {
 
 ///|
 test "generate language exposes generated table fields and metadata" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "fielded",
@@ -339,7 +344,7 @@ test "generate language exposes generated table fields and metadata" {
       #|}
     ),
     options={
-      ..GenerateOptions::default(),
+      ..@generator.GenerateOptions::default(),
       semantic_version: Some(
         @tables.LanguageMetadata::new(major=1, minor=2, patch=3),
       ),
@@ -373,7 +378,7 @@ test "generate language exposes generated table fields and metadata" {
 
 ///|
 test "generate node-types inherits fields from hidden variables" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "hidden_fields",
@@ -412,7 +417,7 @@ test "generate node-types inherits fields from hidden variables" {
 
 ///|
 test "generate node-types marks extra symbols" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "extra_nodes",
@@ -435,7 +440,7 @@ test "generate node-types marks extra symbols" {
 
 ///|
 test "generate language exposes production alias sequences" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "aliased",
@@ -512,7 +517,7 @@ test "generate language exposes production alias sequences" {
 
 ///|
 test "generate node-types exposes named rule aliased as anonymous" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "anonymous_alias",
@@ -539,7 +544,7 @@ test "generate node-types exposes named rule aliased as anonymous" {
 
 ///|
 test "generate node-types keeps anonymous ERROR distinct from builtin error" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "anonymous_error",
@@ -572,7 +577,7 @@ test "generate node-types keeps anonymous ERROR distinct from builtin error" {
 
 ///|
 test "generate node-types makes fields and children optional across merged aliases" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "alias_merge_optional",
@@ -634,7 +639,7 @@ test "generate node-types makes fields and children optional across merged alias
 
 ///|
 test "generate language exposes default alias metadata" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "default_alias",
@@ -672,7 +677,7 @@ test "generate language exposes default alias metadata" {
 
 ///|
 test "generate language exposes external lex modes" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "external_mode",
@@ -723,7 +728,7 @@ test "generate language exposes external lex modes" {
 
 ///|
 test "generate language maps paired external scanner symbols to internal token" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "paired_external",
@@ -748,7 +753,7 @@ test "generate language maps paired external scanner symbols to internal token" 
 
 ///|
 test "generate language exposes supertype count and symbol type" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "supertypes",
@@ -810,7 +815,7 @@ test "generate language exposes supertype count and symbol type" {
 
 ///|
 test "generate node-types folds subtypes when supertype is also present" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "supertype_fold",
@@ -869,7 +874,7 @@ test "generate node-types folds subtypes when supertype is also present" {
 
 ///|
 test "generate node-types folds nested supertypes in topological order" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "nested_supertype_fold",
@@ -942,7 +947,7 @@ test "generate node-types folds nested supertypes in topological order" {
 
 ///|
 test "generate language warns about unsupported regex flags" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "regex_flags",
@@ -961,20 +966,23 @@ test "generate language warns about unsupported regex flags" {
   )
   assert_eq(generated.warnings.length(), 3)
   assert_true(
-    generated.warnings[0] is GenerateWarning::UnsupportedRegexFlag("x"),
+    generated.warnings[0]
+    is @generator.GenerateWarning::UnsupportedRegexFlag("x"),
   )
   assert_true(
-    generated.warnings[1] is GenerateWarning::UnsupportedRegexFlag("y"),
+    generated.warnings[1]
+    is @generator.GenerateWarning::UnsupportedRegexFlag("y"),
   )
   assert_true(
-    generated.warnings[2] is GenerateWarning::UnsupportedRegexFlag("z"),
+    generated.warnings[2]
+    is @generator.GenerateWarning::UnsupportedRegexFlag("z"),
   )
 }
 
 ///|
 test "generate language rejects invalid grammar json" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "broken",
@@ -985,13 +993,13 @@ test "generate language rejects invalid grammar json" {
       ),
     )
   })
-  assert_true(result is GenerateError::InvalidGrammar(_))
+  assert_true(result is @generator.GenerateError::InvalidGrammar(_))
 }
 
 ///|
 test "generate language rejects undefined symbols during preparation" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "undefined_symbol",
@@ -1002,13 +1010,13 @@ test "generate language rejects undefined symbols during preparation" {
       ),
     )
   })
-  assert_true(result is GenerateError::UndefinedSymbol("missing"))
+  assert_true(result is @generator.GenerateError::UndefinedSymbol("missing"))
 }
 
 ///|
 test "generate language rejects terminal supertypes after token extraction" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "terminal_supertype",
@@ -1021,13 +1029,13 @@ test "generate language rejects terminal supertypes after token extraction" {
       ),
     )
   })
-  assert_true(result is GenerateError::TerminalSupertype("node"))
+  assert_true(result is @generator.GenerateError::TerminalSupertype("node"))
 }
 
 ///|
 test "generate language rejects external tokens that do not resolve to a token" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "invalid_external",
@@ -1046,12 +1054,12 @@ test "generate language rejects external tokens that do not resolve to a token" 
       ),
     )
   })
-  assert_true(result is GenerateError::InvalidExternalToken("node"))
+  assert_true(result is @generator.GenerateError::InvalidExternalToken("node"))
 }
 
 ///|
 test "generate language validates named precedence declarations" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "precedence_ok",
@@ -1069,7 +1077,7 @@ test "generate language validates named precedence declarations" {
   assert_eq(generated.language_name, "precedence_ok")
 
   let undeclared = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "precedence_bad",
@@ -1084,12 +1092,14 @@ test "generate language validates named precedence declarations" {
       ),
     )
   })
-  assert_true(undeclared is GenerateError::UndeclaredPrecedence("missing"))
+  assert_true(
+    undeclared is @generator.GenerateError::UndeclaredPrecedence("missing"),
+  )
 }
 
 ///|
 test "generate language precedence validation does not descend into reserved rules" {
-  let generated = generate_language(
+  let generated = @generator.generate_language(
     (
       #|{
       #|  "name": "reserved_precedence",
@@ -1116,7 +1126,7 @@ test "generate language precedence validation does not descend into reserved rul
 ///|
 test "generate language rejects conflicting precedence ordering" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "precedence_conflict",
@@ -1129,14 +1139,18 @@ test "generate language rejects conflicting precedence ordering" {
     )
   })
   assert_true(
-    result is GenerateError::ConflictingPrecedenceOrdering(left="b", right="a"),
+    result
+    is @generator.GenerateError::ConflictingPrecedenceOrdering(
+      left="b",
+      right="a"
+    ),
   )
 }
 
 ///|
 test "generate language rejects unresolved conflicting precedence fixture" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "conflicting_precedence",
@@ -1192,7 +1206,7 @@ test "generate language rejects unresolved conflicting precedence fixture" {
       ),
     )
   })
-  guard result is GenerateError::InvalidGrammar(message) else {
+  guard result is @generator.GenerateError::InvalidGrammar(message) else {
     fail("expected InvalidGrammar")
   }
   assert_true(generator_test_string_contains(message, "unresolved conflict"))
@@ -1201,7 +1215,7 @@ test "generate language rejects unresolved conflicting precedence fixture" {
 ///|
 test "generate language rejects indirect recursion through single symbols" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "indirect_recursion",
@@ -1214,13 +1228,15 @@ test "generate language rejects indirect recursion through single symbols" {
       ),
     )
   })
-  assert_true(result is GenerateError::IndirectRecursion("a -> b -> a"))
+  assert_true(
+    result is @generator.GenerateError::IndirectRecursion("a -> b -> a"),
+  )
 }
 
 ///|
 test "generate language treats choice and metadata wrappers as single symbol edges" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "metadata_recursion",
@@ -1252,14 +1268,15 @@ test "generate language treats choice and metadata wrappers as single symbol edg
     )
   })
   assert_true(
-    result is GenerateError::IndirectRecursion("document -> a -> document"),
+    result
+    is @generator.GenerateError::IndirectRecursion("document -> a -> document"),
   )
 }
 
 ///|
 test "generate language rejects unresolved direct self recursion" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "direct_recursion",
@@ -1270,13 +1287,13 @@ test "generate language rejects unresolved direct self recursion" {
       ),
     )
   })
-  assert_true(result is GenerateError::InvalidGrammar(_))
+  assert_true(result is @generator.GenerateError::InvalidGrammar(_))
 }
 
 ///|
 test "generate language rejects unresolved non single recursion shapes" {
   let result = @test.expect_error(() => {
-    generate_language(
+    @generator.generate_language(
       (
         #|{
         #|  "name": "non_single_recursion",
@@ -1319,5 +1336,5 @@ test "generate language rejects unresolved non single recursion shapes" {
       ),
     )
   })
-  assert_true(result is GenerateError::InvalidGrammar(_))
+  assert_true(result is @generator.GenerateError::InvalidGrammar(_))
 }

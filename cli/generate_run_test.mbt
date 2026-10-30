@@ -12,9 +12,9 @@ fn cli_generate_minimal_grammar_json() -> String {
 
 ///|
 fn cli_generated_file_for_path(
-  files : Array[CliOutputFile],
+  files : Array[@cli.CliOutputFile],
   path : String,
-) -> CliOutputFile? {
+) -> @cli.CliOutputFile? {
   for file in files {
     if file.path == path {
       return Some(file)
@@ -25,7 +25,7 @@ fn cli_generated_file_for_path(
 
 ///|
 test "cli generate command returns parser files and node types" {
-  let command = CliGenerateCommand::{
+  let command = @cli.CliGenerateCommand::{
     grammar_path: Some("grammar.json"),
     output_dir: Some("src"),
     abi_version: Some("latest"),
@@ -36,7 +36,7 @@ test "cli generate command returns parser files and node types" {
     json_summary: true,
     disable_optimizations: false,
   }
-  let result = run_cli_generate_command(
+  let result = @cli.run_cli_generate_command(
     command,
     cli_generate_minimal_grammar_json(),
   )
@@ -71,7 +71,7 @@ test "cli generate command returns parser files and node types" {
 
 ///|
 test "cli generate command can omit parser sources" {
-  let command = CliGenerateCommand::{
+  let command = @cli.CliGenerateCommand::{
     grammar_path: None,
     output_dir: None,
     abi_version: None,
@@ -82,7 +82,7 @@ test "cli generate command can omit parser sources" {
     json_summary: false,
     disable_optimizations: false,
   }
-  let result = run_cli_generate_command(
+  let result = @cli.run_cli_generate_command(
     command,
     cli_generate_minimal_grammar_json(),
   )
@@ -93,7 +93,7 @@ test "cli generate command can omit parser sources" {
 
 ///|
 test "cli generate command can include converted grammar json output" {
-  let command = CliGenerateCommand::{
+  let command = @cli.CliGenerateCommand::{
     grammar_path: Some("grammar.js"),
     output_dir: Some("out"),
     abi_version: None,
@@ -105,7 +105,7 @@ test "cli generate command can include converted grammar json output" {
     disable_optimizations: false,
   }
   let grammar_json = cli_generate_minimal_grammar_json()
-  let result = run_cli_generate_command(
+  let result = @cli.run_cli_generate_command(
     command,
     grammar_json,
     emit_grammar_json=true,
@@ -129,7 +129,7 @@ test "cli generate command can include converted grammar json output" {
 
 ///|
 test "cli generate command reports invalid and unsupported options" {
-  let bad_abi = CliGenerateCommand::{
+  let bad_abi = @cli.CliGenerateCommand::{
     grammar_path: None,
     output_dir: None,
     abi_version: Some("abc"),
@@ -141,16 +141,19 @@ test "cli generate command reports invalid and unsupported options" {
     disable_optimizations: false,
   }
   let bad_abi_result = @test.expect_error(() => {
-    run_cli_generate_command(bad_abi, cli_generate_minimal_grammar_json())
+    @cli.run_cli_generate_command(bad_abi, cli_generate_minimal_grammar_json())
   })
   assert_true(bad_abi_result is InvalidAbiVersion("abc"))
-  let unsupported = CliGenerateCommand::{
+  let unsupported = @cli.CliGenerateCommand::{
     ..bad_abi,
     abi_version: None,
     report_states_for_rule: Some("document"),
   }
   let unsupported_result = @test.expect_error(() => {
-    run_cli_generate_command(unsupported, cli_generate_minimal_grammar_json())
+    @cli.run_cli_generate_command(
+      unsupported,
+      cli_generate_minimal_grammar_json(),
+    )
   })
   assert_true(
     unsupported_result is UnsupportedGenerateOption("--report-states-for-rule"),

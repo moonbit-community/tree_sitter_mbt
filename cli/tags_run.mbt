@@ -26,7 +26,7 @@ pub fn run_cli_tags_command(
   sources : Array[CliParseCommandSource],
 ) -> CliTagsCommandRunResult raise CliTagsRunError {
   let results : Array[CliTagsCommandSourceResult] = []
-  let stdout = StringBuilder::new()
+  let stdout = StringBuilder()
   let indent = sources.length() > 1
   for source in sources {
     let result = run_cli_tags_source(command, config, source, indent)
@@ -47,7 +47,7 @@ fn run_cli_tags_source(
   let generated = @tags.generate_tags(config, source.contents) catch {
     err => raise CliTagsRunError::TagsFailed(err)
   }
-  let output = StringBuilder::new()
+  let output = StringBuilder()
   if indent && !command.quiet {
     output.write_string(cli_tags_source_label(source.name))
     output.write_char('\n')
@@ -138,7 +138,7 @@ fn cli_tags_docs_suffix(docs : String) -> String {
 
 ///|
 fn cli_tags_truncate_docs(text : String, limit : Int32) -> (String, Bool) {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut width = 0
   for char in text {
     let char_width = char.utf16_len()
@@ -153,7 +153,7 @@ fn cli_tags_truncate_docs(text : String, limit : Int32) -> (String, Bool) {
 
 ///|
 fn cli_tags_pad_right(text : String, width : Int32) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   out.write_string(text)
   let mut padding = width - text.length()
   while padding > 0 {
@@ -177,3 +177,15 @@ fn cli_tags_elapsed_millis(start : UInt64) -> UInt64 {
     0
   }
 }
+
+///|
+pub extend CliTagsCommandRunResult with Debug::{to_repr}
+
+///|
+pub extend CliTagsCommandRunResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliTagsCommandSourceResult with Debug::{to_repr}
+
+///|
+pub extend CliTagsCommandSourceResult with Eq::{not_equal, equal}

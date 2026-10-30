@@ -13,10 +13,16 @@ pub(all) suberror ScannerError {
   Failure(String)
   InvalidResult(String)
 } derive(Eq, @debug.Debug)
+pub fn ScannerError::equal(Self, Self) -> Bool
+pub fn ScannerError::not_equal(Self, Self) -> Bool
+pub fn ScannerError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type FieldId derive(Eq, @debug.Debug)
+pub fn FieldId::equal(Self, Self) -> Bool
 pub fn FieldId::new(UInt32) -> Self
+pub fn FieldId::not_equal(Self, Self) -> Bool
+pub fn FieldId::to_repr(Self) -> @debug.Repr
 pub fn FieldId::value(Self) -> UInt32
 
 pub(all) struct InputEdit {
@@ -28,7 +34,10 @@ pub(all) struct InputEdit {
   new_end_point : Point
 } derive(Eq, @debug.Debug)
 pub fn InputEdit::edit_position(Self, byte~ : UInt32, point~ : Point) -> (UInt32, Point)
+pub fn InputEdit::equal(Self, Self) -> Bool
 pub fn InputEdit::new(start_byte~ : UInt32, old_end_byte~ : UInt32, new_end_byte~ : UInt32, start_point~ : Point, old_end_point~ : Point, new_end_point~ : Point) -> Self
+pub fn InputEdit::not_equal(Self, Self) -> Bool
+pub fn InputEdit::to_repr(Self) -> @debug.Repr
 
 pub(all) enum InputEncoding {
   Utf8
@@ -36,6 +45,9 @@ pub(all) enum InputEncoding {
   Utf16BE
   Custom
 } derive(Eq, @debug.Debug)
+pub fn InputEncoding::equal(Self, Self) -> Bool
+pub fn InputEncoding::not_equal(Self, Self) -> Bool
+pub fn InputEncoding::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Point {
   row : UInt32
@@ -43,13 +55,16 @@ pub(all) struct Point {
 } derive(Eq, @debug.Debug)
 pub fn Point::add(Self, Self) -> Self
 pub fn Point::edit(Self, byte~ : UInt32, edit~ : InputEdit) -> (UInt32, Self)
+pub fn Point::equal(Self, Self) -> Bool
 pub fn Point::gt(Self, Self) -> Bool
 pub fn Point::gte(Self, Self) -> Bool
 pub fn Point::lt(Self, Self) -> Bool
 pub fn Point::lte(Self, Self) -> Bool
 pub fn Point::max() -> Self
 pub fn Point::new(row~ : UInt32, column~ : UInt32) -> Self
+pub fn Point::not_equal(Self, Self) -> Bool
 pub fn Point::sub(Self, Self) -> Self
+pub fn Point::to_repr(Self) -> @debug.Repr
 pub fn Point::zero() -> Self
 
 pub(all) struct Range {
@@ -62,16 +77,25 @@ pub fn Range::byte_length(Self) -> UInt32
 pub fn Range::contains_byte(Self, UInt32) -> Bool
 pub fn Range::contains_point(Self, Point) -> Bool
 pub fn Range::edit(Self, InputEdit) -> Self
+pub fn Range::equal(Self, Self) -> Bool
 pub fn Range::is_empty(Self) -> Bool
 pub fn Range::new(start_byte~ : UInt32, end_byte~ : UInt32, start_point~ : Point, end_point~ : Point) -> Self
+pub fn Range::not_equal(Self, Self) -> Bool
+pub fn Range::to_repr(Self) -> @debug.Repr
 pub fn Range::unbounded(start_byte~ : UInt32, start_point~ : Point) -> Self
 
 type StateId derive(Eq, @debug.Debug)
+pub fn StateId::equal(Self, Self) -> Bool
 pub fn StateId::new(UInt32) -> Self
+pub fn StateId::not_equal(Self, Self) -> Bool
+pub fn StateId::to_repr(Self) -> @debug.Repr
 pub fn StateId::value(Self) -> UInt32
 
 type SymbolId derive(Eq, @debug.Debug)
+pub fn SymbolId::equal(Self, Self) -> Bool
 pub fn SymbolId::new(UInt32) -> Self
+pub fn SymbolId::not_equal(Self, Self) -> Bool
+pub fn SymbolId::to_repr(Self) -> @debug.Repr
 pub fn SymbolId::value(Self) -> UInt32
 
 pub(all) enum SymbolType {
@@ -80,6 +104,9 @@ pub(all) enum SymbolType {
   Supertype
   Auxiliary
 } derive(Eq, @debug.Debug)
+pub fn SymbolType::equal(Self, Self) -> Bool
+pub fn SymbolType::not_equal(Self, Self) -> Bool
+pub fn SymbolType::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

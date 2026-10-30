@@ -1949,3 +1949,141 @@ pub fn ValidatedLanguageTables::field_id_for_name(
   }
   None
 }
+
+///|
+pub extend GeneratedAlias with Debug::{to_repr}
+
+///|
+pub extend GeneratedAlias with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedCharacterRange with Debug::{to_repr}
+
+///|
+pub extend GeneratedCharacterRange with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedDefaultAlias with Debug::{to_repr}
+
+///|
+pub extend GeneratedDefaultAlias with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedExternalLexState with Debug::{to_repr}
+
+///|
+pub extend GeneratedExternalLexState with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedFieldLocation with Debug::{to_repr}
+
+///|
+pub extend GeneratedFieldLocation with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedFieldMapEntry with Debug::{to_repr}
+
+///|
+pub extend GeneratedFieldMapEntry with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedLanguageTables with Debug::{to_repr}
+
+///|
+pub extend GeneratedLanguageTables with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedLexMode with Debug::{to_repr}
+
+///|
+pub extend GeneratedLexMode with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedLexState with Debug::{to_repr}
+
+///|
+pub extend GeneratedLexState with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedLexTable with Debug::{to_repr}
+
+///|
+pub extend GeneratedLexTable with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedLexTransition with Debug::{to_repr}
+
+///|
+pub extend GeneratedLexTransition with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedNonTerminalAliasEntry with Debug::{to_repr}
+
+///|
+pub extend GeneratedNonTerminalAliasEntry with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedParseAction with Debug::{to_repr}
+
+///|
+pub extend GeneratedParseAction with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedParseActionList with Debug::{to_repr}
+
+///|
+pub extend GeneratedParseActionList with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedParseTableCell with Debug::{to_repr}
+
+///|
+pub extend GeneratedParseTableCell with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedProductionInfo with Debug::{to_repr}
+
+///|
+pub extend GeneratedProductionInfo with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedSmallParseTableRow with Debug::{to_repr}
+
+///|
+pub extend GeneratedSmallParseTableRow with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedSmallParseTableSection with Debug::{to_repr}
+
+///|
+pub extend GeneratedSmallParseTableSection with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedSmallParseTableSectionKind with Debug::{to_repr}
+
+///|
+pub extend GeneratedSmallParseTableSectionKind with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedSupertypeEntry with Debug::{to_repr}
+
+///|
+pub extend GeneratedSupertypeEntry with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedTokenSet with Debug::{to_repr}
+
+///|
+pub extend GeneratedTokenSet with Eq::{not_equal, equal}
+
+///|
+pub extend TableValidationError with Debug::{to_repr}
+
+///|
+pub extend TableValidationError with Eq::{not_equal, equal}
+
+///|
+pub extend ValidatedLanguageTables with Debug::{to_repr}
+
+///|
+pub extend ValidatedLanguageTables with Eq::{not_equal, equal}

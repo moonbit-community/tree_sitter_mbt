@@ -1,6 +1,6 @@
 ///|
-fn query_files_test_language_config() -> CliLanguageConfig {
-  CliLanguageConfig::{
+fn query_files_test_language_config() -> @cli.CliLanguageConfig {
+  @cli.CliLanguageConfig::{
     scope: "source.test",
     path: None,
     file_types: [],
@@ -17,7 +17,7 @@ fn query_files_test_language_config() -> CliLanguageConfig {
 
 ///|
 test "cli resolves configured query paths relative to grammar root" {
-  let paths = resolve_cli_language_query_paths(
+  let paths = @cli.resolve_cli_language_query_paths(
     "/repo/tree-sitter-test",
     query_files_test_language_config(),
   )
@@ -34,12 +34,12 @@ test "cli resolves configured query paths relative to grammar root" {
 
 ///|
 test "cli resolves located language query paths from grammar root" {
-  let location = CliLanguageConfigLocation::{
+  let location = @cli.CliLanguageConfigLocation::{
     parser_root: "/repo/parser",
     grammar_root: "/repo/parser/grammar",
     config: query_files_test_language_config(),
   }
-  let paths = resolve_cli_language_location_query_paths(location)
+  let paths = @cli.resolve_cli_language_location_query_paths(location)
   assert_true(
     paths.highlights == ["/repo/parser/grammar/queries/highlights.scm"],
   )
@@ -52,7 +52,7 @@ test "cli resolves located language query paths from grammar root" {
 
 ///|
 test "cli classifies explicit query paths without defaults" {
-  let paths = resolve_cli_explicit_query_paths([
+  let paths = @cli.resolve_cli_explicit_query_paths([
     "custom/highlights.scm", "custom/injections.scm", "custom/locals.scm", "custom/tags.scm",
     "custom/rules.scm",
   ])
@@ -65,7 +65,7 @@ test "cli classifies explicit query paths without defaults" {
 
 ///|
 test "cli combines query files without inserted separators" {
-  let combined = combine_cli_query_files([
+  let combined = @cli.combine_cli_query_files([
     { path: "a.scm", content: "a", },
     { path: "b.scm", content: "b\n", },
     { path: "unicode.scm", content: "é", },
@@ -83,41 +83,41 @@ test "cli combines query files without inserted separators" {
 
 ///|
 test "cli maps combined query byte offsets to source files" {
-  let combined = combine_cli_query_files([
+  let combined = @cli.combine_cli_query_files([
     { path: "a.scm", content: "a", },
     { path: "b.scm", content: "b\n", },
     { path: "unicode.scm", content: "é", },
   ])
   assert_true(
-    cli_query_file_offset(combined, 0) ==
+    @cli.cli_query_file_offset(combined, 0) ==
     Some({ path: "a.scm", byte_offset: 0, }),
   )
   assert_true(
-    cli_query_file_offset(combined, 1) ==
+    @cli.cli_query_file_offset(combined, 1) ==
     Some({ path: "b.scm", byte_offset: 0, }),
   )
   assert_true(
-    cli_query_file_offset(combined, 3) ==
+    @cli.cli_query_file_offset(combined, 3) ==
     Some({ path: "unicode.scm", byte_offset: 0, }),
   )
   assert_true(
-    cli_query_file_offset(combined, 5) ==
+    @cli.cli_query_file_offset(combined, 5) ==
     Some({ path: "unicode.scm", byte_offset: 2, }),
   )
-  assert_true(cli_query_file_offset(combined, -1) is None)
-  assert_true(cli_query_file_offset(combined, 6) is None)
+  assert_true(@cli.cli_query_file_offset(combined, -1) is None)
+  assert_true(@cli.cli_query_file_offset(combined, 6) is None)
 }
 
 ///|
 test "cli maps query errors to source files" {
-  let combined = combine_cli_query_files([
+  let combined = @cli.combine_cli_query_files([
     { path: "first.scm", content: "(document) @root", },
     { path: "second.scm", content: "(missing) @bad", },
   ])
   let error = @query.QueryError::NodeType(byte_offset=18, name="missing")
-  assert_eq(cli_query_error_byte_offset(error), 18)
+  assert_eq(@cli.cli_query_error_byte_offset(error), 18)
   assert_true(
-    cli_query_error_file_offset(combined, error) ==
+    @cli.cli_query_error_file_offset(combined, error) ==
     Some({ path: "second.scm", byte_offset: 2, }),
   )
 }

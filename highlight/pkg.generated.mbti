@@ -40,6 +40,9 @@ pub(all) enum HighlightEvent {
   HighlightStart(String)
   HighlightEnd(String)
 } derive(Eq, @debug.Debug)
+pub fn HighlightEvent::equal(Self, Self) -> Bool
+pub fn HighlightEvent::not_equal(Self, Self) -> Bool
+pub fn HighlightEvent::to_repr(Self) -> @debug.Repr
 
 pub(all) struct HighlightOptions {
   cancellation_state : HighlightProgressState?
@@ -55,12 +58,18 @@ pub(all) enum HighlightProgressPhase {
   Query
   Render
 } derive(Eq, @debug.Debug)
+pub fn HighlightProgressPhase::equal(Self, Self) -> Bool
+pub fn HighlightProgressPhase::not_equal(Self, Self) -> Bool
+pub fn HighlightProgressPhase::to_repr(Self) -> @debug.Repr
 
 pub(all) struct HighlightProgressState {
   phase : HighlightProgressPhase
   current_byte_offset : UInt32
 } derive(Eq, @debug.Debug)
+pub fn HighlightProgressState::equal(Self, Self) -> Bool
 pub fn HighlightProgressState::new(phase~ : HighlightProgressPhase, current_byte_offset~ : UInt32) -> Self
+pub fn HighlightProgressState::not_equal(Self, Self) -> Bool
+pub fn HighlightProgressState::to_repr(Self) -> @debug.Repr
 
 type Highlighter
 pub fn Highlighter::highlight(Self, HighlightConfiguration, Bytes, options? : HighlightOptions) -> Array[HighlightEvent] raise HighlightError

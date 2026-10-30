@@ -85,7 +85,7 @@ pub fn run_cli_parse_command(
 ) -> CliParseCommandRunResult raise {
   let results : Array[CliParseCommandSourceResult] = []
   let parse_results : Array[CliParseResult] = []
-  let stdout = StringBuilder::new()
+  let stdout = StringBuilder()
   for source in sources {
     let start_time = if command.time { Some(@env.now()) } else { None }
     let result = run_cli_parse_source_for_command(
@@ -120,7 +120,7 @@ pub fn run_cli_query_command(
     err => raise CliQueryRunError::QueryFailed(err)
   }
   let results : Array[CliQueryCommandSourceResult] = []
-  let stdout = StringBuilder::new()
+  let stdout = StringBuilder()
   let mut exit_code = 0
   for source in sources {
     let result = run_cli_query_source(command, language, compiled, source)
@@ -574,7 +574,7 @@ fn execute_cli_query_source(
   let cursor = @query.QueryCursor::new()
   apply_cli_query_ranges(command, cursor)
   cursor.exec(compiled, root)
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let captures : Array[CliQueryCaptureInfo] = []
   let (match_count, capture_count) = match command.output {
     CliQueryCaptures =>
@@ -723,3 +723,57 @@ pub fn render_cli_test_json_summary(summary : CliTestRunSummary) -> String {
     "}",
   ].join("")
 }
+
+///|
+pub extend CliParseCommandRunResult with Debug::{to_repr}
+
+///|
+pub extend CliParseCommandRunResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliParseCommandSource with Debug::{to_repr}
+
+///|
+pub extend CliParseCommandSource with Eq::{not_equal, equal}
+
+///|
+pub extend CliParseCommandSourceResult with Debug::{to_repr}
+
+///|
+pub extend CliParseCommandSourceResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryCommandRunResult with Debug::{to_repr}
+
+///|
+pub extend CliQueryCommandRunResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryCommandSourceResult with Debug::{to_repr}
+
+///|
+pub extend CliQueryCommandSourceResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliTestCommandFile with Debug::{to_repr}
+
+///|
+pub extend CliTestCommandFile with Eq::{not_equal, equal}
+
+///|
+pub extend CliTestCommandFileResult with Debug::{to_repr}
+
+///|
+pub extend CliTestCommandFileResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliTestCommandRunResult with Debug::{to_repr}
+
+///|
+pub extend CliTestCommandRunResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliTestRunSummary with Debug::{to_repr}
+
+///|
+pub extend CliTestRunSummary with Eq::{not_equal, equal}

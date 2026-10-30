@@ -27,6 +27,9 @@ pub(all) suberror GenerateError {
   AmbiguousExtra(Array[String])
   ParseTableValueOutOfRange(kind~ : String, value~ : Int32, min~ : Int32, max~ : Int32)
 } derive(Eq, @debug.Debug)
+pub fn GenerateError::equal(Self, Self) -> Bool
+pub fn GenerateError::not_equal(Self, Self) -> Bool
+pub fn GenerateError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 pub(all) struct GenerateOptions {
@@ -38,12 +41,18 @@ pub(all) struct GenerateOptions {
   api_alias : String
 } derive(Eq, @debug.Debug)
 pub fn GenerateOptions::default() -> Self
+pub fn GenerateOptions::equal(Self, Self) -> Bool
+pub fn GenerateOptions::not_equal(Self, Self) -> Bool
+pub fn GenerateOptions::to_repr(Self) -> @debug.Repr
 
 pub(all) enum GenerateWarning {
   UnsupportedRegexFlag(String)
   NamedExtraMayBeEmpty(String)
   SimplifiableRule(String)
 } derive(Eq, @debug.Debug)
+pub fn GenerateWarning::equal(Self, Self) -> Bool
+pub fn GenerateWarning::not_equal(Self, Self) -> Bool
+pub fn GenerateWarning::to_repr(Self) -> @debug.Repr
 
 pub(all) struct GeneratedLanguage {
   moonbit_sources : Array[GeneratedSource]
@@ -54,11 +63,17 @@ pub(all) struct GeneratedLanguage {
   metadata : @tables.LanguageMetadata
   warnings : Array[GenerateWarning]
 } derive(Eq, @debug.Debug)
+pub fn GeneratedLanguage::equal(Self, Self) -> Bool
+pub fn GeneratedLanguage::not_equal(Self, Self) -> Bool
+pub fn GeneratedLanguage::to_repr(Self) -> @debug.Repr
 
 pub(all) struct GeneratedSource {
   path : String
   content : String
 } derive(Eq, @debug.Debug)
+pub fn GeneratedSource::equal(Self, Self) -> Bool
+pub fn GeneratedSource::not_equal(Self, Self) -> Bool
+pub fn GeneratedSource::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

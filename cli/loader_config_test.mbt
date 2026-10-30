@@ -1,6 +1,6 @@
 ///|
 test "cli parses global config json" {
-  let config = parse_cli_global_config_json(
+  let config = @cli.parse_cli_global_config_json(
     (
       #|{
       #|  "parser-directories": ["vendor", "grammars"],
@@ -14,27 +14,27 @@ test "cli parses global config json" {
 
 ///|
 test "cli global config path candidates follow loader precedence" {
-  let environment = CliGlobalConfigPathEnvironment::{
+  let environment = @cli.CliGlobalConfigPathEnvironment::{
     tree_sitter_dir: Some("/tree-sitter-dir"),
     xdg_config_home: Some("/xdg"),
     home: Some("/home/user"),
   }
   assert_true(
-    cli_global_config_path_candidates_for_environment(
+    @cli.cli_global_config_path_candidates_for_environment(
       Some("/custom/config.json"),
       environment,
     ) ==
     ["/custom/config.json"],
   )
   assert_true(
-    cli_global_config_path_candidates_for_environment(None, environment) ==
+    @cli.cli_global_config_path_candidates_for_environment(None, environment) ==
     [
       "/tree-sitter-dir/config.json", "/xdg/tree-sitter/config.json", "/home/user/.tree-sitter/config.json",
     ],
   )
   let without_xdg = { ..environment, xdg_config_home: None, }
   assert_true(
-    cli_global_config_path_candidates_for_environment(None, without_xdg) ==
+    @cli.cli_global_config_path_candidates_for_environment(None, without_xdg) ==
     [
       "/tree-sitter-dir/config.json", "/home/user/.config/tree-sitter/config.json",
       "/home/user/.tree-sitter/config.json",
@@ -44,7 +44,7 @@ test "cli global config path candidates follow loader precedence" {
 
 ///|
 test "cli parses tree-sitter language config json" {
-  let config = parse_cli_tree_sitter_config_json(
+  let config = @cli.parse_cli_tree_sitter_config_json(
     (
       #|{
       #|  "grammars": [{
@@ -78,21 +78,21 @@ test "cli parses tree-sitter language config json" {
 
 ///|
 test "cli parses tree-sitter metadata version json" {
-  let metadata = parse_cli_tree_sitter_metadata_json(
+  let metadata = @cli.parse_cli_tree_sitter_metadata_json(
     "{\"metadata\":{\"version\":\"1.2.3\"}}",
   )
   assert_eq(metadata.major, 1)
   assert_eq(metadata.minor, 2)
   assert_eq(metadata.patch, 3)
 
-  try parse_cli_tree_sitter_metadata_json("{\"metadata\":{}}") catch {
+  try @cli.parse_cli_tree_sitter_metadata_json("{\"metadata\":{}}") catch {
     err => assert_true(err is MissingField(path="$.metadata", field="version"))
   } noraise {
     _ => fail("expected missing metadata version")
   }
 
   try
-    parse_cli_tree_sitter_metadata_json(
+    @cli.parse_cli_tree_sitter_metadata_json(
       "{\"metadata\":{\"version\":\"1.02.3\"}}",
     )
   catch {
@@ -108,18 +108,20 @@ test "cli parses tree-sitter metadata version json" {
 ///|
 test "cli config reports typed json errors" {
   let invalid = @test.expect_error(() => {
-    parse_cli_tree_sitter_config_json("{\"grammars\":[{\"file-types\":[]}]}")
+    @cli.parse_cli_tree_sitter_config_json(
+      "{\"grammars\":[{\"file-types\":[]}]}",
+    )
   })
   assert_true(invalid is MissingField(path="$.grammars[0]", field="scope"))
   let wrong_type = @test.expect_error(() => {
-    parse_cli_global_config_json("{\"parser-directories\":\"vendor\"}")
+    @cli.parse_cli_global_config_json("{\"parser-directories\":\"vendor\"}")
   })
   assert_true(wrong_type is ExpectedArray("$.parser-directories"))
 }
 
 ///|
 test "cli file type matching prefers exact file names then longest suffix" {
-  let config = CliLanguageConfig::{
+  let config = @cli.CliLanguageConfig::{
     scope: "source.test",
     path: None,
     file_types: ["pkg", "moon.pkg", "d.ts", "ts"],
@@ -132,12 +134,14 @@ test "cli file type matching prefers exact file names then longest suffix" {
     tags: [],
     external_files: [],
   }
-  guard cli_language_file_type_match(config, "/tmp/moon.pkg") is Some(exact) else {
+  guard @cli.cli_language_file_type_match(config, "/tmp/moon.pkg")
+    is Some(exact) else {
     fail("expected exact filename match")
   }
   assert_true(exact.exact_filename)
   assert_eq(exact.file_type, "moon.pkg")
-  guard cli_language_file_type_match(config, "types/foo.d.ts") is Some(suffix) else {
+  guard @cli.cli_language_file_type_match(config, "types/foo.d.ts")
+    is Some(suffix) else {
     fail("expected suffix match")
   }
   assert_true(!suffix.exact_filename)
@@ -146,7 +150,7 @@ test "cli file type matching prefers exact file names then longest suffix" {
 
 ///|
 test "cli language selection applies content regex tie-breaks" {
-  let base = CliLanguageConfig::{
+  let base = @cli.CliLanguageConfig::{
     scope: "source.base",
     path: None,
     file_types: ["txt"],
@@ -174,13 +178,13 @@ test "cli language selection applies content regex tie-breaks" {
     scope: "source.long",
     content_regex: Some("moonbit"),
   }
-  let selected = select_cli_language_config_for_file(
+  let selected = @cli.select_cli_language_config_for_file(
     [base, no_match, short_match, long_match],
     "sample.txt",
     source="moonbit module",
   )
   assert_true(selected is Some({ scope: "source.long", .. }))
-  let without_source = select_cli_language_config_for_file(
+  let without_source = @cli.select_cli_language_config_for_file(
     [no_match, base],
     "sample.txt",
   )
@@ -190,27 +194,28 @@ test "cli language selection applies content regex tie-breaks" {
 ///|
 test "cli query file classification uses known suffixes" {
   assert_true(
-    classify_cli_query_file_path("queries/highlights.scm")
+    @cli.classify_cli_query_file_path("queries/highlights.scm")
     is CliQueryFileHighlights,
   )
   assert_true(
-    classify_cli_query_file_path("queries/injections.scm")
+    @cli.classify_cli_query_file_path("queries/injections.scm")
     is CliQueryFileInjections,
   )
   assert_true(
-    classify_cli_query_file_path("queries/locals.scm") is CliQueryFileLocals,
+    @cli.classify_cli_query_file_path("queries/locals.scm")
+    is CliQueryFileLocals,
   )
   assert_true(
-    classify_cli_query_file_path("queries/tags.scm") is CliQueryFileTags,
+    @cli.classify_cli_query_file_path("queries/tags.scm") is CliQueryFileTags,
   )
   assert_true(
-    classify_cli_query_file_path("queries/other.scm") is CliQueryFileOther,
+    @cli.classify_cli_query_file_path("queries/other.scm") is CliQueryFileOther,
   )
 }
 
 ///|
 test "cli injection language selection uses longest regex match" {
-  let base = CliLanguageConfig::{
+  let base = @cli.CliLanguageConfig::{
     scope: "source.short",
     path: None,
     file_types: [],
@@ -228,7 +233,7 @@ test "cli injection language selection uses longest regex match" {
     scope: "source.long",
     injection_regex: Some("moonbit"),
   }
-  let selected = select_cli_language_config_for_injection(
+  let selected = @cli.select_cli_language_config_for_injection(
     [base, longer],
     "moonbit",
   )
@@ -240,8 +245,8 @@ fn cli_selection_test_language_config(
   scope : String,
   file_types~ : Array[String] = [],
   first_line_regex? : String,
-) -> CliLanguageConfig {
-  CliLanguageConfig::{
+) -> @cli.CliLanguageConfig {
+  @cli.CliLanguageConfig::{
     scope,
     path: None,
     file_types,
@@ -265,7 +270,7 @@ test "cli language selection applies lib path and scope priority" {
     "mbt",
   ])
   assert_true(
-    select_cli_language(
+    @cli.select_cli_language(
       [file_config, scope_config],
       lib_path="parser.so",
       scope="source.scope",
@@ -273,7 +278,7 @@ test "cli language selection applies lib path and scope priority" {
     )
     is Some(CliLanguageFromLibPath("parser.so")),
   )
-  let scoped = select_cli_language(
+  let scoped = @cli.select_cli_language(
     [file_config, scope_config],
     scope="source.scope",
     file_name="sample.mbt",
@@ -285,7 +290,7 @@ test "cli language selection applies lib path and scope priority" {
     ),
   )
   assert_true(
-    select_cli_language(
+    @cli.select_cli_language(
       [file_config],
       scope="missing.scope",
       file_name="sample.mbt",
@@ -303,7 +308,7 @@ test "cli language selection uses file type before first line fallback" {
     "source.shebang",
     first_line_regex="^#!.*moonbit",
   )
-  let by_file = select_cli_language(
+  let by_file = @cli.select_cli_language(
     [first_line_config, file_config],
     file_name="sample.mbt",
     source="#!/usr/bin/env moonbit\n",
@@ -314,7 +319,7 @@ test "cli language selection uses file type before first line fallback" {
       CliLanguageFromConfig({ scope: "source.file", .. }, CliLanguageByFileType)
     ),
   )
-  let by_first_line = select_cli_language(
+  let by_first_line = @cli.select_cli_language(
     [first_line_config, file_config],
     file_name="sample.unknown",
     source="#!/usr/bin/env moonbit\r\nlet x = 1",
@@ -341,7 +346,7 @@ test "cli locates language configs relative to parser roots" {
     ..cli_selection_test_language_config("source.absolute"),
     path: Some("/opt/tree-sitter-absolute"),
   }
-  let locations = locate_cli_language_configs("/repo/parser", {
+  let locations = @cli.locate_cli_language_configs("/repo/parser", {
     grammars: [root_config, nested_config, absolute_config],
   })
   assert_eq(locations.length(), 3)
@@ -349,7 +354,7 @@ test "cli locates language configs relative to parser roots" {
   assert_eq(locations[1].grammar_root, "/repo/parser/grammar")
   assert_eq(locations[2].grammar_root, "/opt/tree-sitter-absolute")
   assert_eq(
-    cli_tree_sitter_config_path("/repo/parser"),
+    @cli.cli_tree_sitter_config_path("/repo/parser"),
     "/repo/parser/tree-sitter.json",
   )
 }
@@ -367,10 +372,10 @@ test "cli located language selection preserves grammar root" {
     ),
     path: Some("grammar/shebang"),
   }
-  let locations = locate_cli_language_configs("/repo/parser", {
+  let locations = @cli.locate_cli_language_configs("/repo/parser", {
     grammars: [first_line_config, file_config],
   })
-  let by_file = select_cli_language_location(
+  let by_file = @cli.select_cli_language_location(
     locations,
     file_name="sample.mbt",
     source="#!/usr/bin/env moonbit\n",
@@ -384,7 +389,7 @@ test "cli located language selection preserves grammar root" {
       )
     ),
   )
-  let by_first_line = select_cli_language_location(
+  let by_first_line = @cli.select_cli_language_location(
     locations,
     file_name="sample.unknown",
     source="#!/usr/bin/env moonbit\n",
@@ -407,7 +412,7 @@ test "cli first line language selection reports invalid regex" {
     first_line_regex="[",
   )
   let result = @test.expect_error(() => {
-    select_cli_language_config_for_first_line(
+    @cli.select_cli_language_config_for_first_line(
       [config],
       "#!/usr/bin/env moonbit",
     )

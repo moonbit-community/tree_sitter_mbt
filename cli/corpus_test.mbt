@@ -1,6 +1,6 @@
 ///|
 test "cli corpus parser parses examples and normalizes sexp" {
-  let parsed = parse_corpus_file_contents(
+  let parsed = @cli.parse_corpus_file_contents(
     "corpus.txt",
     (
       #|===============
@@ -40,7 +40,7 @@ test "cli corpus parser parses examples and normalizes sexp" {
 
 ///|
 test "cli corpus parser prefers longest later divider" {
-  let parsed = parse_corpus_file_contents(
+  let parsed = @cli.parse_corpus_file_contents(
     "corpus.txt",
     (
       #|==================
@@ -65,7 +65,7 @@ test "cli corpus parser prefers longest later divider" {
 
 ///|
 test "cli corpus parser handles attributes and cst output" {
-  let parsed = parse_corpus_file_contents(
+  let parsed = @cli.parse_corpus_file_contents(
     "corpus.txt",
     (
       #|=========================
@@ -105,7 +105,7 @@ test "cli corpus parser handles attributes and cst output" {
 
 ///|
 test "cli corpus parser respects delimiter suffix" {
-  let parsed = parse_corpus_file_contents(
+  let parsed = @cli.parse_corpus_file_contents(
     "corpus.txt",
     (
       #|=== js
@@ -130,7 +130,7 @@ test "cli corpus parser respects delimiter suffix" {
 
 ///|
 test "cli corpus sexp normalization strips comments and detects fields" {
-  let normalized = normalize_corpus_sexp_output(
+  let normalized = @cli.normalize_corpus_sexp_output(
     (
       #|; comment
       #|(root

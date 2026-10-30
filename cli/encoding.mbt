@@ -50,3 +50,9 @@ pub fn cli_input_from_bytes(
   }
   @tree_sitter_mbt.Input::from_bytes(bytes, encoding~)
 }
+
+///|
+pub extend CliEncodingError with Debug::{to_repr}
+
+///|
+pub extend CliEncodingError with Eq::{not_equal, equal}

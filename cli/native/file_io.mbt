@@ -1107,3 +1107,9 @@ fn remove_cli_input_path(paths : Array[String], path : String) -> Unit {
     }
   }
 }
+
+///|
+pub extend CliFileIoError with Debug::{to_repr}
+
+///|
+pub extend CliFileIoError with Eq::{not_equal, equal}

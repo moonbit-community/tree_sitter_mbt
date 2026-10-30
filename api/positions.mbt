@@ -259,3 +259,27 @@ fn sub_u32_saturating(left : UInt32, right : UInt32) -> UInt32 {
     0
   }
 }
+
+///|
+pub extend InputEdit with Debug::{to_repr}
+
+///|
+pub extend InputEdit with Eq::{not_equal, equal}
+
+///|
+pub extend InputEncoding with Debug::{to_repr}
+
+///|
+pub extend InputEncoding with Eq::{not_equal, equal}
+
+///|
+pub extend Point with Debug::{to_repr}
+
+///|
+pub extend Point with Eq::{not_equal, equal}
+
+///|
+pub extend Range with Debug::{to_repr}
+
+///|
+pub extend Range with Eq::{not_equal, equal}

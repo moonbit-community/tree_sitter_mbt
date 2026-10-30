@@ -13,7 +13,7 @@ pub fn render_parse_cst_cursor(
   cursor : @tree_sitter_mbt.TreeCursor,
   no_ranges~ : Bool = false,
 ) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let total_width = cst_total_range_width(source)
   let mut current = cursor
   let mut indent_level = if no_ranges { 0 } else { 1 }

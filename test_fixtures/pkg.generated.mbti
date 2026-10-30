@@ -24,6 +24,9 @@ pub(all) struct FixtureSource {
   corpus : String
   external_scanner_status : String
 } derive(Eq, @debug.Debug)
+pub fn FixtureSource::equal(Self, Self) -> Bool
+pub fn FixtureSource::not_equal(Self, Self) -> Bool
+pub fn FixtureSource::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

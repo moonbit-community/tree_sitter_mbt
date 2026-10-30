@@ -90,7 +90,7 @@ pub fn resolve_cli_language_grammar_json_path(
 
 ///|
 pub fn combine_cli_query_files(files : Array[CliQueryFile]) -> CliCombinedQuery {
-  let source = StringBuilder::new()
+  let source = StringBuilder()
   let ranges : Array[CliQuerySourceRange] = []
   let mut start_byte = 0
   for file in files {
@@ -190,3 +190,33 @@ fn cli_query_join_path(root : String, path : String) -> String {
 fn cli_query_path_is_absolute(path : String) -> Bool {
   path.has_prefix("/") || path.has_prefix("\\")
 }
+
+///|
+pub extend CliCombinedQuery with Debug::{to_repr}
+
+///|
+pub extend CliCombinedQuery with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryFile with Debug::{to_repr}
+
+///|
+pub extend CliQueryFile with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryFileOffset with Debug::{to_repr}
+
+///|
+pub extend CliQueryFileOffset with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryFilePathSet with Debug::{to_repr}
+
+///|
+pub extend CliQueryFilePathSet with Eq::{not_equal, equal}
+
+///|
+pub extend CliQuerySourceRange with Debug::{to_repr}
+
+///|
+pub extend CliQuerySourceRange with Eq::{not_equal, equal}

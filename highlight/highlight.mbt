@@ -377,7 +377,7 @@ pub fn render_html(
   source : Bytes,
   encoding~ : @api.InputEncoding = Utf8,
 ) -> String raise HighlightError {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for event in events {
     match event {
       Source(start_byte~, end_byte~) => {
@@ -540,7 +540,7 @@ fn compile_highlight_query(
 
 ///|
 fn combine_highlight_query_sources(sources : Array[String]) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut needs_newline = false
   for source in sources {
     if source.is_empty() {
@@ -1029,7 +1029,7 @@ fn highlight_write_html_class(out : StringBuilder, name : String) -> Unit {
 
 ///|
 fn highlight_sanitize_html_class_part(part : StringView) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for char in part {
     if highlight_html_class_char_is_allowed(char) {
       out.write_char(char)
@@ -1054,7 +1054,7 @@ fn highlight_decode_utf16_text(
   if source.length() % 2 != 0 {
     return None
   }
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   for i = 0; i < source.length(); {
     let code_unit = highlight_read_utf16_code_unit(source, i, little_endian~)
     if 0xD800 <= code_unit && code_unit <= 0xDBFF {
@@ -1788,7 +1788,7 @@ fn highlight_decode_utf16(
       predicate, "capture text is not valid utf16",
     )
   }
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   for i = 0; i < source.length(); {
     let code_unit = highlight_read_utf16_code_unit(source, i, little_endian~)
     if 0xD800 <= code_unit && code_unit <= 0xDBFF {
@@ -1847,7 +1847,7 @@ fn highlight_read_utf16_code_unit(
 
 ///|
 fn highlight_normalize_text_regex(regex : String) -> String {
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   let mut escaped = false
   for offset = 0; offset < regex.length(); {
     match regex.get_char(offset) {
@@ -1882,7 +1882,7 @@ fn highlight_normalize_regex_class(
   regex : String,
   start : Int32,
 ) -> (String, Int32) {
-  let class_builder = StringBuilder::new()
+  let class_builder = StringBuilder()
   let complements : Array[String] = []
   let mut has_positive_atom = false
   let mut escaped = false
@@ -1937,7 +1937,7 @@ fn highlight_join_regex_class_complements(
   if complements.length() == 1 && !has_positive_atom {
     return complements[0]
   }
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   builder.write_char('(')
   let mut first = true
   for complement in complements {
@@ -2740,3 +2740,21 @@ fn highlight_boundary_compare(
     0
   }
 }
+
+///|
+pub extend HighlightEvent with Debug::{to_repr}
+
+///|
+pub extend HighlightEvent with Eq::{not_equal, equal}
+
+///|
+pub extend HighlightProgressPhase with Debug::{to_repr}
+
+///|
+pub extend HighlightProgressPhase with Eq::{not_equal, equal}
+
+///|
+pub extend HighlightProgressState with Debug::{to_repr}
+
+///|
+pub extend HighlightProgressState with Eq::{not_equal, equal}

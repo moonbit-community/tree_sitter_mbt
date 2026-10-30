@@ -42,3 +42,21 @@ pub fn StateId::new(value : UInt32) -> StateId {
 pub fn StateId::value(self : StateId) -> UInt32 {
   self.value
 }
+
+///|
+pub extend FieldId with Debug::{to_repr}
+
+///|
+pub extend FieldId with Eq::{not_equal, equal}
+
+///|
+pub extend StateId with Debug::{to_repr}
+
+///|
+pub extend StateId with Eq::{not_equal, equal}
+
+///|
+pub extend SymbolId with Debug::{to_repr}
+
+///|
+pub extend SymbolId with Eq::{not_equal, equal}

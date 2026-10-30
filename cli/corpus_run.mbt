@@ -101,7 +101,7 @@ pub fn cli_corpus_correction_from_example(
 pub fn render_cli_corpus_corrections(
   corrections : Array[CliCorpusCorrection],
 ) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for index, correction in corrections {
     if index > 0 {
       out.write_char('\n')
@@ -282,7 +282,7 @@ pub fn format_cli_corpus_sexp(
   initial_indent_level~ : Int32 = 0,
 ) -> String {
   let formatter = CliCorpusSexpFormatter::new(sexp)
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut indent_level = initial_indent_level
   let mut has_field = false
   while formatter.fetch_next() is Some(scratch) {
@@ -329,7 +329,7 @@ pub fn format_cli_corpus_sexp(
 
 ///|
 pub fn strip_cli_corpus_sexp_fields(sexp : String) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut offset = 0
   while offset < sexp.length() {
     match sexp.get_char(offset) {
@@ -377,7 +377,7 @@ fn cli_corpus_run_result(
 
 ///|
 fn render_cli_corpus_correction(correction : CliCorpusCorrection) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let header = cli_corpus_repeat_char('=', correction.header_delim_len)
   let divider = cli_corpus_repeat_char('-', correction.divider_delim_len)
   out.write_string(header)
@@ -518,7 +518,7 @@ fn CliCorpusSexpFormatter::advance(self : CliCorpusSexpFormatter) -> Char? {
 
 ///|
 fn CliCorpusSexpFormatter::fetch_next(self : CliCorpusSexpFormatter) -> String? {
-  let next = StringBuilder::new()
+  let next = StringBuilder()
   while self.advance() is Some(char) {
     if char == '\'' || char == '"' {
       self.quote = Some(char)
@@ -594,7 +594,7 @@ fn cli_corpus_field_char_is_ascii_alphanumeric(char : Char) -> Bool {
 
 ///|
 fn cli_corpus_repeat_char(char : Char, count : Int32) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for _ in 0..<count {
     out.write_char(char)
   }
@@ -607,3 +607,27 @@ fn cli_corpus_write_indent(out : StringBuilder, indent_level : Int32) -> Unit {
     out.write_string("  ")
   }
 }
+
+///|
+pub extend CliCorpusCorrection with Debug::{to_repr}
+
+///|
+pub extend CliCorpusCorrection with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusRunResult with Debug::{to_repr}
+
+///|
+pub extend CliCorpusRunResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusRunStatus with Debug::{to_repr}
+
+///|
+pub extend CliCorpusRunStatus with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusUpdatePlan with Debug::{to_repr}
+
+///|
+pub extend CliCorpusUpdatePlan with Eq::{not_equal, equal}

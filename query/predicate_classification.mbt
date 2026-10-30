@@ -409,7 +409,7 @@ fn query_validate_regex_pattern(
 
 ///|
 fn query_normalize_text_regex(regex : String) -> String {
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   let mut escaped = false
   for offset = 0; offset < regex.length(); {
     match regex.get_char(offset) {
@@ -444,7 +444,7 @@ fn query_normalize_regex_class(
   regex : String,
   start : Int32,
 ) -> (String, Int32) {
-  let class_builder = StringBuilder::new()
+  let class_builder = StringBuilder()
   let complements : Array[String] = []
   let mut has_positive_atom = false
   let mut escaped = false
@@ -499,7 +499,7 @@ fn query_join_regex_class_complements(
   if complements.length() == 1 && !has_positive_atom {
     return complements[0]
   }
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   builder.write_char('(')
   let mut first = true
   for complement in complements {
@@ -572,3 +572,45 @@ fn[T] query_raise_predicate_error(
     reason~,
   )
 }
+
+///|
+pub extend QueryGeneralPredicate with Debug::{to_repr}
+
+///|
+pub extend QueryGeneralPredicate with Eq::{not_equal, equal}
+
+///|
+pub extend QueryPredicateArg with Debug::{to_repr}
+
+///|
+pub extend QueryPredicateArg with Eq::{not_equal, equal}
+
+///|
+pub extend QueryPredicateClasses with Debug::{to_repr}
+
+///|
+pub extend QueryPredicateClasses with Eq::{not_equal, equal}
+
+///|
+pub extend QueryPropertyAssertion with Debug::{to_repr}
+
+///|
+pub extend QueryPropertyAssertion with Eq::{not_equal, equal}
+
+///|
+pub extend QueryPropertySetting with Debug::{to_repr}
+
+///|
+pub extend QueryPropertySetting with Eq::{not_equal, equal}
+
+///|
+pub extend QueryTextPredicate with Debug::{to_repr}
+
+///|
+pub extend QueryTextPredicate with Eq::{not_equal, equal}
+
+///|
+pub extend QueryTextPredicateKind with Debug::{to_repr}
+
+///|
+pub extend QueryTextPredicateKind with Eq::{not_equal, equal}

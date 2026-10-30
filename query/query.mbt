@@ -3644,7 +3644,7 @@ fn QueryParser::parse_identifier(self : QueryParser) -> String raise QueryError 
   guard self.peek_char() is Some(first) && query_identifier_start(first) else {
     raise self.syntax_error(start, "expected identifier")
   }
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   builder.write_char(first)
   self.offset += first.utf16_len()
   while self.peek_char() is Some(ch) && query_identifier_continue(ch) {
@@ -3659,7 +3659,7 @@ fn QueryParser::parse_string_literal(
   self : QueryParser,
 ) -> String raise QueryError {
   self.expect_char('"')
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   while self.peek_char() is Some(ch) {
     if ch == '"' {
       self.offset += 1
@@ -3851,3 +3851,21 @@ fn query_escape_char(ch : Char) -> Char {
     other => other
   }
 }
+
+///|
+pub extend QueryCaptureQuantifier with Debug::{to_repr}
+
+///|
+pub extend QueryCaptureQuantifier with Eq::{not_equal, equal}
+
+///|
+pub extend QueryCursorProgressState with Debug::{to_repr}
+
+///|
+pub extend QueryCursorProgressState with Eq::{not_equal, equal}
+
+///|
+pub extend QueryPredicateStep with Debug::{to_repr}
+
+///|
+pub extend QueryPredicateStep with Eq::{not_equal, equal}

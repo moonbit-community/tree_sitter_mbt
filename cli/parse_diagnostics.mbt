@@ -27,7 +27,7 @@ pub fn first_parse_problem(tree : @tree_sitter_mbt.Tree) -> CliParseProblem? {
 
 ///|
 pub fn render_parse_problem(problem : CliParseProblem) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   out.write_char('(')
   write_parse_problem_label(out, problem)
   write_parse_range(out, problem.start_point, problem.end_point)
@@ -95,7 +95,7 @@ fn write_parse_problem_label(
 
 ///|
 fn escape_parse_problem_text(text : String) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for char in text {
     match escape_parse_problem_char(char) {
       Some(escaped) => out.write_string(escaped)
@@ -124,3 +124,15 @@ fn escape_parse_problem_char(char : Char) -> String? {
     }
   }
 }
+
+///|
+pub extend CliParseProblem with Debug::{to_repr}
+
+///|
+pub extend CliParseProblem with Eq::{not_equal, equal}
+
+///|
+pub extend CliParseProblemKind with Debug::{to_repr}
+
+///|
+pub extend CliParseProblemKind with Eq::{not_equal, equal}

@@ -93,3 +93,21 @@ fn remove_first_path(paths : Array[String], target : String) -> Unit {
     paths.remove(found_index) |> ignore
   }
 }
+
+///|
+pub extend CliInputError with Debug::{to_repr}
+
+///|
+pub extend CliInputError with Eq::{not_equal, equal}
+
+///|
+pub extend CliInputSource with Debug::{to_repr}
+
+///|
+pub extend CliInputSource with Eq::{not_equal, equal}
+
+///|
+pub extend CliPathExpansion with Debug::{to_repr}
+
+///|
+pub extend CliPathExpansion with Eq::{not_equal, equal}

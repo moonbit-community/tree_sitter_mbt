@@ -57,7 +57,7 @@ fn cli_query_utf8_column_language() -> @tree_sitter_mbt.Language raise {
 }
 
 ///|
-fn cli_tags_test_command() -> CliTagsCommand {
+fn cli_tags_test_command() -> @cli.CliTagsCommand {
   {
     paths_file: None,
     paths: [],
@@ -74,7 +74,7 @@ fn cli_tags_test_command() -> CliTagsCommand {
 ///|
 test "cli parse command runner maps command options to parse runner" {
   let parser = cli_command_test_parser()
-  let command = CliParseCommand::{
+  let command = @cli.CliParseCommand::{
     paths_file: None,
     paths: [],
     config_path: None,
@@ -89,7 +89,7 @@ test "cli parse command runner maps command options to parse runner" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command(command, parser, [
+  let result = @cli.run_cli_parse_command(command, parser, [
     { name: Some("sample.mbt"), contents: b"ab", language_names: [], },
   ])
   assert_eq(result.results.length(), 1)
@@ -110,7 +110,7 @@ test "cli parse command runner maps command options to parse runner" {
 test "cli parse command runner appends first parse problem summary" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(cli_parse_diagnostics_language())
-  let command = CliParseCommand::{
+  let command = @cli.CliParseCommand::{
     paths_file: None,
     paths: [],
     config_path: None,
@@ -125,7 +125,7 @@ test "cli parse command runner appends first parse problem summary" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command(command, parser, [
+  let result = @cli.run_cli_parse_command(command, parser, [
     { name: Some("bad.mbt"), contents: b"x", language_names: [], },
   ])
   assert_eq(result.results.length(), 1)
@@ -140,7 +140,7 @@ test "cli parse command runner appends first parse problem summary" {
 ///|
 test "cli parse command runner appends timing summary when requested" {
   let parser = cli_command_test_parser()
-  let command = CliParseCommand::{
+  let command = @cli.CliParseCommand::{
     paths_file: None,
     paths: [],
     config_path: None,
@@ -155,7 +155,7 @@ test "cli parse command runner appends timing summary when requested" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command(command, parser, [
+  let result = @cli.run_cli_parse_command(command, parser, [
     { name: Some("timed.mbt"), contents: b"ab", language_names: [], },
   ])
   assert_eq(result.exit_code, 0)
@@ -166,7 +166,7 @@ test "cli parse command runner appends timing summary when requested" {
 ///|
 test "cli test command runner filters corpus and renders summaries" {
   let parser = cli_command_test_parser()
-  let command = CliTestCommand::{
+  let command = @cli.CliTestCommand::{
     include_pattern: Some("Passing"),
     exclude_pattern: None,
     file_name: None,
@@ -181,7 +181,7 @@ test "cli test command runner filters corpus and renders summaries" {
     json_summary: true,
     stats: Some(CliTestStatsTotalOnly),
   }
-  let result = run_cli_test_command(command, parser, [
+  let result = @cli.run_cli_test_command(command, parser, [
     {
       name: "corpus.txt",
       contents: (
@@ -219,7 +219,7 @@ test "cli test command runner filters corpus and renders summaries" {
 ///|
 test "cli test command runner prepares update writes" {
   let parser = cli_command_test_parser()
-  let command = CliTestCommand::{
+  let command = @cli.CliTestCommand::{
     include_pattern: None,
     exclude_pattern: None,
     file_name: None,
@@ -234,7 +234,7 @@ test "cli test command runner prepares update writes" {
     json_summary: false,
     stats: None,
   }
-  let result = run_cli_test_command(command, parser, [
+  let result = @cli.run_cli_test_command(command, parser, [
     {
       name: "corpus.txt",
       contents: (
@@ -261,7 +261,7 @@ test "cli test command runner prepares update writes" {
 
 ///|
 test "cli query command runner renders captures with text predicates" {
-  let command = CliQueryCommand::{
+  let command = @cli.CliQueryCommand::{
     query_path: Some("query.scm"),
     source_paths: [],
     config_path: None,
@@ -277,7 +277,7 @@ test "cli query command runner renders captures with text predicates" {
     containing_byte_range: None,
     test_mode: false,
   }
-  let result = run_cli_query_command(
+  let result = @cli.run_cli_query_command(
     command,
     cli_parse_pair_language(),
     "(item) @node (#eq? @node \"a\")",
@@ -292,7 +292,7 @@ test "cli query command runner renders captures with text predicates" {
 
 ///|
 test "cli query command runner renders matches and applies byte ranges" {
-  let command = CliQueryCommand::{
+  let command = @cli.CliQueryCommand::{
     query_path: None,
     source_paths: [],
     config_path: None,
@@ -308,7 +308,7 @@ test "cli query command runner renders matches and applies byte ranges" {
     containing_byte_range: Some({ start: 0U, end: 1U, }),
     test_mode: false,
   }
-  let result = run_cli_query_command(
+  let result = @cli.run_cli_query_command(
     command,
     cli_parse_pair_language(),
     "(document) @root (item) @node",
@@ -329,7 +329,7 @@ test "cli query command runner renders matches and applies byte ranges" {
 
 ///|
 test "cli query command runner test mode passes assertion comments" {
-  let command = CliQueryCommand::{
+  let command = @cli.CliQueryCommand::{
     query_path: None,
     source_paths: [],
     config_path: None,
@@ -345,7 +345,7 @@ test "cli query command runner test mode passes assertion comments" {
     containing_byte_range: None,
     test_mode: true,
   }
-  let result = run_cli_query_command(
+  let result = @cli.run_cli_query_command(
     command,
     cli_query_assertion_language(),
     "(item) @node",
@@ -366,7 +366,7 @@ test "cli query command runner test mode passes assertion comments" {
 
 ///|
 test "cli query command runner test mode uses utf8 grapheme columns" {
-  let command = CliQueryCommand::{
+  let command = @cli.CliQueryCommand::{
     query_path: None,
     source_paths: [],
     config_path: None,
@@ -386,7 +386,7 @@ test "cli query command runner test mode uses utf8 grapheme columns" {
     0x20, 0x20, 0xC3, 0xA9, 0x61, 0x0A, 0x2F, 0x2F, 0x20, 0x5E, 0x20, 0x6E, 0x6F,
     0x64, 0x65, 0x0A,
   ])
-  let result = run_cli_query_command(
+  let result = @cli.run_cli_query_command(
     command,
     cli_query_utf8_column_language(),
     "(item) @node",
@@ -399,7 +399,7 @@ test "cli query command runner test mode uses utf8 grapheme columns" {
 
 ///|
 test "cli query command runner test mode reports assertion failures" {
-  let command = CliQueryCommand::{
+  let command = @cli.CliQueryCommand::{
     query_path: None,
     source_paths: [],
     config_path: None,
@@ -415,7 +415,7 @@ test "cli query command runner test mode reports assertion failures" {
     containing_byte_range: None,
     test_mode: true,
   }
-  let result = run_cli_query_command(
+  let result = @cli.run_cli_query_command(
     command,
     cli_query_assertion_language(),
     "(item) @node",
@@ -441,7 +441,7 @@ test "cli tags command runner renders upstream style rows" {
     cli_parse_pair_language(),
     "(item) @definition.function @name",
   )
-  let result = run_cli_tags_command(cli_tags_test_command(), config, [
+  let result = @cli.run_cli_tags_command(cli_tags_test_command(), config, [
     { name: Some("source.mbt"), contents: b"ab", language_names: [], },
   ])
   assert_eq(result.exit_code, 0)

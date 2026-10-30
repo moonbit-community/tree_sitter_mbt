@@ -92,7 +92,7 @@ fn tags_scope_test_language() -> @tree_sitter_mbt.Language raise {
 
 ///|
 test "tags generate definition and reference records" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_test_language(),
     (
       #|(document . (item) @definition.function @name)
@@ -100,7 +100,7 @@ test "tags generate definition and reference records" {
     ),
   )
   assert_eq(config.tags_pattern_start(), 0)
-  let result = generate_tags(config, b"ab")
+  let result = @tags.generate_tags(config, b"ab")
   assert_true(!result.has_error)
   assert_eq(result.tags.length(), 2)
   assert_eq(result.tags[0].name, "a")
@@ -122,7 +122,7 @@ test "tags generate definition and reference records" {
 
 ///|
 test "tags filter local references and ignored names" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_test_language(),
     (
       #|(document
@@ -136,17 +136,17 @@ test "tags filter local references and ignored names" {
       #|(document (item) @local.definition)
     ),
   )
-  let result = generate_tags(config, b"aa")
+  let result = @tags.generate_tags(config, b"aa")
   assert_eq(result.tags.length(), 0)
 }
 
 ///|
 test "tags apply text predicates" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_test_language(),
     "(item) @definition.function @name (#eq? @name \"a\")",
   )
-  let result = generate_tags(config, b"ab")
+  let result = @tags.generate_tags(config, b"ab")
   assert_eq(result.tags.length(), 1)
   assert_eq(result.tags[0].name, "a")
 }
@@ -154,13 +154,13 @@ test "tags apply text predicates" {
 ///|
 test "tags validate capture names and allow local references" {
   let language = tags_test_language()
-  try TagsConfiguration::new(language, "(item) @custom") catch {
+  try @tags.TagsConfiguration::new(language, "(item) @custom") catch {
     InvalidCaptureName(name) => assert_eq(name, "custom")
     _ => fail("expected invalid capture name")
   } noraise {
     _ => fail("expected invalid capture name")
   }
-  let valid = TagsConfiguration::new(
+  let valid = @tags.TagsConfiguration::new(
     language,
     "(item) @definition.function @name",
     locals_query="(item) @local.reference",
@@ -174,7 +174,7 @@ test "tags local scope can stop outer definition inheritance" {
   let tags_query =
     #|(scope . (item) @reference.call @name (#is-not? local))
     #|(scope (item) . (item) @reference.call @name (#is-not? local))
-  let inherited_config = TagsConfiguration::new(
+  let inherited_config = @tags.TagsConfiguration::new(
     language,
     tags_query,
     locals_query=(
@@ -182,9 +182,9 @@ test "tags local scope can stop outer definition inheritance" {
       #|(scope) @local.scope
     ),
   )
-  let inherited_result = generate_tags(inherited_config, b"a[aa]a")
+  let inherited_result = @tags.generate_tags(inherited_config, b"a[aa]a")
   assert_eq(inherited_result.tags.length(), 0)
-  let isolated_config = TagsConfiguration::new(
+  let isolated_config = @tags.TagsConfiguration::new(
     language,
     tags_query,
     locals_query=(
@@ -192,7 +192,7 @@ test "tags local scope can stop outer definition inheritance" {
       #|(scope) @local.scope (#set! local.scope-inherits false)
     ),
   )
-  let isolated_result = generate_tags(isolated_config, b"a[aa]a")
+  let isolated_result = @tags.generate_tags(isolated_config, b"a[aa]a")
   assert_eq(isolated_result.tags.length(), 2)
   assert_eq(isolated_result.tags[0].name_range.start_byte, 2U)
   assert_eq(isolated_result.tags[1].name_range.start_byte, 3U)
@@ -201,30 +201,30 @@ test "tags local scope can stop outer definition inheritance" {
 ///|
 test "tags deduplicate name ranges and suppress trailing ignored names" {
   let language = tags_test_language()
-  let duplicate_config = TagsConfiguration::new(
+  let duplicate_config = @tags.TagsConfiguration::new(
     language,
     (
       #|(item) @definition.function @name
       #|(item) @definition.class @name
     ),
   )
-  let duplicate_result = generate_tags(duplicate_config, b"a")
+  let duplicate_result = @tags.generate_tags(duplicate_config, b"a")
   assert_eq(duplicate_result.tags.length(), 1)
   assert_eq(duplicate_result.tags[0].syntax_type, "function")
-  let ignore_config = TagsConfiguration::new(
+  let ignore_config = @tags.TagsConfiguration::new(
     language, "(item) @ignore @definition.function @name",
   )
-  let ignored_result = generate_tags(ignore_config, b"a")
+  let ignored_result = @tags.generate_tags(ignore_config, b"a")
   assert_eq(ignored_result.tags.length(), 0)
 }
 
 ///|
 test "tags compute trimmed line and utf16 columns" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_test_language(),
     "(item) @definition.function @name",
   )
-  let result = generate_tags(config, @utf8.encode("  é  "))
+  let result = @tags.generate_tags(config, @utf8.encode("  é  "))
   assert_eq(result.tags.length(), 1)
   let tag = result.tags[0]
   assert_eq(tag.name, "é")
@@ -235,7 +235,7 @@ test "tags compute trimmed line and utf16 columns" {
 
 ///|
 test "tags select adjacent docs and strip prefixes" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_doc_test_language(),
     (
       #|(document
@@ -247,14 +247,14 @@ test "tags select adjacent docs and strip prefixes" {
       #|  (#strip! @doc "^/// "))
     ),
   )
-  let result = generate_tags(config, b"/// skip\n\n/// keep\n/// keep\na")
+  let result = @tags.generate_tags(config, b"/// skip\n\n/// keep\n/// keep\na")
   assert_eq(result.tags.length(), 1)
   assert_eq(result.tags[0].docs, "keep\nkeep")
 }
 
 ///|
 test "tags ignore select adjacent when first argument is not doc" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_doc_test_language(),
     (
       #|(document
@@ -265,14 +265,14 @@ test "tags ignore select adjacent when first argument is not doc" {
       #|  (#strip! @doc "^/// "))
     ),
   )
-  let result = generate_tags(config, b"/// skip\n\n/// keep\na")
+  let result = @tags.generate_tags(config, b"/// skip\n\n/// keep\na")
   assert_eq(result.tags.length(), 1)
   assert_eq(result.tags[0].docs, "skip\nkeep")
 }
 
 ///|
 test "tags ignore strip when first argument is not doc" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_doc_test_language(),
     (
       #|(document
@@ -281,19 +281,25 @@ test "tags ignore strip when first argument is not doc" {
       #|  (#strip! @name "^/// "))
     ),
   )
-  let result = generate_tags(config, b"/// keep\na")
+  let result = @tags.generate_tags(config, b"/// keep\na")
   assert_eq(result.tags.length(), 1)
   assert_eq(result.tags[0].docs, "/// keep")
 }
 
 ///|
 test "tags can be cancelled before parsing" {
-  let config = TagsConfiguration::new(
+  let config = @tags.TagsConfiguration::new(
     tags_test_language(),
     "(item) @definition.function @name",
   )
-  let state = TagsProgressState::new(phase=Query, current_byte_offset=9U)
-  try generate_tags(config, b"a", options=TagsOptions::cancelled(state)) catch {
+  let state = @tags.TagsProgressState::new(phase=Query, current_byte_offset=9U)
+  try
+    @tags.generate_tags(
+      config,
+      b"a",
+      options=@tags.TagsOptions::cancelled(state),
+    )
+  catch {
     Cancelled(cancelled) => assert_true(cancelled == state)
     _ => fail("expected tags cancellation")
   } noraise {

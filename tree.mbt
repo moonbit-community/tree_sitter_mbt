@@ -1331,7 +1331,7 @@ pub fn Node::descendant_count(self : Node) -> Int32 {
 
 ///|
 pub fn Node::to_sexp(self : Node) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   self.write_sexp(out, field_id=@api.FieldId::new(0)) |> ignore
   out.to_string()
 }
@@ -1707,7 +1707,7 @@ fn Node::write_sexp(
     if self.has_redundant_lexical_child(child_node) {
       continue
     }
-    let child_out = StringBuilder::new()
+    let child_out = StringBuilder()
     if child_node.write_sexp(child_out, field_id=child.field_id) {
       child_parts.push(child_out.to_string())
     }

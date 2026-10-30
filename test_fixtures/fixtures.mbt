@@ -49,3 +49,9 @@ pub fn minimal_fixture() -> FixtureSource {
     external_scanner_status: "none",
   }
 }
+
+///|
+pub extend FixtureSource with Debug::{to_repr}
+
+///|
+pub extend FixtureSource with Eq::{not_equal, equal}

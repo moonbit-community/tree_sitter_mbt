@@ -1,6 +1,6 @@
 ///|
 test "generated upstream unicode_classes language metadata" {
-  let language = language()
+  let language = @generated_upstream_unicode_classes.language()
   assert_eq(language.name(), "unicode_classes")
   assert_true(language.metadata() == @tables.LanguageMetadata::zero())
   assert_true(language.symbol_for_name("program", is_named=true) is Some(_))
@@ -15,7 +15,7 @@ test "generated upstream unicode_classes language metadata" {
 ///|
 test "generated upstream unicode_classes parses uppercase corpus" {
   let parser = @tree_sitter_mbt.Parser::new()
-  parser.set_language(language())
+  parser.set_language(@generated_upstream_unicode_classes.language())
   let tree = parser.parse_string("Δბㄱ  Ψ  Ɓƀ  Ƒ  Ɣ  Śřř")
   assert_eq(
     tree.root_node().to_sexp(),

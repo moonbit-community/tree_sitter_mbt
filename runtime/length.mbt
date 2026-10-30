@@ -80,3 +80,9 @@ fn sub_u32_saturating(left : UInt32, right : UInt32) -> UInt32 {
     0
   }
 }
+
+///|
+pub extend Length with Debug::{to_repr}
+
+///|
+pub extend Length with Eq::{not_equal, equal}

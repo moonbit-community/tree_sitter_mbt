@@ -59,7 +59,7 @@ fn highlight_scope_test_language() -> @tree_sitter_mbt.Language raise {
 
 ///|
 test "highlight emits source and highlight events for captures" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function",
@@ -70,7 +70,7 @@ test "highlight emits source and highlight events for captures" {
   assert_eq(config.injection_pattern_start(), 1)
   assert_eq(config.local_pattern_start(), 1)
   config.configure(["function"])
-  let events = Highlighter::new().highlight(config, b"aa")
+  let events = @highlight.Highlighter::new().highlight(config, b"aa")
   assert_true(
     events ==
     [
@@ -86,13 +86,13 @@ test "highlight emits source and highlight events for captures" {
 
 ///|
 test "highlight supports UTF-16 encoded source bytes" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function (#eq? @function \"a\")",
   )
   config.configure(["function"])
-  let little_endian_events = Highlighter::new().highlight_encoded(
+  let little_endian_events = @highlight.Highlighter::new().highlight_encoded(
     config,
     Bytes::from_array([b'a', b'\x00']),
     encoding=Utf16LE,
@@ -105,7 +105,7 @@ test "highlight supports UTF-16 encoded source bytes" {
       HighlightEnd("function"),
     ],
   )
-  let big_endian_events = Highlighter::new().highlight_encoded(
+  let big_endian_events = @highlight.Highlighter::new().highlight_encoded(
     config,
     Bytes::from_array([b'\x00', b'a']),
     encoding=Utf16BE,
@@ -118,13 +118,13 @@ test "highlight supports UTF-16 encoded source bytes" {
       HighlightEnd("function"),
     ],
   )
-  let skipped_config = HighlightConfiguration::new(
+  let skipped_config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function (#eq? @function \"b\")",
   )
   skipped_config.configure(["function"])
-  let skipped_events = Highlighter::new().highlight_encoded(
+  let skipped_events = @highlight.Highlighter::new().highlight_encoded(
     skipped_config,
     Bytes::from_array([b'a', b'\x00']),
     encoding=Utf16LE,
@@ -134,7 +134,7 @@ test "highlight supports UTF-16 encoded source bytes" {
 
 ///|
 test "render html escapes source and highlight classes" {
-  let html = render_html(
+  let html = @highlight.render_html(
     [
       Source(start_byte=0U, end_byte=1U),
       HighlightStart("function.builtin"),
@@ -149,7 +149,7 @@ test "render html escapes source and highlight classes" {
 
 ///|
 test "render html decodes UTF-16 source ranges" {
-  let html = render_html(
+  let html = @highlight.render_html(
     [
       HighlightStart("string"),
       Source(start_byte=0U, end_byte=2U),
@@ -163,25 +163,25 @@ test "render html decodes UTF-16 source ranges" {
 
 ///|
 test "highlight applies text predicates before emitting captures" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function (#eq? @function \"nope\")",
   )
   config.configure(["function"])
-  let events = Highlighter::new().highlight(config, b"a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a")
   assert_true(events == [Source(start_byte=0U, end_byte=1U)])
 }
 
 ///|
 test "highlight uses longest configured highlight name by dot parts" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function.method.builtin",
     highlight_names=["function", "function.builtin"],
   )
-  let events = Highlighter::new().highlight(config, b"a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a")
   assert_true(
     events ==
     [
@@ -194,7 +194,7 @@ test "highlight uses longest configured highlight name by dot parts" {
 
 ///|
 test "highlight reports nonconformant capture names" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function @custom.capture @_private @variable.member",
@@ -214,26 +214,26 @@ test "highlight reports nonconformant capture names" {
 
 ///|
 test "highlight skips non-local patterns for local definitions" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @variable (#is-not? local)",
     locals_query="(item) @local.definition",
   )
   config.configure(["variable"])
-  let events = Highlighter::new().highlight(config, b"a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a")
   assert_true(events == [Source(start_byte=0U, end_byte=1U)])
 }
 
 ///|
 test "highlight keeps non-local patterns without local captures" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @variable (#is-not? local)",
   )
   config.configure(["variable"])
-  let events = Highlighter::new().highlight(config, b"a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a")
   assert_true(
     events ==
     [
@@ -246,14 +246,14 @@ test "highlight keeps non-local patterns without local captures" {
 
 ///|
 test "highlight references inherit local definition highlight" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(document (item) @function (item))",
     locals_query="(document (item) @local.definition (item) @local.reference)",
   )
   config.configure(["function"])
-  let events = Highlighter::new().highlight(config, b"aa")
+  let events = @highlight.Highlighter::new().highlight(config, b"aa")
   assert_true(
     events ==
     [
@@ -269,14 +269,14 @@ test "highlight references inherit local definition highlight" {
 
 ///|
 test "highlight references wait until local definition value ends" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(document (item) @function (item))",
     locals_query="(document (item) @local.definition (item) @local.definition-value @local.reference)",
   )
   config.configure(["function"])
-  let events = Highlighter::new().highlight(config, b"aa")
+  let events = @highlight.Highlighter::new().highlight(config, b"aa")
   assert_true(
     events ==
     [
@@ -290,7 +290,7 @@ test "highlight references wait until local definition value ends" {
 
 ///|
 test "highlight local scopes inherit outer definitions by default" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_scope_test_language(),
     "highlight_scope_test",
     "(document (item) @function (scope) (item))",
@@ -302,7 +302,7 @@ test "highlight local scopes inherit outer definitions by default" {
     ),
   )
   config.configure(["function"])
-  let events = Highlighter::new().highlight(config, b"a[aa]a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a[aa]a")
   assert_true(
     events ==
     [
@@ -326,7 +326,7 @@ test "highlight local scopes inherit outer definitions by default" {
 
 ///|
 test "highlight local scope can stop outer definition inheritance" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_scope_test_language(),
     "highlight_scope_test",
     "(document (item) @function (scope) (item))",
@@ -338,7 +338,7 @@ test "highlight local scope can stop outer definition inheritance" {
     ),
   )
   config.configure(["function"])
-  let events = Highlighter::new().highlight(config, b"a[aa]a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a[aa]a")
   assert_true(
     events ==
     [
@@ -355,18 +355,21 @@ test "highlight local scope can stop outer definition inheritance" {
 
 ///|
 test "highlight can be cancelled before parsing" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function",
   )
   config.configure(["function"])
-  let state = HighlightProgressState::new(phase=Render, current_byte_offset=9U)
+  let state = @highlight.HighlightProgressState::new(
+    phase=Render,
+    current_byte_offset=9U,
+  )
   let result = @test.expect_error(() => {
-    Highlighter::new().highlight(
+    @highlight.Highlighter::new().highlight(
       config,
       b"a",
-      options=HighlightOptions::cancelled(state),
+      options=@highlight.HighlightOptions::cancelled(state),
     )
   })
   match result {
@@ -377,17 +380,19 @@ test "highlight can be cancelled before parsing" {
 
 ///|
 test "highlight progress callback can cancel query execution" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function",
   )
   config.configure(["function"])
   let result = @test.expect_error(() => {
-    Highlighter::new().highlight(
+    @highlight.Highlighter::new().highlight(
       config,
       Bytes::make(150, b'a'),
-      options=HighlightOptions::progress(state => state.phase == Query),
+      options=@highlight.HighlightOptions::progress(state => {
+        state.phase == Query
+      }),
     )
   })
   match result {
@@ -401,17 +406,17 @@ test "highlight progress callback can cancel query execution" {
 
 ///|
 test "highlight progress callback can cancel rendering" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function",
   )
   config.configure(["function"])
   let result = @test.expect_error(() => {
-    Highlighter::new().highlight(
+    @highlight.Highlighter::new().highlight(
       config,
       b"a",
-      options=HighlightOptions::progress(state => {
+      options=@highlight.HighlightOptions::progress(state => {
         state.phase == Render && state.current_byte_offset >= 1U
       }),
     )
@@ -427,7 +432,7 @@ test "highlight progress callback can cancel rendering" {
 
 ///|
 test "highlight disables injection combined patterns in main query" {
-  let config = HighlightConfiguration::new(
+  let config = @highlight.HighlightConfiguration::new(
     highlight_test_language(),
     "highlight_test",
     "(item) @function (#set! injection.combined)",
@@ -435,13 +440,13 @@ test "highlight disables injection combined patterns in main query" {
   )
   assert_eq(config.pattern_count(), 2)
   assert_true(config.has_combined_injections_query())
-  let events = Highlighter::new().highlight(config, b"a")
+  let events = @highlight.Highlighter::new().highlight(config, b"a")
   assert_true(events == [Source(start_byte=0U, end_byte=1U)])
 }
 
 ///|
 test "highlight recursively parses injected layers" {
-  let host_config = HighlightConfiguration::new(
+  let host_config = @highlight.HighlightConfiguration::new(
     highlight_literal_test_language("host", "b"),
     "host",
     "(item) @variable",
@@ -451,7 +456,7 @@ test "highlight recursively parses injected layers" {
     ),
   )
   host_config.configure(["variable"])
-  let middle_config = HighlightConfiguration::new(
+  let middle_config = @highlight.HighlightConfiguration::new(
     highlight_literal_test_language("middle", "b"),
     "middle",
     "(item) @property",
@@ -461,19 +466,23 @@ test "highlight recursively parses injected layers" {
     ),
   )
   middle_config.configure(["property"])
-  let leaf_config = HighlightConfiguration::new(
+  let leaf_config = @highlight.HighlightConfiguration::new(
     highlight_literal_test_language("leaf", "b"),
     "leaf",
     "(item) @function",
   )
   leaf_config.configure(["function"])
-  let events = Highlighter::new().highlight_with_injections(host_config, b"b", name => {
-    match name {
-      "middle" => Some(middle_config)
-      "leaf" => Some(leaf_config)
-      _ => None
-    }
-  })
+  let events = @highlight.Highlighter::new().highlight_with_injections(
+    host_config,
+    b"b",
+    name => {
+      match name {
+        "middle" => Some(middle_config)
+        "leaf" => Some(leaf_config)
+        _ => None
+      }
+    },
+  )
   assert_true(
     events ==
     [

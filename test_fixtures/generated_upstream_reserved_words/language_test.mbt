@@ -1,6 +1,6 @@
 ///|
 test "generated upstream reserved_words language metadata" {
-  let language = language()
+  let language = @generated_upstream_reserved_words.language()
   assert_eq(language.name(), "reserved_words")
   assert_true(language.metadata() == @tables.LanguageMetadata::zero())
   assert_true(language.symbol_for_name("program", is_named=true) is Some(_))
@@ -19,7 +19,7 @@ test "generated upstream reserved_words language metadata" {
 ///|
 test "generated upstream reserved_words parses valid code corpus" {
   let parser = @tree_sitter_mbt.Parser::new()
-  parser.set_language(language())
+  parser.set_language(@generated_upstream_reserved_words.language())
   let input =
     #|if (a) {
     #|  var b = {

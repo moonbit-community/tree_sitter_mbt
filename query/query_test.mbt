@@ -333,7 +333,7 @@ fn query_test_supertype_tree(source : Bytes) -> @tree_sitter_mbt.Tree raise {
 }
 
 ///|
-fn query_capture_names(cursor : QueryCursor) -> Array[String] {
+fn query_capture_names(cursor : @query.QueryCursor) -> Array[String] {
   let names : Array[String] = []
   while true {
     match cursor.next_capture() {
@@ -345,8 +345,8 @@ fn query_capture_names(cursor : QueryCursor) -> Array[String] {
 }
 
 ///|
-fn query_parser_public_snapshot(query : Query) -> String {
-  let builder = StringBuilder::new()
+fn query_parser_public_snapshot(query : @query.Query) -> String {
+  let builder = StringBuilder()
   builder.write_string("patterns: \{query.pattern_count()}\n")
   builder.write_string("captures:\n")
   for capture_id in 0..<query.capture_count() {
@@ -402,7 +402,7 @@ fn query_bool_option_snapshot(value : Bool?) -> String {
 }
 
 ///|
-fn query_quantifier_snapshot(value : QueryCaptureQuantifier?) -> String {
+fn query_quantifier_snapshot(value : @query.QueryCaptureQuantifier?) -> String {
   match value {
     Some(Zero) => "Zero"
     Some(ZeroOrOne) => "ZeroOrOne"
@@ -415,8 +415,8 @@ fn query_quantifier_snapshot(value : QueryCaptureQuantifier?) -> String {
 
 ///|
 fn query_predicate_step_snapshot(
-  query : Query,
-  step : QueryPredicateStep?,
+  query : @query.Query,
+  step : @query.QueryPredicateStep?,
 ) -> String {
   match step {
     Some(Done) => "Done"
@@ -431,7 +431,7 @@ fn query_predicate_step_snapshot(
 ///|
 test "query parses named patterns and capture accessors" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|; leading comment
@@ -459,7 +459,7 @@ test "query parses named patterns and capture accessors" {
 ///|
 test "query parser public API snapshot" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|; leading comment
@@ -499,7 +499,7 @@ test "query parser public API snapshot" {
 test "query pattern source ranges use utf8 byte offsets" {
   let language = query_test_language()
   let source = "; 文\n(item) @node"
-  let query = Query::new(language, source)
+  let query = @query.Query::new(language, source)
   assert_true(query.start_byte_for_pattern(0) == Some(6))
   assert_true(query.end_byte_for_pattern(0) == Some(18))
 }
@@ -507,7 +507,7 @@ test "query pattern source ranges use utf8 byte offsets" {
 ///|
 test "query parser applies identifier and unicode whitespace boundaries" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language, "(item)\u{3000}@\u{0663}.node @_node @-node @é.node",
   )
   assert_eq(query.capture_count(), 4)
@@ -516,56 +516,62 @@ test "query parser applies identifier and unicode whitespace boundaries" {
   assert_true(query.capture_name_for_id(2) == Some("-node"))
   assert_true(query.capture_name_for_id(3) == Some("é.node"))
 
-  let predicate = Query::new(
+  let predicate = @query.Query::new(
     language, "(item) @node\n(\u{3000}#é-op? @node arg.name)",
   )
   assert_true(predicate.predicate_step_count_for_pattern(0) == Some(4))
   assert_true(predicate.string_value_for_id(0) == Some("é-op?"))
   assert_true(predicate.string_value_for_id(1) == Some("arg.name"))
 
-  let dot_start = @test.expect_error(() => Query::new(language, "(item) @.node"))
+  let dot_start = @test.expect_error(() => {
+    @query.Query::new(language, "(item) @.node")
+  })
   assert_true(dot_start is Syntax(byte_offset=8, ..))
 
-  let cjk_capture = Query::new(language, "(item) @节点")
+  let cjk_capture = @query.Query::new(language, "(item) @节点")
   assert_true(cjk_capture.capture_name_for_id(0) == Some("节点"))
 }
 
 ///|
 test "query errors use utf8 byte offsets" {
   let language = query_test_language()
-  let result = @test.expect_error(() => Query::new(language, "; 文\n(missing)"))
+  let result = @test.expect_error(() => {
+    @query.Query::new(language, "; 文\n(missing)")
+  })
   assert_true(result is NodeType(byte_offset=7, name="missing"))
 }
 
 ///|
 test "query error variants use utf8 byte offsets" {
   let language = query_test_language()
-  let bad_syntax = @test.expect_error(() => Query::new(language, "; 文\n(item"))
+  let bad_syntax = @test.expect_error(() => {
+    @query.Query::new(language, "; 文\n(item")
+  })
   assert_true(bad_syntax is Syntax(byte_offset=11, ..))
 
   let field_language = query_test_field_language()
   let bad_field = @test.expect_error(() => {
-    Query::new(field_language, "; 文\n(document missing: (item))")
+    @query.Query::new(field_language, "; 文\n(document missing: (item))")
   })
   assert_true(bad_field is Field(byte_offset=16, name="missing"))
 
   let bad_capture = @test.expect_error(() => {
-    Query::new(language, "; 文\n(item) @node (#eq? @missing \"a\")")
+    @query.Query::new(language, "; 文\n(item) @node (#eq? @missing \"a\")")
   })
   assert_true(bad_capture is Capture(byte_offset=26, name="missing"))
 
   let bad_missing_named = @test.expect_error(() => {
-    Query::new(language, "; 文\n(MISSING itemx)")
+    @query.Query::new(language, "; 文\n(MISSING itemx)")
   })
   assert_true(bad_missing_named is NodeType(byte_offset=15, name="itemx"))
 
   let bad_missing_anonymous = @test.expect_error(() => {
-    Query::new(language, "; 文\n(MISSING \"ax\")")
+    @query.Query::new(language, "; 文\n(MISSING \"ax\")")
   })
   assert_true(bad_missing_anonymous is NodeType(byte_offset=15, name="ax"))
 
   let bad_structure = @test.expect_error(() => {
-    Query::new(language, "; 文\n(item (item))")
+    @query.Query::new(language, "; 文\n(item (item))")
   })
   assert_true(bad_structure is Structure(byte_offset=7, ..))
 }
@@ -573,7 +579,7 @@ test "query error variants use utf8 byte offsets" {
 ///|
 test "query exposes pattern metadata and raw predicate steps" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -614,7 +620,7 @@ test "query parses grouped single-root predicates" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "((item) @node (#eq? @node \"a\"))")
+  let query = @query.Query::new(language, "((item) @node (#eq? @node \"a\"))")
   assert_eq(query.pattern_count(), 1)
   assert_eq(query.capture_count(), 1)
   assert_true(query.capture_name_for_id(0) == Some("node"))
@@ -627,13 +633,13 @@ test "query parses grouped single-root predicates" {
   assert_true(query.predicate_step_for_pattern(0, 2) == Some(String(1)))
   assert_true(query.predicate_step_for_pattern(0, 3) == Some(Done))
 
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_eq(matched.captures.length(), 1)
   assert_true(query.text_predicates_match_bytes(matched, b"a"))
 
-  let failing = Query::new(language, "((item) @node (#eq? @node \"b\"))")
+  let failing = @query.Query::new(language, "((item) @node (#eq? @node \"b\"))")
   cursor.exec(failing, tree.root_node())
   let failed_match = cursor.next_match().unwrap()
   assert_true(!failing.text_predicates_match_bytes(failed_match, b"a"))
@@ -643,14 +649,14 @@ test "query parses grouped single-root predicates" {
 test "query matches grouped sibling sequences" {
   let pair_language = query_test_pair_language()
   let pair_tree = query_test_pair_tree()
-  let query = Query::new(
+  let query = @query.Query::new(
     pair_language, "((item) @node \"b\" @literal (#eq? @literal \"b\"))",
   )
   assert_eq(query.pattern_count(), 1)
   assert_eq(query.capture_count(), 2)
   assert_true(query.predicate_step_count_for_pattern(0) == Some(4))
 
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, pair_tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_eq(matched.captures.length(), 2)
@@ -659,7 +665,7 @@ test "query matches grouped sibling sequences" {
   assert_true(query.text_predicates_match_bytes(matched, b"ab"))
   assert_true(cursor.next_match() is None)
 
-  let child_group = Query::new(
+  let child_group = @query.Query::new(
     pair_language, "(document ((item) @node \"b\" @literal (#eq? @literal \"b\"))) @root",
   )
   assert_eq(child_group.pattern_count(), 1)
@@ -674,7 +680,7 @@ test "query matches grouped sibling sequences" {
   assert_true(child_group.text_predicates_match_bytes(child_group_match, b"ab"))
   assert_true(cursor.next_match() is None)
 
-  let node_predicate = Query::new(
+  let node_predicate = @query.Query::new(
     pair_language, "(document (item) @node (#eq? @node \"a\")) @root",
   )
   assert_true(node_predicate.predicate_step_count_for_pattern(0) == Some(4))
@@ -690,7 +696,9 @@ test "query matches grouped sibling sequences" {
 
   let anchor_language = query_test_anchor_language()
   let anchor_tree = query_test_anchor_tree()
-  let skipped = Query::new(anchor_language, "((item) @left (item) @right)")
+  let skipped = @query.Query::new(
+    anchor_language, "((item) @left (item) @right)",
+  )
   cursor.exec(skipped, anchor_tree.root_node())
   let skipped_match = cursor.next_match().unwrap()
   assert_eq(skipped_match.captures.length(), 2)
@@ -698,7 +706,7 @@ test "query matches grouped sibling sequences" {
   assert_eq(skipped_match.captures[1].node.start_byte(), 3)
   assert_true(cursor.next_match() is None)
 
-  let anonymous_first_group = Query::new(
+  let anonymous_first_group = @query.Query::new(
     anchor_language, "(document (\"b\" @literal . _ @any)) @root",
   )
   cursor.exec(anonymous_first_group, anchor_tree.root_node())
@@ -711,7 +719,7 @@ test "query matches grouped sibling sequences" {
   assert_eq(anonymous_first_match.captures[2].node.start_byte(), 1)
   assert_true(cursor.next_match() is None)
 
-  let optional_leading = Query::new(
+  let optional_leading = @query.Query::new(
     anchor_language, "((other)? @maybe (item) @right)",
   )
   cursor.exec(optional_leading, anchor_tree.root_node())
@@ -730,7 +738,9 @@ test "query matches grouped sibling sequences" {
   assert_eq(first_item_match_count, 1)
   assert_true(saw_optional_match)
 
-  let immediate = Query::new(anchor_language, "((item) @left . (item) @right)")
+  let immediate = @query.Query::new(
+    anchor_language, "((item) @left . (item) @right)",
+  )
   cursor.exec(immediate, anchor_tree.root_node())
   assert_true(cursor.next_match() is None)
 }
@@ -738,7 +748,7 @@ test "query matches grouped sibling sequences" {
 ///|
 test "query parses dot predicate directive marker" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -773,7 +783,7 @@ test "query parses dot predicate directive marker" {
 ///|
 test "query treats comments as whitespace before predicate markers" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -791,7 +801,7 @@ test "query treats comments as whitespace before predicate markers" {
 ///|
 test "query treats comments as whitespace after predicate atoms" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -811,32 +821,34 @@ test "query treats comments as whitespace after predicate atoms" {
 ///|
 test "query reports rooted and non-local pattern metadata" {
   let language = query_test_language()
-  let root_alternation = Query::new(language, "[(item) @node (document) @root]")
+  let root_alternation = @query.Query::new(
+    language, "[(item) @node (document) @root]",
+  )
   assert_true(root_alternation.is_pattern_rooted(0) == Some(true))
   assert_true(root_alternation.is_pattern_non_local(0) == Some(false))
 
-  let repeated_root = Query::new(language, "(item)+ @node")
+  let repeated_root = @query.Query::new(language, "(item)+ @node")
   assert_true(repeated_root.is_pattern_rooted(0) == Some(false))
   assert_true(repeated_root.is_pattern_non_local(0) == Some(true))
 
-  let optional_root = Query::new(language, "(item)? @node")
+  let optional_root = @query.Query::new(language, "(item)? @node")
   assert_true(optional_root.is_pattern_rooted(0) == Some(false))
   assert_true(optional_root.is_pattern_non_local(0) == Some(false))
 
-  let mixed_alternation = Query::new(
+  let mixed_alternation = @query.Query::new(
     language, "[(item) @node (document)* @root]",
   )
   assert_true(mixed_alternation.is_pattern_rooted(0) == Some(false))
   assert_true(mixed_alternation.is_pattern_non_local(0) == Some(true))
 
   let repeat_language = query_test_repeat_language()
-  let repeated_child = Query::new(
+  let repeated_child = @query.Query::new(
     repeat_language, "(document (item)+ @node) @root",
   )
   assert_true(repeated_child.is_pattern_rooted(0) == Some(true))
   assert_true(repeated_child.is_pattern_non_local(0) == Some(true))
 
-  let optional_child = Query::new(
+  let optional_child = @query.Query::new(
     repeat_language, "(document (item)? @node) @root",
   )
   assert_true(optional_child.is_pattern_rooted(0) == Some(true))
@@ -844,7 +856,7 @@ test "query reports rooted and non-local pattern metadata" {
   assert_true(optional_child.is_pattern_guaranteed_at_step(0, 0) == Some(true))
   assert_true(optional_child.is_pattern_guaranteed_at_step(0, 1) == Some(false))
 
-  let repeated_capture_in_sequence = Query::new(
+  let repeated_capture_in_sequence = @query.Query::new(
     query_test_pair_language(),
     "(document (item) @node (\"b\") @node)",
   )
@@ -853,7 +865,7 @@ test "query reports rooted and non-local pattern metadata" {
     Some(OneOrMore),
   )
 
-  let optional_and_required_capture = Query::new(
+  let optional_and_required_capture = @query.Query::new(
     query_test_pair_language(),
     "(document (item)? @node (\"b\") @node)",
   )
@@ -862,14 +874,14 @@ test "query reports rooted and non-local pattern metadata" {
     Some(OneOrMore),
   )
 
-  let local_and_child_capture = Query::new(
+  let local_and_child_capture = @query.Query::new(
     repeat_language, "(document (item)+ @node) @node",
   )
   assert_true(
     local_and_child_capture.capture_quantifier_for_id(0, 0) == Some(OneOrMore),
   )
 
-  let repeated_child_in_optional_parent = Query::new(
+  let repeated_child_in_optional_parent = @query.Query::new(
     repeat_language, "(document (item)+ @node)? @root",
   )
   assert_true(
@@ -881,7 +893,7 @@ test "query reports rooted and non-local pattern metadata" {
     Some(ZeroOrOne),
   )
 
-  let different_alternative_quantifiers = Query::new(
+  let different_alternative_quantifiers = @query.Query::new(
     repeat_language, "(document [(item)+ @node (item)? @node]) @root",
   )
   assert_true(
@@ -893,7 +905,7 @@ test "query reports rooted and non-local pattern metadata" {
     Some(One),
   )
 
-  let required_children = Query::new(
+  let required_children = @query.Query::new(
     query_test_pair_language(),
     "(document (item) @node (\"b\") @literal) @root",
   )
@@ -917,7 +929,7 @@ test "query reports rooted and non-local pattern metadata" {
   assert_true(required_children.is_pattern_guaranteed_at_byte_offset(23))
   assert_true(required_children.is_pattern_guaranteed_at_byte_offset(100))
 
-  let predicate_child = Query::new(
+  let predicate_child = @query.Query::new(
     query_test_pair_language(),
     (
       #|(document (item) @node ("b") @literal) @root
@@ -935,21 +947,21 @@ test "query reports rooted and non-local pattern metadata" {
   assert_true(!predicate_child.is_pattern_guaranteed_at_byte_offset(23))
   assert_true(predicate_child.is_pattern_guaranteed_at_byte_offset(24))
 
-  let wildcard_named_siblings = Query::new(
+  let wildcard_named_siblings = @query.Query::new(
     query_test_anchor_language(),
     "(_ (item) @left (other) @right) @root",
   )
   assert_true(wildcard_named_siblings.is_pattern_rooted(0) == Some(false))
   assert_true(wildcard_named_siblings.is_pattern_non_local(0) == Some(true))
 
-  let wildcard_single_child = Query::new(
+  let wildcard_single_child = @query.Query::new(
     query_test_pair_language(),
     "(_ (item) @node) @root",
   )
   assert_true(wildcard_single_child.is_pattern_rooted(0) == Some(true))
   assert_true(wildcard_single_child.is_pattern_non_local(0) == Some(false))
 
-  let wildcard_anonymous_siblings = Query::new(
+  let wildcard_anonymous_siblings = @query.Query::new(
     query_test_pair_language(),
     "(_ (\"b\") @left (\"b\") @right) @root",
   )
@@ -958,7 +970,7 @@ test "query reports rooted and non-local pattern metadata" {
     wildcard_anonymous_siblings.is_pattern_non_local(0) == Some(false),
   )
 
-  let alternation_child = Query::new(
+  let alternation_child = @query.Query::new(
     query_test_anchor_language(),
     "(document [(item) @left (other) @right]) @root",
   )
@@ -969,7 +981,7 @@ test "query reports rooted and non-local pattern metadata" {
     alternation_child.is_pattern_guaranteed_at_step(0, 1) == Some(false),
   )
 
-  let grouped_sequence = Query::new(
+  let grouped_sequence = @query.Query::new(
     query_test_anchor_language(),
     "((item) @left (item) @right)",
   )
@@ -987,7 +999,7 @@ test "query reports rooted and non-local pattern metadata" {
   assert_true(grouped_sequence.capture_quantifier_for_id(0, 0) == Some(One))
   assert_true(grouped_sequence.capture_quantifier_for_id(0, 1) == Some(One))
 
-  let anonymous_grouped_sequence = Query::new(
+  let anonymous_grouped_sequence = @query.Query::new(
     query_test_pair_language(),
     "((\"b\") @left (\"b\") @right)",
   )
@@ -998,14 +1010,14 @@ test "query reports rooted and non-local pattern metadata" {
 ///|
 test "query parses string literal escapes and reports string errors" {
   let language = query_test_language()
-  let escaped = Query::new(
+  let escaped = @query.Query::new(
     language, "(item) @node (#eq? @node \"\\n\\r\\t\\0\\q\")",
   )
   assert_true(escaped.string_value_for_id(0) == Some("eq?"))
   assert_true(escaped.string_value_for_id(1) == Some("\n\r\t\u0000q"))
 
   let newline = @test.expect_error(() => {
-    Query::new(
+    @query.Query::new(
       language,
       (
         #|(item) @node
@@ -1017,7 +1029,7 @@ test "query parses string literal escapes and reports string errors" {
   assert_true(newline is Syntax(reason="newline in string literal", ..))
 
   let eof = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#eq? @node \"a")
+    @query.Query::new(language, "(item) @node (#eq? @node \"a")
   })
   assert_true(eof is Syntax(reason="unterminated string literal", ..))
 }
@@ -1025,7 +1037,7 @@ test "query parses string literal escapes and reports string errors" {
 ///|
 test "query classifies helper predicates" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -1077,7 +1089,7 @@ test "query classifies helper predicates" {
 ///|
 test "query classifies property predicate argument forms" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -1127,11 +1139,13 @@ test "query classifies property predicate argument forms" {
 ///|
 test "query helper predicate classification validates known operators" {
   let language = query_test_language()
-  let bad_text = Query::new(language, "(item) @node (#eq? \"a\" \"b\")")
+  let bad_text = @query.Query::new(language, "(item) @node (#eq? \"a\" \"b\")")
   let text_result = @test.expect_error(() => bad_text.classify_predicates())
   assert_true(text_result is Predicate(byte_offset=15, operator="eq?", ..))
 
-  let bad_text_arg_count = Query::new(language, "(item) @node (#eq? @node)")
+  let bad_text_arg_count = @query.Query::new(
+    language, "(item) @node (#eq? @node)",
+  )
   let text_arg_count_result = @test.expect_error(() => {
     bad_text_arg_count.classify_predicates()
   })
@@ -1145,7 +1159,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_any_of_arg_count = Query::new(
+  let bad_any_of_arg_count = @query.Query::new(
     language, "(item) @node (#any-of? @node)",
   )
   let any_of_arg_count_result = @test.expect_error(() => {
@@ -1161,7 +1175,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_any_of_arg_type = Query::new(
+  let bad_any_of_arg_type = @query.Query::new(
     language, "(item) @left @right (#any-of? @left @right)",
   )
   let any_of_arg_type_result = @test.expect_error(() => {
@@ -1177,7 +1191,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_regex_arg_type = Query::new(
+  let bad_regex_arg_type = @query.Query::new(
     language, "(item) @node (#match? @node @node)",
   )
   let regex_arg_type_result = @test.expect_error(() => {
@@ -1193,7 +1207,9 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let empty_regex = Query::new(language, "(item) @node (#match? @node \"\")")
+  let empty_regex = @query.Query::new(
+    language, "(item) @node (#match? @node \"\")",
+  )
   let empty_regex_result = @test.expect_error(() => {
     empty_regex.classify_predicates()
   })
@@ -1207,7 +1223,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_property = Query::new(language, "(item) @node (#set! @node)")
+  let bad_property = @query.Query::new(language, "(item) @node (#set! @node)")
   let property_result = @test.expect_error(() => {
     bad_property.classify_predicates()
   })
@@ -1221,7 +1237,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_property_arg_count = Query::new(
+  let bad_property_arg_count = @query.Query::new(
     language, "(item) @node (#set! \"key\" \"value\" @node \"extra\")",
   )
   let arg_count_result = @test.expect_error(() => {
@@ -1237,7 +1253,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_property_captures = Query::new(
+  let bad_property_captures = @query.Query::new(
     language, "(item) @left @right (#is? @left @right local)",
   )
   let capture_result = @test.expect_error(() => {
@@ -1253,7 +1269,7 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_property_values = Query::new(
+  let bad_property_values = @query.Query::new(
     language, "(item) @node (#is? local true false)",
   )
   let value_result = @test.expect_error(() => {
@@ -1269,7 +1285,9 @@ test "query helper predicate classification validates known operators" {
     ),
   )
 
-  let bad_regex = Query::new(language, "(item) @node (#match? @node \"[abc\")")
+  let bad_regex = @query.Query::new(
+    language, "(item) @node (#match? @node \"[abc\")",
+  )
   let regex_result = @test.expect_error(() => bad_regex.classify_predicates())
   assert_true(regex_result is Predicate(byte_offset=15, operator="match?", ..))
 }
@@ -1277,17 +1295,19 @@ test "query helper predicate classification validates known operators" {
 ///|
 test "query predicate errors use utf8 byte offsets" {
   let language = query_test_language()
-  let bad_text = Query::new(language, "; 文\n(item) @node (#eq? \"a\" \"b\")")
+  let bad_text = @query.Query::new(
+    language, "; 文\n(item) @node (#eq? \"a\" \"b\")",
+  )
   let text_result = @test.expect_error(() => bad_text.classify_predicates())
   assert_true(text_result is Predicate(byte_offset=21, operator="eq?", ..))
 
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let bad_source = Query::new(
+  let bad_source = @query.Query::new(
     language, "; 文\n(item) @node (#eq? @node \"a\")",
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(bad_source, tree.root_node())
   let matched = cursor.next_match().unwrap()
   let source_result = @test.expect_error(() => {
@@ -1299,7 +1319,7 @@ test "query predicate errors use utf8 byte offsets" {
 ///|
 test "query predicate classes expose utf8 byte offsets" {
   let language = query_test_language()
-  let query = Query::new(
+  let query = @query.Query::new(
     language, "; 文\n(item) @node (#eq? @node \"a\") (#set! role value) (#is? local) (#custom! @node)",
   )
   let classes = query.classify_predicates()
@@ -1320,7 +1340,7 @@ test "query text predicate helper filters exact predicates" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let passing = Query::new(
+  let passing = @query.Query::new(
     language,
     (
       #|(item) @node
@@ -1330,13 +1350,13 @@ test "query text predicate helper filters exact predicates" {
       #|  (#not-any-of? @node "c")
     ),
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(passing, tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_true(passing.text_predicates_match_bytes(matched, b"a"))
   assert_true(passing.text_predicates_match_string(matched, "a"))
 
-  let failing = Query::new(language, "(item) @node (#eq? @node \"b\")")
+  let failing = @query.Query::new(language, "(item) @node (#eq? @node \"b\")")
   cursor.exec(failing, tree.root_node())
   let failed_match = cursor.next_match().unwrap()
   assert_true(!failing.text_predicates_match_bytes(failed_match, b"a"))
@@ -1348,7 +1368,7 @@ test "query text predicate helper supports capture and regex predicates" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let passing = Query::new(
+  let passing = @query.Query::new(
     language,
     (
       #|(item) @left @right
@@ -1357,24 +1377,26 @@ test "query text predicate helper supports capture and regex predicates" {
       #|  (#not-match? @left "[0-9]+")
     ),
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(passing, tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_true(passing.text_predicates_match_bytes(matched, b"a"))
 
-  let failing = Query::new(language, "(item) @node (#match? @node \"[0-9]+\")")
+  let failing = @query.Query::new(
+    language, "(item) @node (#match? @node \"[0-9]+\")",
+  )
   cursor.exec(failing, tree.root_node())
   let failed_match = cursor.next_match().unwrap()
   assert_true(!failing.text_predicates_match_bytes(failed_match, b"a"))
 
-  let general_regex = Query::new(
+  let general_regex = @query.Query::new(
     language, "(item) @node (#match? @node \"a.*|z\")",
   )
   cursor.exec(general_regex, tree.root_node())
   let general_match = cursor.next_match().unwrap()
   assert_true(general_regex.text_predicates_match_bytes(general_match, b"a"))
 
-  let shorthand_regex = Query::new(
+  let shorthand_regex = @query.Query::new(
     language, "(item) @node (#match? @node \"^\\\\w{1}$\")",
   )
   cursor.exec(shorthand_regex, tree.root_node())
@@ -1383,7 +1405,7 @@ test "query text predicate helper supports capture and regex predicates" {
     shorthand_regex.text_predicates_match_bytes(shorthand_match, b"a"),
   )
 
-  let absolute_anchor_regex = Query::new(
+  let absolute_anchor_regex = @query.Query::new(
     language, "(item) @node (#match? @node \"\\\\Aa\\\\z\")",
   )
   cursor.exec(absolute_anchor_regex, tree.root_node())
@@ -1400,17 +1422,17 @@ test "query text predicate helper supports regex shorthand classes" {
   let language = query_test_text_language()
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
   let digit_tree = parser.parse_bytes(b"1")
-  let digit = Query::new(
+  let digit = @query.Query::new(
     language, "(document) @node (#match? @node \"^\\\\d$\")",
   )
   cursor.exec(digit, digit_tree.root_node())
   let digit_match = cursor.next_match().unwrap()
   assert_true(digit.text_predicates_match_bytes(digit_match, b"1"))
 
-  let digit_class = Query::new(
+  let digit_class = @query.Query::new(
     language, "(document) @node (#match? @node \"^[\\\\d_]$\")",
   )
   cursor.exec(digit_class, digit_tree.root_node())
@@ -1418,7 +1440,7 @@ test "query text predicate helper supports regex shorthand classes" {
   assert_true(digit_class.text_predicates_match_bytes(digit_class_match, b"1"))
 
   let letter_tree = parser.parse_bytes(b"a")
-  let non_digit_class = Query::new(
+  let non_digit_class = @query.Query::new(
     language, "(document) @node (#match? @node \"^[\\\\D_]$\")",
   )
   cursor.exec(non_digit_class, letter_tree.root_node())
@@ -1427,14 +1449,14 @@ test "query text predicate helper supports regex shorthand classes" {
     non_digit_class.text_predicates_match_bytes(non_digit_class_match, b"a"),
   )
 
-  let non_digit = Query::new(
+  let non_digit = @query.Query::new(
     language, "(document) @node (#match? @node \"^\\\\D$\")",
   )
   cursor.exec(non_digit, letter_tree.root_node())
   let non_digit_match = cursor.next_match().unwrap()
   assert_true(non_digit.text_predicates_match_bytes(non_digit_match, b"a"))
 
-  let non_space_class = Query::new(
+  let non_space_class = @query.Query::new(
     language, "(document) @node (#match? @node \"^[\\\\S_]$\")",
   )
   cursor.exec(non_space_class, letter_tree.root_node())
@@ -1443,7 +1465,7 @@ test "query text predicate helper supports regex shorthand classes" {
     non_space_class.text_predicates_match_bytes(non_space_class_match, b"a"),
   )
 
-  let non_space = Query::new(
+  let non_space = @query.Query::new(
     language, "(document) @node (#match? @node \"^\\\\S$\")",
   )
   cursor.exec(non_space, letter_tree.root_node())
@@ -1451,21 +1473,21 @@ test "query text predicate helper supports regex shorthand classes" {
   assert_true(non_space.text_predicates_match_bytes(non_space_match, b"a"))
 
   let space_tree = parser.parse_bytes(b" ")
-  let space = Query::new(
+  let space = @query.Query::new(
     language, "(document) @node (#match? @node \"^\\\\s$\")",
   )
   cursor.exec(space, space_tree.root_node())
   let space_match = cursor.next_match().unwrap()
   assert_true(space.text_predicates_match_bytes(space_match, b" "))
 
-  let non_word = Query::new(
+  let non_word = @query.Query::new(
     language, "(document) @node (#match? @node \"^\\\\W$\")",
   )
   cursor.exec(non_word, space_tree.root_node())
   let non_word_match = cursor.next_match().unwrap()
   assert_true(non_word.text_predicates_match_bytes(non_word_match, b" "))
 
-  let non_word_class = Query::new(
+  let non_word_class = @query.Query::new(
     language, "(document) @node (#match? @node \"^[\\\\W_]$\")",
   )
   cursor.exec(non_word_class, space_tree.root_node())
@@ -1481,9 +1503,9 @@ test "query text predicate helper applies all and any to quantified captures" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"aab")
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
-  let all_a = Query::new(
+  let all_a = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1494,7 +1516,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let all_match = cursor.next_match().unwrap()
   assert_true(!all_a.text_predicates_match_bytes(all_match, b"aab"))
 
-  let any_a = Query::new(
+  let any_a = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1505,7 +1527,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let any_match = cursor.next_match().unwrap()
   assert_true(any_a.text_predicates_match_bytes(any_match, b"aab"))
 
-  let any_z = Query::new(
+  let any_z = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1516,7 +1538,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let missing_any_match = cursor.next_match().unwrap()
   assert_true(!any_z.text_predicates_match_bytes(missing_any_match, b"aab"))
 
-  let any_not_b = Query::new(
+  let any_not_b = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1527,7 +1549,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let any_not_b_match = cursor.next_match().unwrap()
   assert_true(any_not_b.text_predicates_match_bytes(any_not_b_match, b"aab"))
 
-  let any_not_ab = Query::new(
+  let any_not_ab = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1538,7 +1560,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let any_not_ab_match = cursor.next_match().unwrap()
   assert_true(!any_not_ab.text_predicates_match_bytes(any_not_ab_match, b"aab"))
 
-  let exact_all_a = Query::new(
+  let exact_all_a = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1549,7 +1571,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let exact_all_match = cursor.next_match().unwrap()
   assert_true(!exact_all_a.text_predicates_match_bytes(exact_all_match, b"aab"))
 
-  let exact_any_a = Query::new(
+  let exact_any_a = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1560,7 +1582,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let exact_any_match = cursor.next_match().unwrap()
   assert_true(exact_any_a.text_predicates_match_bytes(exact_any_match, b"aab"))
 
-  let exact_any_not_a = Query::new(
+  let exact_any_not_a = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1573,7 +1595,7 @@ test "query text predicate helper applies all and any to quantified captures" {
     exact_any_not_a.text_predicates_match_bytes(exact_any_not_match, b"aab"),
   )
 
-  let exact_none_z = Query::new(
+  let exact_none_z = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1586,7 +1608,7 @@ test "query text predicate helper applies all and any to quantified captures" {
     exact_none_z.text_predicates_match_bytes(exact_none_match, b"aab"),
   )
 
-  let all_in_set = Query::new(
+  let all_in_set = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1597,7 +1619,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let all_in_set_match = cursor.next_match().unwrap()
   assert_true(all_in_set.text_predicates_match_bytes(all_in_set_match, b"aab"))
 
-  let missing_from_set = Query::new(
+  let missing_from_set = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1612,7 +1634,7 @@ test "query text predicate helper applies all and any to quantified captures" {
     ),
   )
 
-  let none_in_set = Query::new(
+  let none_in_set = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1625,7 +1647,7 @@ test "query text predicate helper applies all and any to quantified captures" {
     none_in_set.text_predicates_match_bytes(none_in_set_match, b"aab"),
   )
 
-  let one_in_set = Query::new(
+  let one_in_set = @query.Query::new(
     language,
     (
       #|(document [(item) @token (other) @token]+)
@@ -1637,7 +1659,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   assert_true(!one_in_set.text_predicates_match_bytes(one_in_set_match, b"aab"))
 
   let empty_tree = parser.parse_bytes(b"")
-  let all_absent = Query::new(
+  let all_absent = @query.Query::new(
     language,
     (
       #|(document (item)? @token)
@@ -1648,7 +1670,7 @@ test "query text predicate helper applies all and any to quantified captures" {
   let all_absent_match = cursor.next_match().unwrap()
   assert_true(all_absent.text_predicates_match_bytes(all_absent_match, b""))
 
-  let any_absent = Query::new(
+  let any_absent = @query.Query::new(
     language,
     (
       #|(document (item)? @token)
@@ -1666,9 +1688,9 @@ test "query text predicate helper compares quantified captures pairwise" {
   let repeat_parser = @tree_sitter_mbt.Parser::new()
   repeat_parser.set_language(repeat_language)
   let repeat_tree = repeat_parser.parse_bytes(b"aa")
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
-  let count_mismatch = Query::new(
+  let count_mismatch = @query.Query::new(
     repeat_language,
     (
       #|(document (item) @left @right (item) @left)
@@ -1681,7 +1703,7 @@ test "query text predicate helper compares quantified captures pairwise" {
     !count_mismatch.text_predicates_match_bytes(count_mismatch_match, b"aa"),
   )
 
-  let any_equal_pair = Query::new(
+  let any_equal_pair = @query.Query::new(
     repeat_language,
     (
       #|(document (item) @left @right (item) @left)
@@ -1694,7 +1716,7 @@ test "query text predicate helper compares quantified captures pairwise" {
     any_equal_pair.text_predicates_match_bytes(any_equal_match, b"aa"),
   )
 
-  let any_not_equal_pair = Query::new(
+  let any_not_equal_pair = @query.Query::new(
     repeat_language,
     (
       #|(document (item) @left @right (item) @left)
@@ -1711,7 +1733,7 @@ test "query text predicate helper compares quantified captures pairwise" {
   let mixed_parser = @tree_sitter_mbt.Parser::new()
   mixed_parser.set_language(mixed_language)
   let mixed_tree = mixed_parser.parse_bytes(b"ab")
-  let not_equal_pair = Query::new(
+  let not_equal_pair = @query.Query::new(
     mixed_language,
     (
       #|(document (item) @left (other) @right)
@@ -1731,8 +1753,8 @@ test "query text predicate helper reports invalid source ranges" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(item) @node (#eq? @node \"a\")")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node (#eq? @node \"a\")")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   let matched = cursor.next_match().unwrap()
   let result = @test.expect_error(() => {
@@ -1747,8 +1769,8 @@ test "query cursor returns matches and document-ordered captures" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(item) @node\n(document) @root")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node\n(document) @root")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let first_match = cursor.next_match().unwrap()
@@ -1784,8 +1806,8 @@ test "query cursor ignores trees from incompatible languages" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(query_language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(query_language, "(item) @node")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(query_language, "(item) @node")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["node"])
 
@@ -1802,8 +1824,8 @@ test "query cursor ignores trees from incompatible languages" {
 test "query cursor matches simple child patterns" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(language, "(document (item) @node) @root")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(document (item) @node) @root")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let matched = cursor.next_match().unwrap()
@@ -1821,7 +1843,7 @@ test "query cursor matches simple child patterns" {
   assert_eq(root_capture.name, "root")
   assert_true(cursor.next_capture() is None)
 
-  let wildcard_root = Query::new(language, "(_ (item) @node) @root")
+  let wildcard_root = @query.Query::new(language, "(_ (item) @node) @root")
   cursor.exec(wildcard_root, tree.root_node())
   let wildcard_root_match = cursor.next_match().unwrap()
   assert_eq(wildcard_root_match.captures.length(), 2)
@@ -1831,7 +1853,7 @@ test "query cursor matches simple child patterns" {
   assert_eq(wildcard_root_match.captures[1].node.type_(), "item")
   assert_true(cursor.next_match() is None)
 
-  let anonymous_child = Query::new(
+  let anonymous_child = @query.Query::new(
     language, "(document (item) @node \"b\" @literal) @root",
   )
   cursor.exec(anonymous_child, tree.root_node())
@@ -1845,7 +1867,7 @@ test "query cursor matches simple child patterns" {
   assert_true(cursor.next_match() is None)
 
   let terminal_with_child = @test.expect_error(() => {
-    Query::new(language, "(item (\"b\") @literal) @node")
+    @query.Query::new(language, "(item (\"b\") @literal) @node")
   })
   assert_true(terminal_with_child is Structure(..))
 
@@ -1853,7 +1875,7 @@ test "query cursor matches simple child patterns" {
   let repeat_parser = @tree_sitter_mbt.Parser::new()
   repeat_parser.set_language(repeat_language)
   let repeat_tree = repeat_parser.parse_bytes(b"aaa")
-  let repeat_query = Query::new(
+  let repeat_query = @query.Query::new(
     repeat_language, "(document (item) @node) @root",
   )
   cursor.exec(repeat_query, repeat_tree.root_node())
@@ -1872,8 +1894,8 @@ test "query cursor matches field-constrained child patterns" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(document left: (item) @node) @root")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(document left: (item) @node) @root")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let matched = cursor.next_match().unwrap()
@@ -1881,11 +1903,13 @@ test "query cursor matches field-constrained child patterns" {
   assert_eq(matched.captures[0].name, "root")
   assert_eq(matched.captures[1].name, "node")
 
-  let no_match = Query::new(language, "(document right: (item) @node) @root")
+  let no_match = @query.Query::new(
+    language, "(document right: (item) @node) @root",
+  )
   cursor.exec(no_match, tree.root_node())
   assert_true(cursor.next_match() is None)
 
-  let root_field_query = Query::new(language, "left: (item) @node")
+  let root_field_query = @query.Query::new(language, "left: (item) @node")
   cursor.exec(root_field_query, tree.root_node())
   let root_field_match = cursor.next_match().unwrap()
   assert_eq(root_field_match.captures.length(), 1)
@@ -1893,7 +1917,7 @@ test "query cursor matches field-constrained child patterns" {
   assert_eq(root_field_match.captures[0].node.type_(), "item")
   assert_true(cursor.next_match() is None)
 
-  let root_field_no_match = Query::new(language, "right: (item) @node")
+  let root_field_no_match = @query.Query::new(language, "right: (item) @node")
   cursor.exec(root_field_no_match, tree.root_node())
   assert_true(cursor.next_match() is None)
 
@@ -1903,7 +1927,7 @@ test "query cursor matches field-constrained child patterns" {
   let hidden_tree = hidden_parser.parse_bytes(b"a")
   assert_eq(hidden_tree.root_node().child(0).type_(), "item")
   assert_true(hidden_tree.root_node().field_name_for_child(0) == Some("left"))
-  let inherited_field_query = Query::new(
+  let inherited_field_query = @query.Query::new(
     hidden_language, "(document left: (item) @node) @root",
   )
   cursor.exec(inherited_field_query, hidden_tree.root_node())
@@ -1911,7 +1935,7 @@ test "query cursor matches field-constrained child patterns" {
   assert_eq(inherited_match.captures.length(), 2)
   assert_eq(inherited_match.captures[1].name, "node")
 
-  let inherited_root_field_query = Query::new(
+  let inherited_root_field_query = @query.Query::new(
     hidden_language, "left: (item) @node",
   )
   cursor.exec(inherited_root_field_query, hidden_tree.root_node())
@@ -1920,13 +1944,13 @@ test "query cursor matches field-constrained child patterns" {
   assert_eq(inherited_root_field_match.captures[0].name, "node")
   assert_true(cursor.next_match() is None)
 
-  let hidden_no_match = Query::new(
+  let hidden_no_match = @query.Query::new(
     hidden_language, "(document right: (item) @node) @root",
   )
   cursor.exec(hidden_no_match, hidden_tree.root_node())
   assert_true(cursor.next_match() is None)
 
-  let hidden_root_field_no_match = Query::new(
+  let hidden_root_field_no_match = @query.Query::new(
     hidden_language, "right: (item) @node",
   )
   cursor.exec(hidden_root_field_no_match, hidden_tree.root_node())
@@ -1939,7 +1963,7 @@ test "query treats comments as whitespace in field constraints" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(document
@@ -1949,7 +1973,7 @@ test "query treats comments as whitespace in field constraints" {
       #|  : (item) @node) @root
     ),
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["node", "root"])
 }
@@ -1960,19 +1984,21 @@ test "query cursor matches negated field constraints" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(document !right (item) @node) @root")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(
+    language, "(document !right (item) @node) @root",
+  )
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_eq(matched.captures.length(), 2)
 
-  let spaced_query = Query::new(
+  let spaced_query = @query.Query::new(
     language, "(document ! right (item) @node) @root",
   )
   cursor.exec(spaced_query, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 2)
 
-  let commented_query = Query::new(
+  let commented_query = @query.Query::new(
     language,
     (
       #|(document !
@@ -1983,7 +2009,9 @@ test "query cursor matches negated field constraints" {
   cursor.exec(commented_query, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 2)
 
-  let no_match = Query::new(language, "(document !left (item) @node) @root")
+  let no_match = @query.Query::new(
+    language, "(document !left (item) @node) @root",
+  )
   cursor.exec(no_match, tree.root_node())
   assert_true(cursor.next_match() is None)
 
@@ -1991,13 +2019,13 @@ test "query cursor matches negated field constraints" {
   let hidden_parser = @tree_sitter_mbt.Parser::new()
   hidden_parser.set_language(hidden_language)
   let hidden_tree = hidden_parser.parse_bytes(b"a")
-  let hidden_present = Query::new(
+  let hidden_present = @query.Query::new(
     hidden_language, "(document !right (item) @node) @root",
   )
   cursor.exec(hidden_present, hidden_tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 2)
 
-  let hidden_absent = Query::new(
+  let hidden_absent = @query.Query::new(
     hidden_language, "(document !left (item) @node) @root",
   )
   cursor.exec(hidden_absent, hidden_tree.root_node())
@@ -2010,12 +2038,12 @@ test "query cursor matches quantified child patterns" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"aaa")
-  let many = Query::new(language, "(document (item)+ @node) @root")
+  let many = @query.Query::new(language, "(document (item)+ @node) @root")
   assert_true(many.capture_name_for_id(0) == Some("node"))
   assert_true(many.capture_name_for_id(1) == Some("root"))
   assert_true(many.capture_quantifier_for_id(0, 0) == Some(OneOrMore))
   assert_true(many.capture_quantifier_for_id(0, 1) == Some(One))
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(many, tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_eq(matched.captures.length(), 4)
@@ -2024,12 +2052,12 @@ test "query cursor matches quantified child patterns" {
   assert_eq(matched.captures[2].name, "node")
   assert_eq(matched.captures[3].name, "node")
 
-  let optional = Query::new(language, "(document (item)? @node) @root")
+  let optional = @query.Query::new(language, "(document (item)? @node) @root")
   assert_true(optional.capture_quantifier_for_id(0, 0) == Some(ZeroOrOne))
   cursor.exec(optional, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 2)
 
-  let optional_with_tail = Query::new(
+  let optional_with_tail = @query.Query::new(
     language, "(document (item)? @maybe . (item) @right) @root",
   )
   let two_item_tree = parser.parse_bytes(b"aa")
@@ -2060,17 +2088,21 @@ test "query cursor matches quantified child patterns" {
   assert_true(saw_present_optional)
 
   let empty_tree = parser.parse_bytes(b"")
-  let zero_or_more = Query::new(language, "(document (item)* @node) @root")
+  let zero_or_more = @query.Query::new(
+    language, "(document (item)* @node) @root",
+  )
   assert_true(zero_or_more.capture_quantifier_for_id(0, 0) == Some(ZeroOrMore))
   cursor.exec(zero_or_more, empty_tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 1)
 
-  let one_or_more = Query::new(language, "(document (item)+ @node) @root")
+  let one_or_more = @query.Query::new(
+    language, "(document (item)+ @node) @root",
+  )
   cursor.exec(one_or_more, empty_tree.root_node())
   assert_true(cursor.next_match() is None)
 
   let branch_tree = parser.parse_bytes(b"aa")
-  let repeated_alternation = Query::new(
+  let repeated_alternation = @query.Query::new(
     language, "(document [(item) @one (item) @two]+) @root",
   )
   cursor.exec(repeated_alternation, branch_tree.root_node())
@@ -2088,7 +2120,7 @@ test "query cursor matches quantified child patterns" {
   assert_eq(two_two.captures[2].name, "two")
   assert_true(cursor.next_match() is None)
 
-  let equivalent_repeated_alternation = Query::new(
+  let equivalent_repeated_alternation = @query.Query::new(
     language, "(document [(item) @same (item) @same]+) @root",
   )
   cursor.exec(equivalent_repeated_alternation, branch_tree.root_node())
@@ -2105,9 +2137,9 @@ test "query cursor matches quantified root patterns" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"aaa")
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
-  let one_or_more = Query::new(language, "(item)+ @node")
+  let one_or_more = @query.Query::new(language, "(item)+ @node")
   cursor.exec(one_or_more, tree.root_node())
   let repeated_match = cursor.next_match().unwrap()
   assert_eq(repeated_match.captures.length(), 3)
@@ -2115,7 +2147,9 @@ test "query cursor matches quantified root patterns" {
   assert_true(query_capture_names(cursor) == ["node", "node", "node"])
 
   let branch_tree = parser.parse_bytes(b"aa")
-  let repeated_alternation = Query::new(language, "[(item) @one (item) @two]+")
+  let repeated_alternation = @query.Query::new(
+    language, "[(item) @one (item) @two]+",
+  )
   cursor.exec(repeated_alternation, branch_tree.root_node())
   let one_one = cursor.next_match().unwrap()
   assert_eq(one_one.captures[0].name, "one")
@@ -2131,7 +2165,7 @@ test "query cursor matches quantified root patterns" {
   assert_eq(two_two.captures[1].name, "two")
   assert_true(cursor.next_match() is None)
 
-  let equivalent_repeated_alternation = Query::new(
+  let equivalent_repeated_alternation = @query.Query::new(
     language, "[(item) @same (item) @same]+",
   )
   cursor.exec(equivalent_repeated_alternation, branch_tree.root_node())
@@ -2141,13 +2175,13 @@ test "query cursor matches quantified root patterns" {
   assert_eq(equivalent.captures[1].name, "same")
   assert_true(cursor.next_match() is None)
 
-  let zero_or_more = Query::new(language, "(item)* @node")
+  let zero_or_more = @query.Query::new(language, "(item)* @node")
   cursor.exec(zero_or_more, tree.root_node())
   let zero_or_more_match = cursor.next_match().unwrap()
   assert_eq(zero_or_more_match.captures.length(), 3)
   assert_true(cursor.next_match() is None)
 
-  let optional = Query::new(language, "(item)? @node")
+  let optional = @query.Query::new(language, "(item)? @node")
   cursor.exec(optional, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 1)
   assert_eq(cursor.next_match().unwrap().captures.length(), 1)
@@ -2163,14 +2197,14 @@ test "query cursor matches quantified root patterns" {
   assert_eq(cursor.next_match().unwrap().captures.length(), 0)
   assert_true(cursor.next_match() is None)
 
-  let ranged = QueryCursor::new()
+  let ranged = @query.QueryCursor::new()
   ranged.set_byte_range(1, 2) |> ignore
   ranged.exec(one_or_more, tree.root_node())
   let ranged_match = ranged.next_match().unwrap()
   assert_eq(ranged_match.captures.length(), 3)
   assert_true(query_capture_names(ranged) == ["node"])
 
-  let inconsistent_range = QueryCursor::new()
+  let inconsistent_range = @query.QueryCursor::new()
   inconsistent_range.set_byte_range(0, 1) |> ignore
   inconsistent_range.set_point_range(
     @api.Point::new(row=0, column=1),
@@ -2189,40 +2223,40 @@ test "query parser composes repeated suffix modifiers" {
   parser.set_language(language)
   let tree = parser.parse_bytes(b"aaa")
   let empty_tree = parser.parse_bytes(b"")
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
-  let stars = Query::new(language, "(item)*** @node")
+  let stars = @query.Query::new(language, "(item)*** @node")
   assert_true(stars.capture_quantifier_for_id(0, 0) == Some(ZeroOrMore))
   cursor.exec(stars, empty_tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 0)
   cursor.exec(stars, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 3)
 
-  let questions = Query::new(language, "(item)??? @node")
+  let questions = @query.Query::new(language, "(item)??? @node")
   assert_true(questions.capture_quantifier_for_id(0, 0) == Some(ZeroOrOne))
   cursor.exec(questions, empty_tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 0)
   cursor.exec(questions, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 1)
 
-  let mixed_left = Query::new(language, "(item)*?* @node")
+  let mixed_left = @query.Query::new(language, "(item)*?* @node")
   assert_true(mixed_left.capture_quantifier_for_id(0, 0) == Some(ZeroOrMore))
   cursor.exec(mixed_left, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 3)
 
-  let mixed_right = Query::new(language, "(item)?*? @node")
+  let mixed_right = @query.Query::new(language, "(item)?*? @node")
   assert_true(mixed_right.capture_quantifier_for_id(0, 0) == Some(ZeroOrMore))
   cursor.exec(mixed_right, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 3)
 
-  let capture_before_quantifier = Query::new(language, "(item) @node+")
+  let capture_before_quantifier = @query.Query::new(language, "(item) @node+")
   assert_true(
     capture_before_quantifier.capture_quantifier_for_id(0, 0) == Some(OneOrMore),
   )
   cursor.exec(capture_before_quantifier, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 3)
 
-  let commented_suffixes = Query::new(
+  let commented_suffixes = @query.Query::new(
     language,
     (
       #|(item) ; after pattern
@@ -2236,7 +2270,7 @@ test "query parser composes repeated suffix modifiers" {
   cursor.exec(commented_suffixes, tree.root_node())
   assert_eq(cursor.next_match().unwrap().captures.length(), 3)
 
-  let commented_capture_suffix = Query::new(
+  let commented_capture_suffix = @query.Query::new(
     language,
     (
       #|(item) @node ; after capture
@@ -2254,9 +2288,11 @@ test "query parser composes repeated suffix modifiers" {
 test "query cursor matches anchored child patterns" {
   let language = query_test_anchor_language()
   let tree = query_test_anchor_tree()
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
-  let first_named = Query::new(language, "(document . (item) @node) @root")
+  let first_named = @query.Query::new(
+    language, "(document . (item) @node) @root",
+  )
   cursor.exec(first_named, tree.root_node())
   let first_match = cursor.next_match().unwrap()
   assert_eq(first_match.captures.length(), 2)
@@ -2264,7 +2300,7 @@ test "query cursor matches anchored child patterns" {
   assert_eq(first_match.captures[1].node.start_byte(), 1)
   assert_true(cursor.next_match() is None)
 
-  let first_any = Query::new(language, "(document . _ @node) @root")
+  let first_any = @query.Query::new(language, "(document . _ @node) @root")
   cursor.exec(first_any, tree.root_node())
   let any_match = cursor.next_match().unwrap()
   assert_eq(any_match.captures[1].node.type_(), "b")
@@ -2272,7 +2308,7 @@ test "query cursor matches anchored child patterns" {
 
   let pair_language = query_test_pair_language()
   let pair_tree = query_test_pair_tree()
-  let bare_wildcard_after_named = Query::new(
+  let bare_wildcard_after_named = @query.Query::new(
     pair_language, "(document (item) @left . _ @literal) @root",
   )
   cursor.exec(bare_wildcard_after_named, pair_tree.root_node())
@@ -2282,7 +2318,7 @@ test "query cursor matches anchored child patterns" {
   assert_eq(bare_wildcard_match.captures[2].node.type_(), "b")
   assert_true(!bare_wildcard_match.captures[2].node.is_named())
 
-  let named_wildcard_after_named = Query::new(
+  let named_wildcard_after_named = @query.Query::new(
     pair_language, "(document (item) @left . (_) @named) @root",
   )
   cursor.exec(named_wildcard_after_named, pair_tree.root_node())
@@ -2292,7 +2328,7 @@ test "query cursor matches anchored child patterns" {
   let mixed_parser = @tree_sitter_mbt.Parser::new()
   mixed_parser.set_language(mixed_language)
   let mixed_tree = mixed_parser.parse_bytes(b"aab")
-  let anchored_backtrack = Query::new(
+  let anchored_backtrack = @query.Query::new(
     mixed_language, "(document (item) @left . (other) @right) @root",
   )
   cursor.exec(anchored_backtrack, mixed_tree.root_node())
@@ -2301,7 +2337,7 @@ test "query cursor matches anchored child patterns" {
   assert_eq(backtracked.captures[2].node.start_byte(), 2)
   assert_true(cursor.next_match() is None)
 
-  let skipped = Query::new(
+  let skipped = @query.Query::new(
     language, "(document (item) @left (item) @right) @root",
   )
   cursor.exec(skipped, tree.root_node())
@@ -2310,13 +2346,15 @@ test "query cursor matches anchored child patterns" {
   assert_eq(skipped_match.captures[1].node.start_byte(), 1)
   assert_eq(skipped_match.captures[2].node.start_byte(), 3)
 
-  let immediate = Query::new(
+  let immediate = @query.Query::new(
     language, "(document (item) @left . (item) @right) @root",
   )
   cursor.exec(immediate, tree.root_node())
   assert_true(cursor.next_match() is None)
 
-  let last_named = Query::new(language, "(document (item) @node .) @root")
+  let last_named = @query.Query::new(
+    language, "(document (item) @node .) @root",
+  )
   cursor.exec(last_named, tree.root_node())
   let last_match = cursor.next_match().unwrap()
   assert_eq(last_match.captures[1].node.start_byte(), 3)
@@ -2329,10 +2367,10 @@ test "query cursor matches alternation patterns" {
   let simple_parser = @tree_sitter_mbt.Parser::new()
   simple_parser.set_language(simple_language)
   let simple_tree = simple_parser.parse_bytes(b"a")
-  let root_alternation = Query::new(
+  let root_alternation = @query.Query::new(
     simple_language, "[(item) @node (document) @root]",
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(root_alternation, simple_tree.root_node())
   let document_match = cursor.next_match().unwrap()
   assert_eq(document_match.captures[0].name, "root")
@@ -2342,7 +2380,7 @@ test "query cursor matches alternation patterns" {
   assert_eq(item_match.captures[0].node.type_(), "item")
   assert_true(cursor.next_match() is None)
 
-  let same_root_alternation = Query::new(
+  let same_root_alternation = @query.Query::new(
     simple_language, "[(item) @left (item) @right]",
   )
   cursor.exec(same_root_alternation, simple_tree.root_node())
@@ -2354,7 +2392,7 @@ test "query cursor matches alternation patterns" {
 
   let language = query_test_anchor_language()
   let tree = query_test_anchor_tree()
-  let first_branch = Query::new(
+  let first_branch = @query.Query::new(
     language, "(document (item) @left [(other) @middle (item) @right]) @root",
   )
   cursor.exec(first_branch, tree.root_node())
@@ -2363,7 +2401,7 @@ test "query cursor matches alternation patterns" {
   assert_eq(first_branch_match.captures[1].name, "left")
   assert_eq(first_branch_match.captures[2].name, "middle")
 
-  let same_child_alternation = Query::new(
+  let same_child_alternation = @query.Query::new(
     language, "(document (item) @left [(other) @one (other) @two]) @root",
   )
   cursor.exec(same_child_alternation, tree.root_node())
@@ -2375,7 +2413,7 @@ test "query cursor matches alternation patterns" {
   assert_eq(second_child_branch.captures[2].name, "two")
   assert_true(cursor.next_match() is None)
 
-  let second_branch = Query::new(
+  let second_branch = @query.Query::new(
     language, "(document (other) @middle [(other) @again (item) @right]) @root",
   )
   cursor.exec(second_branch, tree.root_node())
@@ -2384,7 +2422,7 @@ test "query cursor matches alternation patterns" {
   assert_eq(second_branch_match.captures[1].name, "middle")
   assert_eq(second_branch_match.captures[2].name, "right")
 
-  let optional_capture = Query::new(
+  let optional_capture = @query.Query::new(
     language, "(document [(other) @maybe (item)]) @root",
   )
   assert_true(optional_capture.capture_name_for_id(0) == Some("maybe"))
@@ -2399,44 +2437,46 @@ test "query cursor matches alternation patterns" {
 test "query cursor matches supertype patterns" {
   let language = query_test_supertype_language()
   let literal_tree = query_test_supertype_tree(b"a")
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
 
-  let any_expr = Query::new(language, "(expr) @expr")
+  let any_expr = @query.Query::new(language, "(expr) @expr")
   cursor.exec(any_expr, literal_tree.root_node())
   let expr_capture = cursor.next_capture().unwrap()
   assert_eq(expr_capture.name, "expr")
   assert_eq(expr_capture.node.type_(), "literal")
   assert_true(cursor.next_capture() is None)
 
-  let literal_only = Query::new(language, "(expr/literal) @literal")
+  let literal_only = @query.Query::new(language, "(expr/literal) @literal")
   cursor.exec(literal_only, literal_tree.root_node())
   let literal_capture = cursor.next_capture().unwrap()
   assert_eq(literal_capture.name, "literal")
   assert_eq(literal_capture.node.type_(), "literal")
 
-  let identifier_only = Query::new(language, "(expr/identifier) @identifier")
+  let identifier_only = @query.Query::new(
+    language, "(expr/identifier) @identifier",
+  )
   cursor.exec(identifier_only, literal_tree.root_node())
   assert_true(cursor.next_capture() is None)
 
   let question_tree = query_test_supertype_tree(b"?")
-  let question_only = Query::new(language, "(expr/\"?\") @question")
+  let question_only = @query.Query::new(language, "(expr/\"?\") @question")
   cursor.exec(question_only, question_tree.root_node())
   let question_capture = cursor.next_capture().unwrap()
   assert_eq(question_capture.node.type_(), "?")
   assert_true(!question_capture.node.is_named())
 
   let bad_left = @test.expect_error(() => {
-    Query::new(language, "(literal/identifier)")
+    @query.Query::new(language, "(literal/identifier)")
   })
   assert_true(bad_left is NodeType(name="literal", ..))
 
   let bad_subtype = @test.expect_error(() => {
-    Query::new(language, "(expr/document)")
+    @query.Query::new(language, "(expr/document)")
   })
   assert_true(bad_subtype is NodeType(name="document", ..))
 
   let anonymous_subtype_with_child = @test.expect_error(() => {
-    Query::new(language, "(expr/\"?\" (literal))")
+    @query.Query::new(language, "(expr/\"?\" (literal))")
   })
   assert_true(anonymous_subtype_with_child is Structure(..))
 }
@@ -2447,8 +2487,8 @@ test "query cursor remove_match filters future results" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(item) @node\n(document) @root")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node\n(document) @root")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let first_match = cursor.next_match().unwrap()
@@ -2491,7 +2531,7 @@ test "query cursor text predicate helpers remove failing matches" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(
+  let query = @query.Query::new(
     language,
     (
       #|(item) @bad (#eq? @bad "z")
@@ -2499,7 +2539,7 @@ test "query cursor text predicate helpers remove failing matches" {
     ),
   )
 
-  let match_cursor = QueryCursor::new()
+  let match_cursor = @query.QueryCursor::new()
   match_cursor.exec(query, tree.root_node())
   let matched = match_cursor
     .next_match_with_text_predicates_bytes(query, b"a")
@@ -2510,14 +2550,14 @@ test "query cursor text predicate helpers remove failing matches" {
     match_cursor.next_match_with_text_predicates_bytes(query, b"a") is None,
   )
 
-  let string_cursor = QueryCursor::new()
+  let string_cursor = @query.QueryCursor::new()
   string_cursor.exec(query, tree.root_node())
   let string_matched = string_cursor
     .next_match_with_text_predicates_string(query, "a")
     .unwrap()
   assert_eq(string_matched.pattern_index, 1)
 
-  let capture_cursor = QueryCursor::new()
+  let capture_cursor = @query.QueryCursor::new()
   capture_cursor.exec(query, tree.root_node())
   let capture = capture_cursor
     .next_capture_with_text_predicates_bytes(query, b"a")
@@ -2527,7 +2567,7 @@ test "query cursor text predicate helpers remove failing matches" {
     capture_cursor.next_capture_with_text_predicates_bytes(query, b"a") is None,
   )
 
-  let string_capture_cursor = QueryCursor::new()
+  let string_capture_cursor = @query.QueryCursor::new()
   string_capture_cursor.exec(query, tree.root_node())
   let string_capture = string_capture_cursor
     .next_capture_with_text_predicates_string(query, "a")
@@ -2536,7 +2576,7 @@ test "query cursor text predicate helpers remove failing matches" {
 
   let pair_language = query_test_pair_language()
   let pair_tree = query_test_pair_tree()
-  let multi_capture_query = Query::new(
+  let multi_capture_query = @query.Query::new(
     pair_language,
     (
       #|(document (item) @bad ("b") @bad)
@@ -2545,7 +2585,7 @@ test "query cursor text predicate helpers remove failing matches" {
       #|  (#eq? @ok "b")
     ),
   )
-  let multi_capture_cursor = QueryCursor::new()
+  let multi_capture_cursor = @query.QueryCursor::new()
   multi_capture_cursor.exec(multi_capture_query, pair_tree.root_node())
   let later_capture = multi_capture_cursor
     .next_capture_with_text_predicates_bytes(multi_capture_query, b"ab")
@@ -2565,11 +2605,11 @@ test "query disable_capture removes capture output only" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(item) @node\n(document) @root")
+  let query = @query.Query::new(language, "(item) @node\n(document) @root")
   assert_true(query.disable_capture("node"))
   assert_true(!query.disable_capture("missing"))
 
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   let first_match = cursor.next_match().unwrap()
   assert_eq(first_match.pattern_index, 1)
@@ -2581,7 +2621,7 @@ test "query disable_capture removes capture output only" {
 
   let pair_language = query_test_pair_language()
   let pair_tree = query_test_pair_tree()
-  let repeated_capture = Query::new(
+  let repeated_capture = @query.Query::new(
     pair_language, "(document (item) @node (\"b\") @node) @root",
   )
   assert_true(repeated_capture.disable_capture("node"))
@@ -2599,11 +2639,11 @@ test "query disable_pattern removes matches" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(item) @node\n(document) @root")
+  let query = @query.Query::new(language, "(item) @node\n(document) @root")
   assert_true(query.disable_pattern(0))
   assert_true(!query.disable_pattern(2))
 
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   let matched = cursor.next_match().unwrap()
   assert_eq(matched.pattern_index, 1)
@@ -2614,14 +2654,14 @@ test "query disable_pattern removes matches" {
 test "query cursor byte range filters captures" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(language, "(item) @node\n(\"b\") @literal")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node\n(\"b\") @literal")
+  let cursor = @query.QueryCursor::new()
   assert_true(cursor.set_byte_range(1, 2))
   assert_true(!cursor.set_byte_range(3, 2))
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["literal"])
 
-  let unbounded = QueryCursor::new()
+  let unbounded = @query.QueryCursor::new()
   assert_true(unbounded.set_byte_range(1, 0))
   unbounded.exec(query, tree.root_node())
   assert_true(query_capture_names(unbounded) == ["literal"])
@@ -2630,12 +2670,12 @@ test "query cursor byte range filters captures" {
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["node", "literal"])
 
-  let empty = QueryCursor::new()
+  let empty = @query.QueryCursor::new()
   assert_true(empty.set_byte_range(1, 1))
   empty.exec(query, tree.root_node())
   assert_true(query_capture_names(empty) == ["node", "literal"])
 
-  let nested = Query::new(
+  let nested = @query.Query::new(
     language, "(document (item) @node (\"b\") @literal) @root",
   )
   cursor.set_byte_range(1, 2) |> ignore
@@ -2649,8 +2689,8 @@ test "query cursor byte range filters captures" {
 test "query cursor point range filters captures" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(language, "(item) @node\n(\"b\") @literal")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node\n(\"b\") @literal")
+  let cursor = @query.QueryCursor::new()
   assert_true(
     cursor.set_point_range(
       @api.Point::new(row=0, column=1),
@@ -2666,7 +2706,7 @@ test "query cursor point range filters captures" {
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["literal"])
 
-  let unbounded = QueryCursor::new()
+  let unbounded = @query.QueryCursor::new()
   assert_true(
     unbounded.set_point_range(
       @api.Point::new(row=0, column=1),
@@ -2680,7 +2720,7 @@ test "query cursor point range filters captures" {
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["node", "literal"])
 
-  let empty = QueryCursor::new()
+  let empty = @query.QueryCursor::new()
   assert_true(
     empty.set_point_range(
       @api.Point::new(row=0, column=1),
@@ -2690,7 +2730,7 @@ test "query cursor point range filters captures" {
   empty.exec(query, tree.root_node())
   assert_true(query_capture_names(empty) == ["node", "literal"])
 
-  let nested = Query::new(
+  let nested = @query.Query::new(
     language, "(document (item) @node (\"b\") @literal) @root",
   )
   cursor.set_point_range(
@@ -2708,16 +2748,16 @@ test "query cursor point range filters captures" {
 test "query cursor containing byte range requires contained captures" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(
+  let query = @query.Query::new(
     language, "(document) @root\n(item) @node\n(\"b\") @literal",
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   assert_true(cursor.set_containing_byte_range(1, 2))
   assert_true(!cursor.set_containing_byte_range(3, 2))
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["literal"])
 
-  let unbounded = QueryCursor::new()
+  let unbounded = @query.QueryCursor::new()
   assert_true(unbounded.set_containing_byte_range(1, 0))
   unbounded.exec(query, tree.root_node())
   assert_true(query_capture_names(unbounded) == ["literal"])
@@ -2731,14 +2771,14 @@ test "query cursor containing byte range requires contained captures" {
 test "query cursor containing byte range requires contained matched nodes" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(language, "(document (item) @node (\"b\"))")
-  let only_capture_contained = QueryCursor::new()
+  let query = @query.Query::new(language, "(document (item) @node (\"b\"))")
+  let only_capture_contained = @query.QueryCursor::new()
   assert_true(only_capture_contained.set_containing_byte_range(0, 1))
   only_capture_contained.exec(query, tree.root_node())
   assert_true(only_capture_contained.next_match() is None)
   assert_true(query_capture_names(only_capture_contained) == [])
 
-  let whole_match_contained = QueryCursor::new()
+  let whole_match_contained = @query.QueryCursor::new()
   assert_true(whole_match_contained.set_containing_byte_range(0, 2))
   whole_match_contained.exec(query, tree.root_node())
   assert_true(query_capture_names(whole_match_contained) == ["node"])
@@ -2748,10 +2788,10 @@ test "query cursor containing byte range requires contained matched nodes" {
 test "query cursor containing point range requires contained captures" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(
+  let query = @query.Query::new(
     language, "(document) @root\n(item) @node\n(\"b\") @literal",
   )
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   assert_true(
     cursor.set_containing_point_range(
       @api.Point::new(row=0, column=1),
@@ -2767,7 +2807,7 @@ test "query cursor containing point range requires contained captures" {
   cursor.exec(query, tree.root_node())
   assert_true(query_capture_names(cursor) == ["literal"])
 
-  let unbounded = QueryCursor::new()
+  let unbounded = @query.QueryCursor::new()
   assert_true(
     unbounded.set_containing_point_range(
       @api.Point::new(row=0, column=1),
@@ -2787,8 +2827,8 @@ test "query cursor containing point range requires contained captures" {
 test "query cursor containing point range requires contained matched nodes" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(language, "(document (item) @node (\"b\"))")
-  let only_capture_contained = QueryCursor::new()
+  let query = @query.Query::new(language, "(document (item) @node (\"b\"))")
+  let only_capture_contained = @query.QueryCursor::new()
   assert_true(
     only_capture_contained.set_containing_point_range(
       @api.Point::new(row=0, column=0),
@@ -2799,7 +2839,7 @@ test "query cursor containing point range requires contained matched nodes" {
   assert_true(only_capture_contained.next_match() is None)
   assert_true(query_capture_names(only_capture_contained) == [])
 
-  let whole_match_contained = QueryCursor::new()
+  let whole_match_contained = @query.QueryCursor::new()
   assert_true(
     whole_match_contained.set_containing_point_range(
       @api.Point::new(row=0, column=0),
@@ -2814,10 +2854,10 @@ test "query cursor containing point range requires contained matched nodes" {
 test "query cursor max start depth limits pattern roots" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(
+  let query = @query.Query::new(
     language, "(document) @root\n(item) @node\n(\"b\") @literal",
   )
-  let root_only = QueryCursor::new()
+  let root_only = @query.QueryCursor::new()
   assert_true(root_only.set_max_start_depth(0))
   assert_true(!root_only.set_max_start_depth(-2))
   root_only.exec(query, tree.root_node())
@@ -2828,10 +2868,10 @@ test "query cursor max start depth limits pattern roots" {
   root_only.exec(query, tree.root_node())
   assert_true(query_capture_names(root_only) == ["root", "node", "literal"])
 
-  let root_internal = Query::new(
+  let root_internal = @query.Query::new(
     language, "(document (item) @node (\"b\") @literal) @root",
   )
-  let root_internal_cursor = QueryCursor::new()
+  let root_internal_cursor = @query.QueryCursor::new()
   root_internal_cursor.set_max_start_depth(0) |> ignore
   root_internal_cursor.exec(root_internal, tree.root_node())
   let root_internal_match = root_internal_cursor.next_match().unwrap()
@@ -2840,7 +2880,7 @@ test "query cursor max start depth limits pattern roots" {
     query_capture_names(root_internal_cursor) == ["node", "root", "literal"],
   )
 
-  let children = QueryCursor::new()
+  let children = @query.QueryCursor::new()
   assert_true(children.set_max_start_depth(1))
   children.exec(query, tree.root_node())
   assert_true(query_capture_names(children) == ["root", "node", "literal"])
@@ -2850,8 +2890,8 @@ test "query cursor max start depth limits pattern roots" {
 test "query cursor match limit reports branching pressure" {
   let language = query_test_pair_language()
   let tree = query_test_pair_tree()
-  let query = Query::new(language, "(item) @node\n(\"b\") @literal")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node\n(\"b\") @literal")
+  let cursor = @query.QueryCursor::new()
   assert_eq(cursor.match_limit(), @api.uint32_max())
   assert_true(!cursor.did_exceed_match_limit())
 
@@ -2869,18 +2909,18 @@ test "query cursor match limit reports branching pressure" {
   let repeat_parser = @tree_sitter_mbt.Parser::new()
   repeat_parser.set_language(repeat_language)
   let branch_tree = repeat_parser.parse_bytes(b"aa")
-  let branching = Query::new(
+  let branching = @query.Query::new(
     repeat_language, "(document [(item) @one (item) @two]+) @root",
   )
-  let branching_cursor = QueryCursor::new()
+  let branching_cursor = @query.QueryCursor::new()
   branching_cursor.set_match_limit(1)
   branching_cursor.exec(branching, branch_tree.root_node())
   assert_true(branching_cursor.did_exceed_match_limit())
   assert_eq(branching_cursor.next_match().unwrap().captures.length(), 2)
   assert_true(branching_cursor.next_match() is None)
 
-  let no_capture_query = Query::new(language, "(item)\n(\"b\")")
-  let no_capture_cursor = QueryCursor::new()
+  let no_capture_query = @query.Query::new(language, "(item)\n(\"b\")")
+  let no_capture_cursor = @query.QueryCursor::new()
   no_capture_cursor.set_match_limit(0)
   no_capture_cursor.exec(no_capture_query, tree.root_node())
   assert_true(!no_capture_cursor.did_exceed_match_limit())
@@ -2888,10 +2928,10 @@ test "query cursor match limit reports branching pressure" {
   assert_eq(no_capture_cursor.next_match().unwrap().captures.length(), 0)
   assert_true(no_capture_cursor.next_match() is None)
 
-  let sibling_branching = Query::new(
+  let sibling_branching = @query.Query::new(
     repeat_language, "([(item) @one (item) @two] (item) @tail)",
   )
-  let sibling_branching_cursor = QueryCursor::new()
+  let sibling_branching_cursor = @query.QueryCursor::new()
   sibling_branching_cursor.set_match_limit(1)
   sibling_branching_cursor.exec(sibling_branching, branch_tree.root_node())
   assert_true(sibling_branching_cursor.did_exceed_match_limit())
@@ -2910,8 +2950,8 @@ test "query cursor progress callback can cancel scanning" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(Bytes::make(150, b'a'))
-  let query = Query::new(language, "(item) @node")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(item) @node")
+  let cursor = @query.QueryCursor::new()
   let offsets : Array[UInt32] = []
   cursor.set_progress_callback(
     Some(state => {
@@ -2944,11 +2984,11 @@ test "query supports anonymous string root pattern" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(\"a\") @literal")
+  let query = @query.Query::new(language, "(\"a\") @literal")
   assert_eq(query.string_count(), 1)
   assert_true(query.string_value_for_id(0) == Some("a"))
 
-  let cursor = QueryCursor::new()
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
   let capture = cursor.next_capture().unwrap()
   assert_eq(capture.name, "literal")
@@ -2956,7 +2996,7 @@ test "query supports anonymous string root pattern" {
   assert_true(!capture.node.is_named())
   assert_true(cursor.next_capture() is None)
 
-  let bare_query = Query::new(language, "\"a\" @literal")
+  let bare_query = @query.Query::new(language, "\"a\" @literal")
   assert_eq(bare_query.string_count(), 1)
   assert_true(bare_query.string_value_for_id(0) == Some("a"))
   cursor.exec(bare_query, tree.root_node())
@@ -2973,8 +3013,8 @@ test "query supports named wildcard root pattern" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "(_) @any")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(_) @any")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let root_capture = cursor.next_capture().unwrap()
@@ -2990,8 +3030,8 @@ test "query supports bare wildcard root pattern" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let query = Query::new(language, "_ @any")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "_ @any")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let root_capture = cursor.next_capture().unwrap()
@@ -3009,8 +3049,8 @@ test "query supports ERROR root pattern" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"b")
-  let query = Query::new(language, "(ERROR) @error")
-  let cursor = QueryCursor::new()
+  let query = @query.Query::new(language, "(ERROR) @error")
+  let cursor = @query.QueryCursor::new()
   cursor.exec(query, tree.root_node())
 
   let capture = cursor.next_capture().unwrap()
@@ -3018,11 +3058,13 @@ test "query supports ERROR root pattern" {
   assert_true(capture.node.is_error())
   assert_true(cursor.next_capture() is None)
 
-  let error_child_pattern = Query::new(language, "(ERROR (item) @child) @error")
+  let error_child_pattern = @query.Query::new(
+    language, "(ERROR (item) @child) @error",
+  )
   cursor.exec(error_child_pattern, tree.root_node())
   assert_true(cursor.next_match() is None)
 
-  let wildcard = Query::new(language, "_ @any\n(_) @named")
+  let wildcard = @query.Query::new(language, "_ @any\n(_) @named")
   cursor.exec(wildcard, tree.root_node())
   let mut any_capture_count = 0
   let mut named_capture_count = 0
@@ -3044,15 +3086,17 @@ test "query supports MISSING root patterns" {
   let named_parser = @tree_sitter_mbt.Parser::new()
   named_parser.set_language(named_language)
   let named_tree = named_parser.parse_bytes(b"")
-  let missing_named = Query::new(named_language, "(MISSING item) @missing")
-  let named_cursor = QueryCursor::new()
+  let missing_named = @query.Query::new(
+    named_language, "(MISSING item) @missing",
+  )
+  let named_cursor = @query.QueryCursor::new()
   named_cursor.exec(missing_named, named_tree.root_node())
   let named_capture = named_cursor.next_capture().unwrap()
   assert_true(named_capture.node.is_missing())
   assert_eq(named_capture.node.type_(), "item")
   assert_true(named_capture.node.is_named())
 
-  let named_regular = Query::new(
+  let named_regular = @query.Query::new(
     named_language, "(document (item) @node)\n(document (_) @named)",
   )
   named_cursor.exec(named_regular, named_tree.root_node())
@@ -3070,21 +3114,23 @@ test "query supports MISSING root patterns" {
   let literal_parser = @tree_sitter_mbt.Parser::new()
   literal_parser.set_language(literal_language)
   let literal_tree = literal_parser.parse_bytes(b"")
-  let missing_any = Query::new(literal_language, "(MISSING) @missing")
-  let any_cursor = QueryCursor::new()
+  let missing_any = @query.Query::new(literal_language, "(MISSING) @missing")
+  let any_cursor = @query.QueryCursor::new()
   any_cursor.exec(missing_any, literal_tree.root_node())
   let any_capture = any_cursor.next_capture().unwrap()
   assert_true(any_capture.node.is_missing())
 
-  let missing_literal = Query::new(literal_language, "(MISSING \"a\") @missing")
-  let literal_cursor = QueryCursor::new()
+  let missing_literal = @query.Query::new(
+    literal_language, "(MISSING \"a\") @missing",
+  )
+  let literal_cursor = @query.QueryCursor::new()
   literal_cursor.exec(missing_literal, literal_tree.root_node())
   let literal_capture = literal_cursor.next_capture().unwrap()
   assert_true(literal_capture.node.is_missing())
   assert_eq(literal_capture.node.type_(), "a")
   assert_true(!literal_capture.node.is_named())
 
-  let literal_regular = Query::new(
+  let literal_regular = @query.Query::new(
     literal_language, "(document (\"a\") @literal)\n(document _ @any)",
   )
   literal_cursor.exec(literal_regular, literal_tree.root_node())
@@ -3103,25 +3149,27 @@ test "query supports MISSING root patterns" {
 test "query treats ERROR and MISSING special names exactly" {
   let language = query_test_language()
   let error_short_prefix = @test.expect_error(() => {
-    Query::new(language, "(ERR)")
+    @query.Query::new(language, "(ERR)")
   })
   assert_true(error_short_prefix is NodeType(name="ERR", ..))
 
-  let error_prefix = @test.expect_error(() => Query::new(language, "(ERRORx)"))
+  let error_prefix = @test.expect_error(() => {
+    @query.Query::new(language, "(ERRORx)")
+  })
   assert_true(error_prefix is NodeType(name="ERRORx", ..))
 
   let missing_short_prefix = @test.expect_error(() => {
-    Query::new(language, "(MISS)")
+    @query.Query::new(language, "(MISS)")
   })
   assert_true(missing_short_prefix is NodeType(name="MISS", ..))
 
   let missing_named_prefix = @test.expect_error(() => {
-    Query::new(language, "(MISSING itemx)")
+    @query.Query::new(language, "(MISSING itemx)")
   })
   assert_true(missing_named_prefix is NodeType(name="itemx", ..))
 
   let missing_literal_prefix = @test.expect_error(() => {
-    Query::new(language, "(MISSING \"ax\")")
+    @query.Query::new(language, "(MISSING \"ax\")")
   })
   assert_true(missing_literal_prefix is NodeType(name="ax", ..))
 }
@@ -3129,115 +3177,117 @@ test "query treats ERROR and MISSING special names exactly" {
 ///|
 test "query reports syntax and node type errors" {
   let language = query_test_language()
-  let bad_syntax = @test.expect_error(() => Query::new(language, "(item"))
+  let bad_syntax = @test.expect_error(() => @query.Query::new(language, "(item"))
   assert_true(bad_syntax is Syntax(..))
 
-  let bad_node = @test.expect_error(() => Query::new(language, "(missing)"))
+  let bad_node = @test.expect_error(() => {
+    @query.Query::new(language, "(missing)")
+  })
   assert_true(bad_node is NodeType(name="missing", ..))
 
   let bad_literal = @test.expect_error(() => {
-    Query::new(language, "(\"missing\")")
+    @query.Query::new(language, "(\"missing\")")
   })
   assert_true(bad_literal is NodeType(name="missing", ..))
 
   let bad_bare_literal = @test.expect_error(() => {
-    Query::new(language, "\"missing\"")
+    @query.Query::new(language, "\"missing\"")
   })
   assert_true(bad_bare_literal is NodeType(name="missing", ..))
 
   let bare_child_identifier = @test.expect_error(() => {
-    Query::new(language, "(document item)")
+    @query.Query::new(language, "(document item)")
   })
   assert_true(bare_child_identifier is Syntax(..))
 
   let field_language = query_test_field_language()
   let bad_field = @test.expect_error(() => {
-    Query::new(field_language, "(document missing: (item))")
+    @query.Query::new(field_language, "(document missing: (item))")
   })
   assert_true(bad_field is Field(name="missing", ..))
 
   let bad_root_field = @test.expect_error(() => {
-    Query::new(field_language, "missing: (item)")
+    @query.Query::new(field_language, "missing: (item)")
   })
   assert_true(bad_root_field is Field(name="missing", ..))
 
   let bad_negated_field = @test.expect_error(() => {
-    Query::new(field_language, "(document !missing)")
+    @query.Query::new(field_language, "(document !missing)")
   })
   assert_true(bad_negated_field is Field(name="missing", ..))
 
   let bad_predicate_capture = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#eq? @missing \"a\")")
+    @query.Query::new(language, "(item) @node (#eq? @missing \"a\")")
   })
   assert_true(bad_predicate_capture is Capture(name="missing", ..))
 
   let bad_predicate_symbol = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#custom! a/b)")
+    @query.Query::new(language, "(item) @node (#custom! a/b)")
   })
   assert_true(bad_predicate_symbol is Syntax(..))
 
   let bad_predicate_capture_suffix = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#eq? @node/extra \"a\")")
+    @query.Query::new(language, "(item) @node (#eq? @node/extra \"a\")")
   })
   assert_true(bad_predicate_capture_suffix is Syntax(..))
 
   let bad_predicate_operator = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#custom @node)")
+    @query.Query::new(language, "(item) @node (#custom @node)")
   })
   assert_true(bad_predicate_operator is Syntax(..))
 
   let dot_start_predicate_operator = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#.custom? @node)")
+    @query.Query::new(language, "(item) @node (#.custom? @node)")
   })
   assert_true(dot_start_predicate_operator is Syntax(..))
 
   let suffix_only_predicate_operator = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#? @node)")
+    @query.Query::new(language, "(item) @node (#? @node)")
   })
   assert_true(suffix_only_predicate_operator is Syntax(..))
 
   let embedded_suffix_predicate_operator = @test.expect_error(() => {
-    Query::new(language, "(item) @node (#custom?! @node)")
+    @query.Query::new(language, "(item) @node (#custom?! @node)")
   })
   assert_true(embedded_suffix_predicate_operator is Syntax(..))
 
   let empty_root_alternation = @test.expect_error(() => {
-    Query::new(language, "[]")
+    @query.Query::new(language, "[]")
   })
   assert_true(empty_root_alternation is Syntax(..))
 
   let empty_child_alternation = @test.expect_error(() => {
-    Query::new(language, "(document [])")
+    @query.Query::new(language, "(document [])")
   })
   assert_true(empty_child_alternation is Syntax(..))
 
   let dangling_child_anchor = @test.expect_error(() => {
-    Query::new(language, "(document .)")
+    @query.Query::new(language, "(document .)")
   })
   assert_true(dangling_child_anchor is Syntax(..))
 
-  let valid_predicate_capture = Query::new(
+  let valid_predicate_capture = @query.Query::new(
     language, "(item) @node (#eq? @node \"a\")",
   )
   assert_eq(valid_predicate_capture.capture_count(), 1)
   assert_true(valid_predicate_capture.capture_name_for_id(0) == Some("node"))
 
   let pair_language = query_test_pair_language()
-  let string_first_group = Query::new(pair_language, "(\"b\" (item))")
+  let string_first_group = @query.Query::new(pair_language, "(\"b\" (item))")
   assert_eq(string_first_group.pattern_count(), 1)
 
   let named_terminal_with_child = @test.expect_error(() => {
-    Query::new(language, "(item (item))")
+    @query.Query::new(language, "(item (item))")
   })
   assert_true(named_terminal_with_child is Structure(..))
 
   let missing_with_child = @test.expect_error(() => {
-    Query::new(language, "(MISSING item (item))")
+    @query.Query::new(language, "(MISSING item (item))")
   })
   assert_true(missing_with_child is Syntax(..))
 
   let missing_with_extra_symbol = @test.expect_error(() => {
-    Query::new(language, "(MISSING item item)")
+    @query.Query::new(language, "(MISSING item item)")
   })
   assert_true(missing_with_extra_symbol is Syntax(..))
 }
@@ -3248,9 +3298,11 @@ test "query intentionally allows more than upstream step storage limits" {
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   let tree = parser.parse_bytes(b"a")
-  let many_captures = Query::new(language, "(item) @one @two @three @four")
+  let many_captures = @query.Query::new(
+    language, "(item) @one @two @three @four",
+  )
   assert_eq(many_captures.capture_count(), 4)
-  let capture_cursor = QueryCursor::new()
+  let capture_cursor = @query.QueryCursor::new()
   capture_cursor.exec(many_captures, tree.root_node())
   assert_true(
     query_capture_names(capture_cursor) == ["one", "two", "three", "four"],
@@ -3260,10 +3312,10 @@ test "query intentionally allows more than upstream step storage limits" {
   let field_parser = @tree_sitter_mbt.Parser::new()
   field_parser.set_language(field_language)
   let field_tree = field_parser.parse_bytes(b"a")
-  let many_negated_fields = Query::new(
+  let many_negated_fields = @query.Query::new(
     field_language, "(document !f1 !f2 !f3 !f4 !f5 !f6 !f7 !f8 !f9) @root",
   )
-  let field_cursor = QueryCursor::new()
+  let field_cursor = @query.QueryCursor::new()
   field_cursor.exec(many_negated_fields, field_tree.root_node())
   assert_true(query_capture_names(field_cursor) == ["root"])
   let with_field = field_parser.parse_bytes(b"j")

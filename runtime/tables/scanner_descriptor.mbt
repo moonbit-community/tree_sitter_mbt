@@ -505,3 +505,27 @@ fn external_scanner_noop_serialize() -> Bytes raise @api.ScannerError {
   }
   Bytes::new(0)
 }
+
+///|
+pub extend ExternalScanResult with Debug::{to_repr}
+
+///|
+pub extend ExternalScanResult with Eq::{not_equal, equal}
+
+///|
+pub extend ExternalScannerAdvanceStep with Debug::{to_repr}
+
+///|
+pub extend ExternalScannerAdvanceStep with Eq::{not_equal, equal}
+
+///|
+pub extend ExternalScannerContext with Debug::{to_repr}
+
+///|
+pub extend ExternalScannerContext with Eq::{not_equal, equal}
+
+///|
+pub extend ExternalScannerDescriptor with Debug::{to_repr}
+
+///|
+pub extend ExternalScannerDescriptor with Eq::{not_equal, equal}

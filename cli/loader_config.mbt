@@ -852,3 +852,69 @@ fn cli_config_push_unique_path(paths : Array[String], path : String) -> Unit {
   }
   paths.push(path)
 }
+
+///|
+pub extend CliConfigError with Debug::{to_repr}
+
+///|
+pub extend CliConfigError with Eq::{not_equal, equal}
+
+///|
+pub extend CliGlobalConfig with Debug::{to_repr}
+
+///|
+pub extend CliGlobalConfig with Eq::{not_equal, equal}
+
+///|
+pub extend CliGlobalConfigPathEnvironment with Debug::{to_repr}
+
+///|
+pub extend CliGlobalConfigPathEnvironment with Eq::{not_equal, equal}
+
+///|
+pub extend CliLanguageConfig with Debug::{to_repr}
+
+///|
+pub extend CliLanguageConfig with Eq::{not_equal, equal}
+
+///|
+pub extend CliLanguageConfigLocation with Debug::{to_repr}
+
+///|
+pub extend CliLanguageConfigLocation with Eq::{not_equal, equal}
+
+///|
+pub extend CliLanguageFileTypeMatch with Debug::{to_repr}
+
+///|
+pub extend CliLanguageFileTypeMatch with Eq::{not_equal, equal}
+
+///|
+pub extend CliLanguageSelection with Debug::{to_repr}
+
+///|
+pub extend CliLanguageSelection with Eq::{not_equal, equal}
+
+///|
+pub extend CliLanguageSelectionReason with Debug::{to_repr}
+
+///|
+pub extend CliLanguageSelectionReason with Eq::{not_equal, equal}
+
+///|
+pub extend CliLocatedLanguageSelection with Debug::{to_repr}
+
+///|
+pub extend CliLocatedLanguageSelection with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryFileKind with Debug::{to_repr}
+
+///|
+pub extend CliQueryFileKind with Eq::{not_equal, equal}
+
+///|
+pub extend CliTreeSitterConfig with Debug::{to_repr}
+
+///|
+pub extend CliTreeSitterConfig with Eq::{not_equal, equal}

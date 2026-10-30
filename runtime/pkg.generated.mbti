@@ -13,12 +13,15 @@ import {
 // Types and methods
 type Length derive(Eq, @debug.Debug)
 pub fn Length::add(Self, Self) -> Self
+pub fn Length::equal(Self, Self) -> Bool
 pub fn Length::is_undefined(Self) -> Bool
 pub fn Length::max() -> Self
 pub fn Length::min(Self, Self) -> Self
 pub fn Length::new(bytes~ : UInt32, extent~ : @api.Point) -> Self
+pub fn Length::not_equal(Self, Self) -> Bool
 pub fn Length::saturating_sub(Self, Self) -> Self
 pub fn Length::sub(Self, Self) -> Self
+pub fn Length::to_repr(Self) -> @debug.Repr
 pub fn Length::undefined() -> Self
 pub fn Length::zero() -> Self
 

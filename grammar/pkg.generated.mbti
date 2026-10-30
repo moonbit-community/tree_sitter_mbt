@@ -23,6 +23,9 @@ pub(all) suberror GrammarError {
   EmptyStringExtra(String)
   UndeclaredReservedContext(String)
 } derive(Eq, @debug.Debug)
+pub fn GrammarError::equal(Self, Self) -> Bool
+pub fn GrammarError::not_equal(Self, Self) -> Bool
+pub fn GrammarError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 pub(all) struct InputGrammar {
@@ -39,21 +42,33 @@ pub(all) struct InputGrammar {
   supertypes : Array[String]
   inherits : String?
 } derive(Eq, @debug.Debug)
+pub fn InputGrammar::equal(Self, Self) -> Bool
+pub fn InputGrammar::not_equal(Self, Self) -> Bool
+pub fn InputGrammar::to_repr(Self) -> @debug.Repr
 
 pub(all) struct NamedRule {
   name : String
   rule : Rule
 } derive(Eq, @debug.Debug)
+pub fn NamedRule::equal(Self, Self) -> Bool
+pub fn NamedRule::not_equal(Self, Self) -> Bool
+pub fn NamedRule::to_repr(Self) -> @debug.Repr
 
 pub(all) enum PrecedenceValue {
   Number(Int32)
   Name(String)
 } derive(Eq, @debug.Debug)
+pub fn PrecedenceValue::equal(Self, Self) -> Bool
+pub fn PrecedenceValue::not_equal(Self, Self) -> Bool
+pub fn PrecedenceValue::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ReservedSet {
   name : String
   rules : Array[Rule]
 } derive(Eq, @debug.Debug)
+pub fn ReservedSet::equal(Self, Self) -> Bool
+pub fn ReservedSet::not_equal(Self, Self) -> Bool
+pub fn ReservedSet::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Rule {
   Alias(content~ : Rule, value~ : String, named~ : Bool)
@@ -74,6 +89,9 @@ pub(all) enum Rule {
   ImmediateToken(Rule)
   Reserved(context_name~ : String, content~ : Rule)
 } derive(Eq, @debug.Debug)
+pub fn Rule::equal(Self, Self) -> Bool
+pub fn Rule::not_equal(Self, Self) -> Bool
+pub fn Rule::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

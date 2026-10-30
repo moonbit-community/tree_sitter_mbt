@@ -820,3 +820,39 @@ fn path_key(path : String, key : String) -> String {
 fn path_index(path : String, index : Int32) -> String {
   "\{path}[\{index}]"
 }
+
+///|
+pub extend GrammarError with Debug::{to_repr}
+
+///|
+pub extend GrammarError with Eq::{not_equal, equal}
+
+///|
+pub extend InputGrammar with Debug::{to_repr}
+
+///|
+pub extend InputGrammar with Eq::{not_equal, equal}
+
+///|
+pub extend NamedRule with Debug::{to_repr}
+
+///|
+pub extend NamedRule with Eq::{not_equal, equal}
+
+///|
+pub extend PrecedenceValue with Debug::{to_repr}
+
+///|
+pub extend PrecedenceValue with Eq::{not_equal, equal}
+
+///|
+pub extend ReservedSet with Debug::{to_repr}
+
+///|
+pub extend ReservedSet with Eq::{not_equal, equal}
+
+///|
+pub extend Rule with Debug::{to_repr}
+
+///|
+pub extend Rule with Eq::{not_equal, equal}

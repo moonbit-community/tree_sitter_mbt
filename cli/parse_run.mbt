@@ -68,3 +68,15 @@ pub fn cli_parse_exit_code(results : Array[CliParseResult]) -> Int32 {
     0
   }
 }
+
+///|
+pub extend CliParseOutputMode with Debug::{to_repr}
+
+///|
+pub extend CliParseOutputMode with Eq::{not_equal, equal}
+
+///|
+pub extend CliParseResult with Debug::{to_repr}
+
+///|
+pub extend CliParseResult with Eq::{not_equal, equal}

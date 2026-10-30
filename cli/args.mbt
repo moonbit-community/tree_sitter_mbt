@@ -1009,3 +1009,63 @@ fn cli_parse_stats_mode(
     _ => raise CliArgsError::InvalidOptionValue(option~, value~)
   }
 }
+
+///|
+pub extend CliArgsError with Debug::{to_repr}
+
+///|
+pub extend CliArgsError with Eq::{not_equal, equal}
+
+///|
+pub extend CliByteRange with Debug::{to_repr}
+
+///|
+pub extend CliByteRange with Eq::{not_equal, equal}
+
+///|
+pub extend CliCommand with Debug::{to_repr}
+
+///|
+pub extend CliCommand with Eq::{not_equal, equal}
+
+///|
+pub extend CliGenerateCommand with Debug::{to_repr}
+
+///|
+pub extend CliGenerateCommand with Eq::{not_equal, equal}
+
+///|
+pub extend CliParseCommand with Debug::{to_repr}
+
+///|
+pub extend CliParseCommand with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryCommand with Debug::{to_repr}
+
+///|
+pub extend CliQueryCommand with Eq::{not_equal, equal}
+
+///|
+pub extend CliQueryOutputMode with Debug::{to_repr}
+
+///|
+pub extend CliQueryOutputMode with Eq::{not_equal, equal}
+
+///|
+pub extend CliTagsCommand with Debug::{to_repr}
+
+///|
+pub extend CliTagsCommand with Eq::{not_equal, equal}
+
+///|
+pub extend CliTestCommand with Debug::{to_repr}
+
+///|
+pub extend CliTestCommand with Eq::{not_equal, equal}
+
+///|
+pub extend CliTestStatsMode with Debug::{to_repr}
+
+///|
+pub extend CliTestStatsMode with Eq::{not_equal, equal}

@@ -156,8 +156,8 @@ fn parse_corpus_header(
   if !corpus_suffix_matches(first_suffix, suffix) {
     return None
   }
-  let name_out = StringBuilder::new()
-  let marker_out = StringBuilder::new()
+  let name_out = StringBuilder()
+  let marker_out = StringBuilder()
   let languages : Array[String] = []
   let mut seen_marker = false
   let mut seen_skip = false
@@ -295,7 +295,7 @@ fn build_corpus_example(
 ///|
 fn split_corpus_lines_inclusive(contents : String) -> Array[String] {
   let lines : Array[String] = []
-  let current = StringBuilder::new()
+  let current = StringBuilder()
   for char in contents {
     current.write_char(char)
     if char == '\n' {
@@ -363,7 +363,7 @@ fn join_corpus_lines(
   start : Int32,
   end : Int32,
 ) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   for index in start..<end {
     out.write_string(lines[index])
   }
@@ -385,3 +385,33 @@ fn corpus_input_bytes(
   }
   Bytes::from_array(bytes)
 }
+
+///|
+pub extend CliCorpusAttributes with Debug::{to_repr}
+
+///|
+pub extend CliCorpusAttributes with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusExample with Debug::{to_repr}
+
+///|
+pub extend CliCorpusExample with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusExpectation with Debug::{to_repr}
+
+///|
+pub extend CliCorpusExpectation with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusFile with Debug::{to_repr}
+
+///|
+pub extend CliCorpusFile with Eq::{not_equal, equal}
+
+///|
+pub extend CliCorpusNormalizedOutput with Debug::{to_repr}
+
+///|
+pub extend CliCorpusNormalizedOutput with Eq::{not_equal, equal}

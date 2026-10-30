@@ -11,7 +11,7 @@ pub fn render_parse_normal_cursor(
   cursor : @tree_sitter_mbt.TreeCursor,
   no_ranges~ : Bool = false,
 ) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   let mut current = cursor
   let mut needs_newline = false
   let mut indent_level = 0

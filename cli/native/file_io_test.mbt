@@ -150,7 +150,10 @@ async test "native parse command loads paths file and parses source" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command_files(command, native_test_parser())
+  let result = @native.run_cli_parse_command_files(
+    command,
+    native_test_parser(),
+  )
   assert_eq(result.exit_code, 0)
   assert_eq(result.results.length(), 1)
   assert_true(result.results[0].name == Some(source_path))
@@ -177,7 +180,7 @@ async test "native parse and query commands use stdin when no source paths are g
     test_number: None,
     rebuild: false,
   }
-  let parse_sources = read_cli_parse_command_sources(parse_command)
+  let parse_sources = @native.read_cli_parse_command_sources(parse_command)
   assert_eq(parse_sources.length(), 1)
   assert_true(parse_sources[0].name is None)
   assert_true(parse_sources[0].language_names.is_empty())
@@ -197,7 +200,7 @@ async test "native parse and query commands use stdin when no source paths are g
     containing_byte_range: None,
     test_mode: false,
   }
-  let query_sources = read_cli_query_command_sources(query_command)
+  let query_sources = @native.read_cli_query_command_sources(query_command)
   assert_eq(query_sources.length(), 1)
   assert_true(query_sources[0].name is None)
   assert_true(query_sources[0].language_names.is_empty())
@@ -225,7 +228,7 @@ async test "native parse command reports empty paths file as missing input" {
     rebuild: false,
   }
   let result = native_expect_error_string(() => {
-    read_cli_parse_command_sources(command)
+    @native.read_cli_parse_command_sources(command)
   })
   assert_true(result.contains("MissingInputPaths"))
   assert_true(result.contains("parse"))
@@ -256,7 +259,10 @@ async test "native parse command expands globs and exclusions" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command_files(command, native_test_parser())
+  let result = @native.run_cli_parse_command_files(
+    command,
+    native_test_parser(),
+  )
   assert_eq(result.exit_code, 0)
   assert_eq(result.results.length(), 1)
   assert_true(result.results[0].name == Some(kept_path))
@@ -289,7 +295,7 @@ async test "native parse command can load language from grammar path" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command_loaded_files(command)
+  let result = @native.run_cli_parse_command_loaded_files(command)
   assert_eq(result.exit_code, 0)
   assert_eq(result.stdout, "(document)\n")
   native_remove_file_if_exists(source_path)
@@ -322,7 +328,7 @@ async test "native parse command can load language from esm grammar js path" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command_loaded_files(command)
+  let result = @native.run_cli_parse_command_loaded_files(command)
   assert_eq(result.exit_code, 0)
   assert_eq(result.stdout, "(document)\n")
   native_remove_file_if_exists(source_path)
@@ -339,7 +345,7 @@ async test "native read language from commonjs grammar js with require" {
   let common_path = dir + "/common.js"
   native_write_text(grammar_path, native_minimal_grammar_js_with_require())
   native_write_text(common_path, "exports.literal = 'a';\n")
-  let language = read_cli_language_from_grammar_path(grammar_path)
+  let language = @native.read_cli_language_from_grammar_path(grammar_path)
   let parser = @tree_sitter_mbt.Parser::new()
   parser.set_language(language)
   assert_eq(parser.parse_string("a").to_sexp(), "(document)")
@@ -372,7 +378,7 @@ async test "native query command loads query and source files" {
     containing_byte_range: None,
     test_mode: false,
   }
-  let result = run_cli_query_command_files(command, @minimal.language())
+  let result = @native.run_cli_query_command_files(command, @minimal.language())
   assert_eq(result.exit_code, 0)
   assert_eq(result.results.length(), 1)
   assert_eq(result.stdout, "root document 0:1\n")
@@ -407,7 +413,7 @@ async test "native query command can load language from grammar path" {
     containing_byte_range: None,
     test_mode: false,
   }
-  let result = run_cli_query_command_loaded_files(command)
+  let result = @native.run_cli_query_command_loaded_files(command)
   assert_eq(result.exit_code, 0)
   assert_eq(result.stdout, "root document 0:1\n")
   native_remove_file_if_exists(query_path)
@@ -460,18 +466,18 @@ async test "native test-number input reads corpus case and language marker" {
     test_number: Some(0U),
     rebuild: false,
   }
-  let zero_sources = read_cli_parse_command_sources(zero_command)
+  let zero_sources = @native.read_cli_parse_command_sources(zero_command)
   assert_eq(zero_sources.length(), 1)
   assert_true(zero_sources[0].name == Some("First case"))
   assert_true(zero_sources[0].contents == b"x")
   assert_true(zero_sources[0].language_names == ["source.first"])
   let parse_command = { ..zero_command, test_number: Some(2U), }
-  let parse_sources = read_cli_parse_command_sources(parse_command)
+  let parse_sources = @native.read_cli_parse_command_sources(parse_command)
   assert_eq(parse_sources.length(), 1)
   assert_true(parse_sources[0].name == Some("Second case"))
   assert_true(parse_sources[0].contents == b"a")
   assert_true(parse_sources[0].language_names == ["source.second"])
-  let parse_result = run_cli_parse_command_files(
+  let parse_result = @native.run_cli_parse_command_files(
     parse_command,
     native_test_parser(),
   )
@@ -493,9 +499,9 @@ async test "native test-number input reads corpus case and language marker" {
     containing_byte_range: None,
     test_mode: false,
   }
-  let query_sources = read_cli_query_command_sources(query_command)
+  let query_sources = @native.read_cli_query_command_sources(query_command)
   assert_true(query_sources[0].language_names == ["source.second"])
-  let query_result = run_cli_query_command_files(
+  let query_result = @native.run_cli_query_command_files(
     query_command,
     @minimal.language(),
   )
@@ -517,12 +523,16 @@ async test "native config readers load global and tree-sitter json" {
   native_write_text(
     grammar_config_path, "{\"grammars\":[{\"scope\":\"source.mbt\",\"file-types\":[\"mbt\"]}]}",
   )
-  let global = read_cli_global_config_file(global_path)
+  let global = @native.read_cli_global_config_file(global_path)
   assert_true(global.parser_directories == ["grammars"])
-  let optional_global = read_cli_optional_global_config_file(Some(global_path))
+  let optional_global = @native.read_cli_optional_global_config_file(
+    Some(global_path),
+  )
   assert_true(optional_global is Some({ parser_directories: ["grammars"], .. }))
-  assert_true(read_cli_optional_global_config_file(None) is None)
-  let grammar_config = read_cli_tree_sitter_config_file(grammar_config_path)
+  assert_true(@native.read_cli_optional_global_config_file(None) is None)
+  let grammar_config = @native.read_cli_tree_sitter_config_file(
+    grammar_config_path,
+  )
   assert_eq(grammar_config.grammars.length(), 1)
   assert_eq(grammar_config.grammars[0].scope, "source.mbt")
   native_remove_file_if_exists(global_path)
@@ -575,7 +585,7 @@ async test "native parse command selects configured grammar by file type" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command_loaded_files(command)
+  let result = @native.run_cli_parse_command_loaded_files(command)
   assert_eq(result.exit_code, 0)
   assert_eq(result.stdout, "(document)\n")
   native_remove_file_if_exists(source_path)
@@ -632,7 +642,7 @@ async test "native parse command falls back to configured grammar js" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_parse_command_loaded_files(command)
+  let result = @native.run_cli_parse_command_loaded_files(command)
   assert_eq(result.exit_code, 0)
   assert_eq(result.stdout, "(document)\n")
   native_remove_file_if_exists(source_path)
@@ -693,7 +703,7 @@ async test "native tags command loads configured queries and grammar" {
     test_number: None,
     rebuild: false,
   }
-  let result = run_cli_tags_command_loaded_files(command)
+  let result = @native.run_cli_tags_command_loaded_files(command)
   assert_eq(result.exit_code, 0)
   assert_eq(result.results.length(), 1)
   assert_eq(result.stdout, "a         \t | function\tdef [0, 0] - [0, 1] `a`\n")
@@ -748,18 +758,26 @@ async test "native global config discovery checks explicit env xdg and legacy pa
   @env.set_env_var("XDG_CONFIG_HOME", xdg_dir)
   @env.set_env_var("HOME", home_dir)
   assert_true(
-    resolve_cli_global_config_path(Some(explicit_path)) == Some(explicit_path),
+    @native.resolve_cli_global_config_path(Some(explicit_path)) ==
+    Some(explicit_path),
   )
   assert_true(
-    resolve_cli_global_config_path(None) == Some(tree_sitter_config_path),
+    @native.resolve_cli_global_config_path(None) ==
+    Some(tree_sitter_config_path),
   )
   native_remove_file_if_exists(tree_sitter_config_path)
-  assert_true(resolve_cli_global_config_path(None) == Some(xdg_config_path))
+  assert_true(
+    @native.resolve_cli_global_config_path(None) == Some(xdg_config_path),
+  )
   @env.unset_env_var("XDG_CONFIG_HOME")
-  assert_true(resolve_cli_global_config_path(None) == Some(home_config_path))
+  assert_true(
+    @native.resolve_cli_global_config_path(None) == Some(home_config_path),
+  )
   native_remove_file_if_exists(home_config_path)
-  assert_true(resolve_cli_global_config_path(None) == Some(legacy_config_path))
-  let loaded = read_cli_discovered_global_config_file(None)
+  assert_true(
+    @native.resolve_cli_global_config_path(None) == Some(legacy_config_path),
+  )
+  let loaded = @native.read_cli_discovered_global_config_file(None)
   assert_true(loaded is Some({ parser_directories: ["legacy"], .. }))
   native_remove_file_if_exists(explicit_path)
   native_remove_file_if_exists(xdg_config_path)
@@ -795,7 +813,7 @@ async test "native config readers locate tree-sitter languages" {
       #|}
     ),
   )
-  let locations = read_cli_tree_sitter_config_locations([dir])
+  let locations = @native.read_cli_tree_sitter_config_locations([dir])
   assert_eq(locations.length(), 1)
   assert_eq(locations[0].parser_root, dir)
   assert_eq(locations[0].grammar_root, dir + "/grammar")
@@ -816,10 +834,10 @@ async test "native query file readers preserve combined source ranges" {
   let second_path = dir + "/locals.scm"
   native_write_text(first_path, "a")
   native_write_text(second_path, "b\n")
-  let files = read_cli_query_files([first_path, second_path])
+  let files = @native.read_cli_query_files([first_path, second_path])
   assert_eq(files.length(), 2)
   assert_eq(files[0].content, "a")
-  let combined = read_cli_combined_query([first_path, second_path])
+  let combined = @native.read_cli_combined_query([first_path, second_path])
   assert_eq(combined.source, "ab\n")
   assert_true(
     combined.ranges ==
@@ -860,17 +878,19 @@ async test "native generate command reads grammar and writes outputs" {
     json_summary: true,
     disable_optimizations: false,
   }
-  let result = run_cli_generate_command_files(command)
+  let result = @native.run_cli_generate_command_files(command)
   assert_eq(result.files.length(), 3)
   let language_path = dir + "/language.mbt"
   let node_types_path = dir + "/node-types.json"
   assert_true(
-    read_cli_file_string(language_path).contains(
+    @native.read_cli_file_string(language_path).contains(
       "@tables.LanguageMetadata::new(major=1, minor=2, patch=3)",
     ),
   )
   assert_true(
-    read_cli_file_string(node_types_path).contains("\"type\": \"document\""),
+    @native.read_cli_file_string(node_types_path).contains(
+      "\"type\": \"document\"",
+    ),
   )
   assert_true(result.json_summary is Some(_))
   native_remove_file_if_exists(language_path)
@@ -887,7 +907,7 @@ async test "native generate command converts grammar js and writes parser output
   native_create_clean_dir(dir)
   let grammar_path = dir + "/grammar.js"
   native_write_text(grammar_path, native_minimal_grammar_js_cjs())
-  let result = run_cli_generate_command_files(
+  let result = @native.run_cli_generate_command_files(
     native_generate_command(Some(grammar_path), Some(dir), false),
   )
   assert_eq(result.files.length(), 4)
@@ -901,7 +921,9 @@ async test "native generate command converts grammar js and writes parser output
     ],
   )
   assert_true(
-    read_cli_file_string(dir + "/grammar.json").contains("\"name\":\"minimal\""),
+    @native.read_cli_file_string(dir + "/grammar.json").contains(
+      "\"name\":\"minimal\"",
+    ),
   )
   assert_true(
     result.json_summary ==
@@ -923,7 +945,7 @@ async test "native generate command with grammar js and no parser writes grammar
   native_create_clean_dir(dir)
   let grammar_path = dir + "/grammar.js"
   native_write_text(grammar_path, native_minimal_grammar_js_cjs())
-  let result = run_cli_generate_command_files(
+  let result = @native.run_cli_generate_command_files(
     native_generate_command(Some(grammar_path), Some(dir), true),
   )
   assert_eq(result.files.length(), 2)
@@ -951,7 +973,7 @@ async test "native grammar js errors include runtime status and stderr" {
   )
   let missing_runtime = dir + "/missing-node"
   let missing_result = native_expect_error_string(() => {
-    run_cli_generate_command_files(
+    @native.run_cli_generate_command_files(
       native_generate_command(
         Some(grammar_path),
         Some(dir),
@@ -966,7 +988,7 @@ async test "native grammar js errors include runtime status and stderr" {
   assert_true(missing_result.contains("-1"))
   native_write_text(grammar_path, "throw new Error('boom from grammar js');\n")
   let invalid_result = native_expect_error_string(() => {
-    run_cli_generate_command_files(
+    @native.run_cli_generate_command_files(
       native_generate_command(Some(grammar_path), Some(dir), true),
     )
   })
@@ -984,7 +1006,7 @@ async test "native grammar loader rejects unsupported extensions" {
   let grammar_path = dir + "/grammar.txt"
   native_write_text(grammar_path, native_minimal_grammar_json())
   let result = native_expect_error_string(() => {
-    read_cli_language_from_grammar_path(grammar_path)
+    @native.read_cli_language_from_grammar_path(grammar_path)
   })
   assert_true(result.contains("UnsupportedGrammarFileExtension"))
   assert_true(result.contains(grammar_path))
@@ -1024,12 +1046,14 @@ async test "native test command loads corpus and writes update files" {
     json_summary: false,
     stats: None,
   }
-  let result = run_cli_test_command_files(command, native_test_parser(), [
-    corpus_path,
-  ])
+  let result = @native.run_cli_test_command_files(
+    command,
+    native_test_parser(),
+    [corpus_path],
+  )
   assert_eq(result.exit_code, 1)
   assert_eq(result.files.length(), 1)
-  assert_true(read_cli_file_string(corpus_path).contains("(document)"))
+  assert_true(@native.read_cli_file_string(corpus_path).contains("(document)"))
   native_remove_file_if_exists(corpus_path)
   native_remove_dir_if_exists(dir)
 }
@@ -1073,9 +1097,11 @@ async test "native test command reads corpus directories recursively" {
     json_summary: false,
     stats: None,
   }
-  let result = run_cli_test_command_files(command, native_test_parser(), [
-    corpus_dir,
-  ])
+  let result = @native.run_cli_test_command_files(
+    command,
+    native_test_parser(),
+    [corpus_dir],
+  )
   assert_eq(result.exit_code, 0)
   assert_eq(result.files.length(), 2)
   assert_eq(result.summary.total, 2)

@@ -15,10 +15,16 @@ pub(all) suberror IncludedRangesError {
   InvalidRange(index~ : Int32, range~ : @api.Range)
   Overlap(index~ : Int32, previous~ : @api.Range, current~ : @api.Range)
 } derive(Eq, @debug.Debug)
+pub fn IncludedRangesError::equal(Self, Self) -> Bool
+pub fn IncludedRangesError::not_equal(Self, Self) -> Bool
+pub fn IncludedRangesError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror LanguageError {
   UnsupportedAbi(Int32)
 } derive(Eq, @debug.Debug)
+pub fn LanguageError::equal(Self, Self) -> Bool
+pub fn LanguageError::not_equal(Self, Self) -> Bool
+pub fn LanguageError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror ParseError {
   NoLanguage
@@ -31,6 +37,9 @@ pub(all) suberror ParseError {
   ParseTableError(state_id~ : @api.StateId, symbol_id~ : @api.SymbolId)
   ParseStackUnderflow
 } derive(Eq, @debug.Debug)
+pub fn ParseError::equal(Self, Self) -> Bool
+pub fn ParseError::not_equal(Self, Self) -> Bool
+pub fn ParseError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type Input
@@ -48,13 +57,19 @@ pub(all) struct InputChunk {
   bytes_read : Int32
 } derive(Eq, @debug.Debug)
 pub fn InputChunk::eof() -> Self
+pub fn InputChunk::equal(Self, Self) -> Bool
 pub fn InputChunk::from_bytes(Bytes) -> Self
 pub fn InputChunk::new(chunk~ : Bytes?, bytes_read~ : Int32) -> Self
+pub fn InputChunk::not_equal(Self, Self) -> Bool
+pub fn InputChunk::to_repr(Self) -> @debug.Repr
 
 pub(all) enum InputDecodeResult {
   CodePoint(Int32, bytes~ : Int32)
   DecodeError
 } derive(Eq, @debug.Debug)
+pub fn InputDecodeResult::equal(Self, Self) -> Bool
+pub fn InputDecodeResult::not_equal(Self, Self) -> Bool
+pub fn InputDecodeResult::to_repr(Self) -> @debug.Repr
 
 type Language
 pub fn Language::abi_version(Self) -> Int32
@@ -80,6 +95,9 @@ pub(all) enum LogType {
   Lex
   Parse
 } derive(Eq, @debug.Debug)
+pub fn LogType::equal(Self, Self) -> Bool
+pub fn LogType::not_equal(Self, Self) -> Bool
+pub fn LogType::to_repr(Self) -> @debug.Repr
 
 type Logger
 pub fn Logger::log(Self, LogType, String) -> Unit
@@ -153,8 +171,11 @@ pub(all) struct ParseState {
   current_byte_offset : UInt32
   has_error : Bool
 } derive(Eq, @debug.Debug)
+pub fn ParseState::equal(Self, Self) -> Bool
 pub fn ParseState::initial() -> Self
 pub fn ParseState::new(current_byte_offset~ : UInt32, has_error~ : Bool) -> Self
+pub fn ParseState::not_equal(Self, Self) -> Bool
+pub fn ParseState::to_repr(Self) -> @debug.Repr
 
 type Parser
 pub fn Parser::included_ranges(Self) -> Array[@api.Range]

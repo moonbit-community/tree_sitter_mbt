@@ -3874,3 +3874,33 @@ fn moonbit_keyword_is_reserved(value : String) -> Bool {
     _ => false
   }
 }
+
+///|
+pub extend GenerateError with Debug::{to_repr}
+
+///|
+pub extend GenerateError with Eq::{not_equal, equal}
+
+///|
+pub extend GenerateOptions with Debug::{to_repr}
+
+///|
+pub extend GenerateOptions with Eq::{not_equal, equal}
+
+///|
+pub extend GenerateWarning with Debug::{to_repr}
+
+///|
+pub extend GenerateWarning with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedLanguage with Debug::{to_repr}
+
+///|
+pub extend GeneratedLanguage with Eq::{not_equal, equal}
+
+///|
+pub extend GeneratedSource with Debug::{to_repr}
+
+///|
+pub extend GeneratedSource with Eq::{not_equal, equal}

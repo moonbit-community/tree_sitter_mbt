@@ -154,6 +154,9 @@ pub(all) suberror CliArgsError {
   ConflictingOptions(String, String)
   UnexpectedArgument(String)
 } derive(Eq, @debug.Debug)
+pub fn CliArgsError::equal(Self, Self) -> Bool
+pub fn CliArgsError::not_equal(Self, Self) -> Bool
+pub fn CliArgsError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror CliConfigError {
   InvalidJson(String)
@@ -164,20 +167,32 @@ pub(all) suberror CliConfigError {
   InvalidSemanticVersion(path~ : String, value~ : String)
   InvalidRegex(path~ : String, pattern~ : String)
 } derive(Eq, @debug.Debug)
+pub fn CliConfigError::equal(Self, Self) -> Bool
+pub fn CliConfigError::not_equal(Self, Self) -> Bool
+pub fn CliConfigError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror CliEncodingError {
   UnknownEncoding(String)
 } derive(Eq, @debug.Debug)
+pub fn CliEncodingError::equal(Self, Self) -> Bool
+pub fn CliEncodingError::not_equal(Self, Self) -> Bool
+pub fn CliEncodingError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror CliGenerateRunError {
   InvalidAbiVersion(String)
   UnsupportedGenerateOption(String)
   GenerateFailed(@generator.GenerateError)
 } derive(Eq, @debug.Debug)
+pub fn CliGenerateRunError::equal(Self, Self) -> Bool
+pub fn CliGenerateRunError::not_equal(Self, Self) -> Bool
+pub fn CliGenerateRunError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror CliInputError {
   EmptyPathSelection
 } derive(Eq, @debug.Debug)
+pub fn CliInputError::equal(Self, Self) -> Bool
+pub fn CliInputError::not_equal(Self, Self) -> Bool
+pub fn CliInputError::to_repr(Self) -> @debug.Repr
 
 pub(all) suberror CliQueryRunError {
   LanguageFailed(@tree_sitter_mbt.LanguageError)
@@ -196,11 +211,17 @@ pub(all) struct CliByteRange {
   start : UInt32
   end : UInt32
 } derive(Eq, @debug.Debug)
+pub fn CliByteRange::equal(Self, Self) -> Bool
+pub fn CliByteRange::not_equal(Self, Self) -> Bool
+pub fn CliByteRange::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCombinedQuery {
   source : String
   ranges : Array[CliQuerySourceRange]
 } derive(Eq, @debug.Debug)
+pub fn CliCombinedQuery::equal(Self, Self) -> Bool
+pub fn CliCombinedQuery::not_equal(Self, Self) -> Bool
+pub fn CliCombinedQuery::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliCommand {
   CliParse(CliParseCommand)
@@ -209,6 +230,9 @@ pub(all) enum CliCommand {
   CliQuery(CliQueryCommand)
   CliTags(CliTagsCommand)
 } derive(Eq, @debug.Debug)
+pub fn CliCommand::equal(Self, Self) -> Bool
+pub fn CliCommand::not_equal(Self, Self) -> Bool
+pub fn CliCommand::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusAttributes {
   platform : Bool
@@ -217,6 +241,9 @@ pub(all) struct CliCorpusAttributes {
   cst : Bool
   languages : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusAttributes::equal(Self, Self) -> Bool
+pub fn CliCorpusAttributes::not_equal(Self, Self) -> Bool
+pub fn CliCorpusAttributes::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusCorrection {
   name : String
@@ -226,6 +253,9 @@ pub(all) struct CliCorpusCorrection {
   header_delim_len : Int32
   divider_delim_len : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusCorrection::equal(Self, Self) -> Bool
+pub fn CliCorpusCorrection::not_equal(Self, Self) -> Bool
+pub fn CliCorpusCorrection::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusExample {
   name : String
@@ -238,23 +268,35 @@ pub(all) struct CliCorpusExample {
   attributes : CliCorpusAttributes
   file_name : String?
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusExample::equal(Self, Self) -> Bool
+pub fn CliCorpusExample::not_equal(Self, Self) -> Bool
+pub fn CliCorpusExample::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliCorpusExpectation {
   Pass
   Error
   Skip
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusExpectation::equal(Self, Self) -> Bool
+pub fn CliCorpusExpectation::not_equal(Self, Self) -> Bool
+pub fn CliCorpusExpectation::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusFile {
   name : String
   examples : Array[CliCorpusExample]
   file_name : String?
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusFile::equal(Self, Self) -> Bool
+pub fn CliCorpusFile::not_equal(Self, Self) -> Bool
+pub fn CliCorpusFile::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusNormalizedOutput {
   output : String
   has_fields : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusNormalizedOutput::equal(Self, Self) -> Bool
+pub fn CliCorpusNormalizedOutput::not_equal(Self, Self) -> Bool
+pub fn CliCorpusNormalizedOutput::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusRunResult {
   name : String
@@ -266,6 +308,9 @@ pub(all) struct CliCorpusRunResult {
   expectation : CliCorpusExpectation
   file_name : String?
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusRunResult::equal(Self, Self) -> Bool
+pub fn CliCorpusRunResult::not_equal(Self, Self) -> Bool
+pub fn CliCorpusRunResult::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliCorpusRunStatus {
   CorpusRunPassed
@@ -273,6 +318,9 @@ pub(all) enum CliCorpusRunStatus {
   CorpusRunSkipped
   CorpusRunPlatformSkipped
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusRunStatus::equal(Self, Self) -> Bool
+pub fn CliCorpusRunStatus::not_equal(Self, Self) -> Bool
+pub fn CliCorpusRunStatus::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliCorpusUpdatePlan {
   results : Array[CliCorpusRunResult]
@@ -281,6 +329,9 @@ pub(all) struct CliCorpusUpdatePlan {
   can_update : Bool
   stopped_on_fail_fast : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliCorpusUpdatePlan::equal(Self, Self) -> Bool
+pub fn CliCorpusUpdatePlan::not_equal(Self, Self) -> Bool
+pub fn CliCorpusUpdatePlan::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliGenerateCommand {
   grammar_path : String?
@@ -293,6 +344,9 @@ pub(all) struct CliGenerateCommand {
   json_summary : Bool
   disable_optimizations : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliGenerateCommand::equal(Self, Self) -> Bool
+pub fn CliGenerateCommand::not_equal(Self, Self) -> Bool
+pub fn CliGenerateCommand::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliGenerateRunResult {
   files : Array[CliOutputFile]
@@ -301,23 +355,35 @@ pub(all) struct CliGenerateRunResult {
   warnings : Array[@generator.GenerateWarning]
   json_summary : String?
 } derive(Eq, @debug.Debug)
+pub fn CliGenerateRunResult::equal(Self, Self) -> Bool
+pub fn CliGenerateRunResult::not_equal(Self, Self) -> Bool
+pub fn CliGenerateRunResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliGlobalConfig {
   parser_directories : Array[String]
   theme : Json?
 } derive(Eq, @debug.Debug)
+pub fn CliGlobalConfig::equal(Self, Self) -> Bool
+pub fn CliGlobalConfig::not_equal(Self, Self) -> Bool
+pub fn CliGlobalConfig::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliGlobalConfigPathEnvironment {
   tree_sitter_dir : String?
   xdg_config_home : String?
   home : String?
 } derive(Eq, @debug.Debug)
+pub fn CliGlobalConfigPathEnvironment::equal(Self, Self) -> Bool
+pub fn CliGlobalConfigPathEnvironment::not_equal(Self, Self) -> Bool
+pub fn CliGlobalConfigPathEnvironment::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliInputSource {
   Stdin
   Paths(Array[String])
   TestNumber(UInt32)
 } derive(Eq, @debug.Debug)
+pub fn CliInputSource::equal(Self, Self) -> Bool
+pub fn CliInputSource::not_equal(Self, Self) -> Bool
+pub fn CliInputSource::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliLanguageConfig {
   scope : String
@@ -332,39 +398,60 @@ pub(all) struct CliLanguageConfig {
   tags : Array[String]
   external_files : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn CliLanguageConfig::equal(Self, Self) -> Bool
+pub fn CliLanguageConfig::not_equal(Self, Self) -> Bool
+pub fn CliLanguageConfig::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliLanguageConfigLocation {
   parser_root : String
   grammar_root : String
   config : CliLanguageConfig
 } derive(Eq, @debug.Debug)
+pub fn CliLanguageConfigLocation::equal(Self, Self) -> Bool
+pub fn CliLanguageConfigLocation::not_equal(Self, Self) -> Bool
+pub fn CliLanguageConfigLocation::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliLanguageFileTypeMatch {
   file_type : String
   exact_filename : Bool
   suffix_length : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliLanguageFileTypeMatch::equal(Self, Self) -> Bool
+pub fn CliLanguageFileTypeMatch::not_equal(Self, Self) -> Bool
+pub fn CliLanguageFileTypeMatch::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliLanguageSelection {
   CliLanguageFromLibPath(String)
   CliLanguageFromConfig(CliLanguageConfig, CliLanguageSelectionReason)
 } derive(Eq, @debug.Debug)
+pub fn CliLanguageSelection::equal(Self, Self) -> Bool
+pub fn CliLanguageSelection::not_equal(Self, Self) -> Bool
+pub fn CliLanguageSelection::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliLanguageSelectionReason {
   CliLanguageByScope
   CliLanguageByFileType
   CliLanguageByFirstLine
 } derive(Eq, @debug.Debug)
+pub fn CliLanguageSelectionReason::equal(Self, Self) -> Bool
+pub fn CliLanguageSelectionReason::not_equal(Self, Self) -> Bool
+pub fn CliLanguageSelectionReason::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliLocatedLanguageSelection {
   CliLocatedLanguageFromLibPath(String)
   CliLocatedLanguageFromConfig(CliLanguageConfigLocation, CliLanguageSelectionReason)
 } derive(Eq, @debug.Debug)
+pub fn CliLocatedLanguageSelection::equal(Self, Self) -> Bool
+pub fn CliLocatedLanguageSelection::not_equal(Self, Self) -> Bool
+pub fn CliLocatedLanguageSelection::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliOutputFile {
   path : String
   content : String
 } derive(Eq, @debug.Debug)
+pub fn CliOutputFile::equal(Self, Self) -> Bool
+pub fn CliOutputFile::not_equal(Self, Self) -> Bool
+pub fn CliOutputFile::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliParseCommand {
   paths_file : String?
@@ -381,29 +468,44 @@ pub(all) struct CliParseCommand {
   test_number : UInt32?
   rebuild : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliParseCommand::equal(Self, Self) -> Bool
+pub fn CliParseCommand::not_equal(Self, Self) -> Bool
+pub fn CliParseCommand::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliParseCommandRunResult {
   results : Array[CliParseCommandSourceResult]
   stdout : String
   exit_code : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliParseCommandRunResult::equal(Self, Self) -> Bool
+pub fn CliParseCommandRunResult::not_equal(Self, Self) -> Bool
+pub fn CliParseCommandRunResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliParseCommandSource {
   name : String?
   contents : Bytes
   language_names : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn CliParseCommandSource::equal(Self, Self) -> Bool
+pub fn CliParseCommandSource::not_equal(Self, Self) -> Bool
+pub fn CliParseCommandSource::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliParseCommandSourceResult {
   name : String?
   result : CliParseResult
 } derive(Eq, @debug.Debug)
+pub fn CliParseCommandSourceResult::equal(Self, Self) -> Bool
+pub fn CliParseCommandSourceResult::not_equal(Self, Self) -> Bool
+pub fn CliParseCommandSourceResult::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliParseOutputMode {
   CliParseNormal
   CliParseCst
   CliParseQuiet
 } derive(Eq, @debug.Debug)
+pub fn CliParseOutputMode::equal(Self, Self) -> Bool
+pub fn CliParseOutputMode::not_equal(Self, Self) -> Bool
+pub fn CliParseOutputMode::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliParseProblem {
   kind : CliParseProblemKind
@@ -414,11 +516,17 @@ pub(all) struct CliParseProblem {
   start_point : @api.Point
   end_point : @api.Point
 } derive(Eq, @debug.Debug)
+pub fn CliParseProblem::equal(Self, Self) -> Bool
+pub fn CliParseProblem::not_equal(Self, Self) -> Bool
+pub fn CliParseProblem::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliParseProblemKind {
   ErrorNode
   MissingNode
 } derive(Eq, @debug.Debug)
+pub fn CliParseProblemKind::equal(Self, Self) -> Bool
+pub fn CliParseProblemKind::not_equal(Self, Self) -> Bool
+pub fn CliParseProblemKind::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliParseResult {
   output : String
@@ -426,11 +534,17 @@ pub(all) struct CliParseResult {
   problem : CliParseProblem?
   encoding : @api.InputEncoding
 } derive(Eq, @debug.Debug)
+pub fn CliParseResult::equal(Self, Self) -> Bool
+pub fn CliParseResult::not_equal(Self, Self) -> Bool
+pub fn CliParseResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliPathExpansion {
   argument : String
   paths : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn CliPathExpansion::equal(Self, Self) -> Bool
+pub fn CliPathExpansion::not_equal(Self, Self) -> Bool
+pub fn CliPathExpansion::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQueryCommand {
   query_path : String?
@@ -448,12 +562,18 @@ pub(all) struct CliQueryCommand {
   containing_byte_range : CliByteRange?
   test_mode : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliQueryCommand::equal(Self, Self) -> Bool
+pub fn CliQueryCommand::not_equal(Self, Self) -> Bool
+pub fn CliQueryCommand::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQueryCommandRunResult {
   results : Array[CliQueryCommandSourceResult]
   stdout : String
   exit_code : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliQueryCommandRunResult::equal(Self, Self) -> Bool
+pub fn CliQueryCommandRunResult::not_equal(Self, Self) -> Bool
+pub fn CliQueryCommandRunResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQueryCommandSourceResult {
   name : String?
@@ -463,11 +583,17 @@ pub(all) struct CliQueryCommandSourceResult {
   has_parse_error : Bool
   successful : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliQueryCommandSourceResult::equal(Self, Self) -> Bool
+pub fn CliQueryCommandSourceResult::not_equal(Self, Self) -> Bool
+pub fn CliQueryCommandSourceResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQueryFile {
   path : String
   content : String
 } derive(Eq, @debug.Debug)
+pub fn CliQueryFile::equal(Self, Self) -> Bool
+pub fn CliQueryFile::not_equal(Self, Self) -> Bool
+pub fn CliQueryFile::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliQueryFileKind {
   CliQueryFileHighlights
@@ -476,11 +602,17 @@ pub(all) enum CliQueryFileKind {
   CliQueryFileTags
   CliQueryFileOther
 } derive(Eq, @debug.Debug)
+pub fn CliQueryFileKind::equal(Self, Self) -> Bool
+pub fn CliQueryFileKind::not_equal(Self, Self) -> Bool
+pub fn CliQueryFileKind::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQueryFileOffset {
   path : String
   byte_offset : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliQueryFileOffset::equal(Self, Self) -> Bool
+pub fn CliQueryFileOffset::not_equal(Self, Self) -> Bool
+pub fn CliQueryFileOffset::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQueryFilePathSet {
   highlights : Array[String]
@@ -489,17 +621,26 @@ pub(all) struct CliQueryFilePathSet {
   tags : Array[String]
   others : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn CliQueryFilePathSet::equal(Self, Self) -> Bool
+pub fn CliQueryFilePathSet::not_equal(Self, Self) -> Bool
+pub fn CliQueryFilePathSet::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliQueryOutputMode {
   CliQueryCaptures
   CliQueryMatches
 } derive(Eq, @debug.Debug)
+pub fn CliQueryOutputMode::equal(Self, Self) -> Bool
+pub fn CliQueryOutputMode::not_equal(Self, Self) -> Bool
+pub fn CliQueryOutputMode::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliQuerySourceRange {
   path : String
   start_byte : Int32
   end_byte : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliQuerySourceRange::equal(Self, Self) -> Bool
+pub fn CliQuerySourceRange::not_equal(Self, Self) -> Bool
+pub fn CliQuerySourceRange::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTagsCommand {
   paths_file : String?
@@ -512,12 +653,18 @@ pub(all) struct CliTagsCommand {
   test_number : UInt32?
   rebuild : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliTagsCommand::equal(Self, Self) -> Bool
+pub fn CliTagsCommand::not_equal(Self, Self) -> Bool
+pub fn CliTagsCommand::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTagsCommandRunResult {
   results : Array[CliTagsCommandSourceResult]
   stdout : String
   exit_code : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliTagsCommandRunResult::equal(Self, Self) -> Bool
+pub fn CliTagsCommandRunResult::not_equal(Self, Self) -> Bool
+pub fn CliTagsCommandRunResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTagsCommandSourceResult {
   name : String?
@@ -526,6 +673,9 @@ pub(all) struct CliTagsCommandSourceResult {
   has_parse_error : Bool
   successful : Bool
 } derive(Eq, @debug.Debug)
+pub fn CliTagsCommandSourceResult::equal(Self, Self) -> Bool
+pub fn CliTagsCommandSourceResult::not_equal(Self, Self) -> Bool
+pub fn CliTagsCommandSourceResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTestCommand {
   include_pattern : String?
@@ -542,6 +692,9 @@ pub(all) struct CliTestCommand {
   json_summary : Bool
   stats : CliTestStatsMode?
 } derive(Eq, @debug.Debug)
+pub fn CliTestCommand::equal(Self, Self) -> Bool
+pub fn CliTestCommand::not_equal(Self, Self) -> Bool
+pub fn CliTestCommand::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTestCommandFile {
   name : String
@@ -549,12 +702,18 @@ pub(all) struct CliTestCommandFile {
   file_name : String?
   current_platform : String?
 } derive(Eq, @debug.Debug)
+pub fn CliTestCommandFile::equal(Self, Self) -> Bool
+pub fn CliTestCommandFile::not_equal(Self, Self) -> Bool
+pub fn CliTestCommandFile::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTestCommandFileResult {
   name : String
   results : Array[CliCorpusRunResult]
   update : CliOutputFile?
 } derive(Eq, @debug.Debug)
+pub fn CliTestCommandFileResult::equal(Self, Self) -> Bool
+pub fn CliTestCommandFileResult::not_equal(Self, Self) -> Bool
+pub fn CliTestCommandFileResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTestCommandRunResult {
   files : Array[CliTestCommandFileResult]
@@ -563,6 +722,9 @@ pub(all) struct CliTestCommandRunResult {
   json_summary : String?
   exit_code : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliTestCommandRunResult::equal(Self, Self) -> Bool
+pub fn CliTestCommandRunResult::not_equal(Self, Self) -> Bool
+pub fn CliTestCommandRunResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTestRunSummary {
   total : Int32
@@ -571,16 +733,25 @@ pub(all) struct CliTestRunSummary {
   skipped : Int32
   platform_skipped : Int32
 } derive(Eq, @debug.Debug)
+pub fn CliTestRunSummary::equal(Self, Self) -> Bool
+pub fn CliTestRunSummary::not_equal(Self, Self) -> Bool
+pub fn CliTestRunSummary::to_repr(Self) -> @debug.Repr
 
 pub(all) enum CliTestStatsMode {
   CliTestStatsAll
   CliTestStatsOutliersAndTotal
   CliTestStatsTotalOnly
 } derive(Eq, @debug.Debug)
+pub fn CliTestStatsMode::equal(Self, Self) -> Bool
+pub fn CliTestStatsMode::not_equal(Self, Self) -> Bool
+pub fn CliTestStatsMode::to_repr(Self) -> @debug.Repr
 
 pub(all) struct CliTreeSitterConfig {
   grammars : Array[CliLanguageConfig]
 } derive(Eq, @debug.Debug)
+pub fn CliTreeSitterConfig::equal(Self, Self) -> Bool
+pub fn CliTreeSitterConfig::not_equal(Self, Self) -> Bool
+pub fn CliTreeSitterConfig::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

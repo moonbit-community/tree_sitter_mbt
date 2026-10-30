@@ -147,7 +147,7 @@ fn cli_generate_summary_json(
 
 ///|
 fn cli_json_string(value : String) -> String {
-  let out = StringBuilder::new()
+  let out = StringBuilder()
   out.write_char('"')
   for char in value {
     match char {
@@ -162,3 +162,21 @@ fn cli_json_string(value : String) -> String {
   out.write_char('"')
   out.to_string()
 }
+
+///|
+pub extend CliGenerateRunError with Debug::{to_repr}
+
+///|
+pub extend CliGenerateRunError with Eq::{not_equal, equal}
+
+///|
+pub extend CliGenerateRunResult with Debug::{to_repr}
+
+///|
+pub extend CliGenerateRunResult with Eq::{not_equal, equal}
+
+///|
+pub extend CliOutputFile with Debug::{to_repr}
+
+///|
+pub extend CliOutputFile with Eq::{not_equal, equal}

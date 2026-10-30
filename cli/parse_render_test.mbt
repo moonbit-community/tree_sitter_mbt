@@ -27,7 +27,7 @@ test "cli renders normal parse output with ranges and fields" {
   parser.set_language(language)
   let tree = parser.parse_bytes(b"ab")
   assert_eq(
-    render_parse_normal_tree(tree),
+    @cli.render_parse_normal_tree(tree),
     (
       #|(document [0, 0] - [0, 2]
       #|  left: (item [0, 0] - [0, 1]))
@@ -43,7 +43,7 @@ test "cli renders normal parse output without ranges" {
   parser.set_language(language)
   let tree = parser.parse_bytes(b"ab")
   assert_eq(
-    render_parse_normal_tree(tree, no_ranges=true),
+    @cli.render_parse_normal_tree(tree, no_ranges=true),
     (
       #|(document
       #|  left: (item))

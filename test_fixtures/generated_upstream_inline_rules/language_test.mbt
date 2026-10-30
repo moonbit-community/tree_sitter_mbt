@@ -1,6 +1,6 @@
 ///|
 test "generated upstream inline_rules language metadata" {
-  let language = language()
+  let language = @generated_upstream_inline_rules.language()
   assert_eq(language.name(), "inline_rules")
   assert_true(language.metadata() == @tables.LanguageMetadata::zero())
   assert_true(language.symbol_for_name("program", is_named=true) is Some(_))
@@ -16,7 +16,7 @@ test "generated upstream inline_rules language metadata" {
 ///|
 test "generated upstream inline_rules parses expression corpus" {
   let parser = @tree_sitter_mbt.Parser::new()
-  parser.set_language(language())
+  parser.set_language(@generated_upstream_inline_rules.language())
   let input =
     #|1 + 2 * 3;
     #|4 * 5 + 6;

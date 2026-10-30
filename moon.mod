@@ -4,7 +4,7 @@ import {
 
 name = "moonbit-community/tree_sitter_mbt"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.mbt.md"
 
